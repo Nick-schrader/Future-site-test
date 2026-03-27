@@ -3,3 +3,4 @@ bot/node_modules/
 bot/.env
 bot/porto.db
 .env
+node_modules
