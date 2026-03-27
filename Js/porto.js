@@ -103,7 +103,7 @@ function laadEenheden() {
     .then(r => r.json())
     .then(data => {
       appData.eenheden = data.map(e => ({
-        id: e.roepnummer || e.dienstnummer || '-',
+        id: e.roepnummer || e.dienstnummer || e.id || '-',
         medewerkers: e.koppel_id
           ? `${e.shortname || e.display_name} + ${e.koppel_naam || e.koppel_display || '?'}`
           : (e.shortname || e.display_name),
@@ -130,7 +130,8 @@ function renderEenheden() {
   GROEPEN.forEach(p => groepen[p] = []);
 
   appData.eenheden.forEach(e => {
-    const prefix = e.id && e.id.length >= 2 ? e.id.substring(0, 2) : null;
+    const prefix = e.id && e.id.trim().length >= 2 ? e.id.trim().substring(0, 2) : null;
+    console.log('eenheid id:', e.id, '-> prefix:', prefix);
     if (prefix && groepen[prefix] !== undefined) {
       groepen[prefix].push(e);
     } else {
@@ -247,55 +248,49 @@ function renderMeldingen() {
     fetch(`${API_URL}/api/wachtrij`).then(r => r.json()),
     fetch(`${API_URL}/api/status-alerts`).then(r => r.json()),
   ]).then(([wachtrij, alerts]) => {
-      // Speel geluid als er nieuwe aanmeldingen zijn
       if (wachtrij.length > vorigeWachtrijCount && vorigeWachtrijCount >= 0) {
         speelAanmeldGeluid();
       }
       vorigeWachtrijCount = wachtrij.length;
+
+      // Speel geluid bij nieuwe status 6/7 alerts
+      if (alerts.length > (window._vorigeAlerts || 0)) {
+        speelAanmeldGeluid();
+        // Verwijder alerts direct weer
+        alerts.forEach(a => fetch(`${API_URL}/api/status-alerts/${a.id}`, { method: 'DELETE' }));
+      }
+      window._vorigeAlerts = 0;
+
       window._wachtrij = wachtrij;
 
-      let html = '';
-
-      // Status 6/7 alerts bovenaan in rood
-      alerts.forEach(a => {
-        const label = a.status === 7 ? '🔴 SPRAAK URGENT' : '🔵 SPRAAKAANVRAAG';
-        const kleur = a.status === 7 ? '#7f1d1d' : '#1e3a5f';
-        html += `
-          <div class="melding-item" style="background:${kleur};border:1px solid ${a.status === 7 ? '#f87171' : '#60a5fa'}">
-            <div>
-              <strong>${label}</strong>
-              <br/><span style="font-size:0.85rem">${a.naam}</span>
-            </div>
-            <button class="btn-ghost small" onclick="dismissAlert(${a.id})">✕</button>
-          </div>`;
-      });
-
-      if (wachtrij.length === 0 && alerts.length === 0) {
+      if (wachtrij.length === 0) {
         list.innerHTML = '<div style="color:#888;font-size:0.85rem;padding:8px">Geen aanmeldingen</div>';
         return;
       }
 
-      // Aanmeldingen
-      wachtrij.forEach((w, i) => {
+      list.innerHTML = wachtrij.map((w, i) => {
         let rollen = [];
         try { rollen = JSON.parse(w.rollen || '[]'); } catch {}
         const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
         const heeftIbt = rolNamen.some(r => r.includes('IBT') || r.includes('ibt'));
-        html += `
-          <div class="melding-item melding-aanmeld">
-            <div>
-              <strong>&#128100; ${w.naam}</strong>
-              ${!heeftIbt ? `<br/><span style="color:#f87171;font-size:0.78rem;font-weight:bold">⚠ Geen IBT</span>` : ''}
-              ${w.bijzonderheden ? `<br/><em style="color:#888;font-size:0.78rem">${w.bijzonderheden}</em>` : ''}
-            </div>
-            <button class="btn-purple small" onclick="openIndelenModal(${i})">Indelen</button>
-          </div>`;
-      });
-
-      list.innerHTML = html;
+        return `
+        <div class="melding-item melding-aanmeld">
+          <div>
+            <strong>&#128100; ${w.naam}</strong>
+            ${!heeftIbt ? `<br/><span style="color:#f87171;font-size:0.78rem;font-weight:bold">⚠ Geen IBT</span>` : ''}
+            ${w.bijzonderheden ? `<br/><em style="color:#888;font-size:0.78rem">${w.bijzonderheden}</em>` : ''}
+          </div>
+          <button class="btn-purple small" onclick="openIndelenModal(${i})">Indelen</button>
+        </div>`;
+      }).join('');
     }).catch(() => {
       if (list) list.innerHTML = '<div style="color:#888;font-size:0.85rem">Kan aanmeldingen niet laden</div>';
     });
+}
+
+function dismissAlert(id) {
+  fetch(`${API_URL}/api/status-alerts/${id}`, { method: 'DELETE' })
+    .then(() => renderMeldingen());
 }
 
 function dismissAlert(id) {

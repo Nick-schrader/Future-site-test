@@ -253,11 +253,11 @@ app.post('/api/status', (req, res) => {
   if (status !== undefined) db.prepare('UPDATE gebruikers SET status = ? WHERE id = ?').run(status, userId);
   if (voertuig !== undefined) db.prepare('UPDATE gebruikers SET voertuig = ? WHERE id = ?').run(voertuig, userId);
 
-  // Sla alert op bij status 6 of 7
+  // Speel geluid bij status 6 of 7
   if (status === 6 || status === 7) {
-    const g = db.prepare('SELECT shortname, display_name, dienstnummer FROM gebruikers WHERE id = ?').get(userId);
-    const naam = (g?.shortname || g?.display_name || '') + (g?.dienstnummer ? ` (${g.dienstnummer})` : '');
-    db.prepare('INSERT INTO status_alerts (user_id, naam, status, tijd) VALUES (?, ?, ?, ?)').run(userId, naam, status, Date.now());
+    db.prepare('INSERT INTO status_alerts (user_id, naam, status, tijd) VALUES (?, ?, ?, ?)').run(
+      userId, '', status, Date.now()
+    );
   }
 
   res.json({ success: true });
