@@ -113,6 +113,7 @@ function laadEenheden() {
         status: e.status || 1,
         userId: e.id,
         koppelId: e.koppel_id || null,
+        rollen: e.rollen || '[]',
       }));
       renderEenheden();
     }).catch(() => {});
@@ -611,12 +612,34 @@ function openVoertuigModal(id) {
   document.getElementById('edit-roepnummer').value = unit.id !== unit.medewerkers ? unit.id : '';
   document.getElementById('edit-voertuig').value = unit.voertuig !== '-' ? unit.voertuig : 'Noodhulp';
 
+  // IBT check
+  let rollen = [];
+  try { rollen = JSON.parse(unit.rollen || '[]'); } catch {}
+  const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
+  const heeftIbt = rolNamen.some(r => r.includes('IBT') || r.includes('ibt'));
+  document.getElementById('edit-ibt-warn').style.display = heeftIbt ? 'none' : 'block';
+
   // Toon koppelen of ontkoppelen knop
   const isGekoppeld = !!unit.koppelId;
   document.getElementById('koppel-btn').classList.toggle('hidden', isGekoppeld);
   document.getElementById('ontkoppel-btn').classList.toggle('hidden', !isGekoppeld);
 
   document.getElementById('voertuig-modal').classList.remove('hidden');
+}
+
+function setStatusVoorEenheid(status) {
+  const id = document.getElementById('edit-unit-id').value;
+  const unit = appData.eenheden.find(e => e.id === id);
+  if (!unit) return;
+  fetch(`${API_URL}/api/status`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId: unit.userId, status }),
+  }).then(() => {
+    closeVoertuigModal();
+    laadEenheden();
+    showToast(`${unit.medewerkers} → Status ${status}`);
+  });
 }
 
 function ontkoppelEenheid() {

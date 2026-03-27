@@ -604,7 +604,7 @@ app.get('/api/koppel-kandidaten/:userId', (req, res) => {
 app.get('/api/eenheden', async (_req, res) => {
   const eenheden = db.prepare(`
     SELECT g.id, g.display_name, g.shortname, g.dienstnummer, g.voertuig, g.status, g.dienst,
-           g.koppel_id, i.roepnummer, i.ingedeeld_door,
+           g.koppel_id, g.rollen, i.roepnummer, i.ingedeeld_door,
            k.shortname as koppel_naam, k.display_name as koppel_display, k.id as koppel_user_id
     FROM gebruikers g
     LEFT JOIN indelingen i ON g.id = i.user_id
