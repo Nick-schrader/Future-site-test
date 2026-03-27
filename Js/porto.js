@@ -130,7 +130,7 @@ function renderEenheden() {
   GROEPEN.forEach(p => groepen[p] = []);
 
   appData.eenheden.forEach(e => {
-    const prefix = e.id && e.id.includes('-') ? e.id.split('-')[0] : null;
+    const prefix = e.id && e.id.length >= 2 ? e.id.substring(0, 2) : null;
     if (prefix && groepen[prefix] !== undefined) {
       groepen[prefix].push(e);
     } else {
@@ -144,7 +144,7 @@ function renderEenheden() {
   let html = '';
   labels.forEach(prefix => {
     const groep = groepen[prefix] || [];
-    const label = prefix === 'Overig' ? 'Overig' : `${prefix}-00`;
+    const label = prefix === 'Overig' ? 'Overig' : `${prefix} Nummer`;
     const ingeklapt = window._groepIngeklapt[label] || false;
     const pijl = ingeklapt ? '▶' : '▼';
     html += `<tr class="group-header" onclick="toggleGroep('${label}')" style="cursor:pointer">
@@ -734,6 +734,13 @@ function openIndelenModal(index) {
   document.getElementById('indelen-user-id').value = w.user_id;
   document.getElementById('indelen-naam').textContent = w.naam + ' indelen';
   document.getElementById('indelen-roepnummer').value = '';
+
+  let rollen = [];
+  try { rollen = JSON.parse(w.rollen || '[]'); } catch {}
+  const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
+  const heeftIbt = rolNamen.some(r => r.includes('IBT') || r.includes('ibt'));
+  document.getElementById('indelen-ibt-warn').style.display = heeftIbt ? 'none' : 'block';
+
   document.getElementById('indelen-modal').classList.remove('hidden');
 }
 
