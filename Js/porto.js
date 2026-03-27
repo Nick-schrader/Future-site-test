@@ -506,6 +506,7 @@ function aanmeldenDirect() {
       userId: u.id,
       naam: u.displayName || u.username,
       bijzonderheden: document.getElementById('aanmeld-bijzonderheden').value.trim(),
+      rangicoon: u.rangicoon || '',
     }),
   });
 

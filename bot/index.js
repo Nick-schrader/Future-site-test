@@ -154,12 +154,11 @@ app.post('/api/instellingen', (req, res) => {
 
 // ---- API: Aanmelden (STATUS 0) ----
 app.post('/api/aanmelden', (req, res) => {
-  const { userId, naam, bijzonderheden } = req.body;
+  const { userId, naam, bijzonderheden, rangicoon } = req.body;
   if (!userId) return res.status(400).json({ error: 'Geen userId' });
   addAanmelding.run({ user_id: userId, naam, bijzonderheden: bijzonderheden || '', tijd: Date.now() });
-  // Sla indienst_start op in gebruikers tabel
-  const { db } = require('./database');
   db.prepare('UPDATE gebruikers SET indienst_start = ? WHERE id = ?').run(Date.now(), userId);
+  if (rangicoon !== undefined) db.prepare('UPDATE gebruikers SET rangicoon = ? WHERE id = ?').run(rangicoon, userId);
   res.json({ success: true });
 });
 
@@ -176,22 +175,18 @@ app.post('/api/indelen', async (req, res) => {
   addIndeling.run({ user_id: userId, roepnummer, voertuig, ingedeeld_door: ingedeeldDoor || '', tijd: Date.now() });
   removeAanmelding.run(userId);
 
-  // Haal korte naam op uit database
-  const { db } = require('./database');
-  const gebruiker = db.prepare('SELECT shortname, display_name FROM gebruikers WHERE id = ?').get(userId);
-  const korteNaam = gebruiker?.shortname || gebruiker?.display_name || '';
-  const nieuweNaam = `[${roepnummer}] ${korteNaam}`.trim();
-
   // Zet naam in Discord
   try {
     const guild = await client.guilds.fetch(process.env.GUILD_ID);
     const member = await guild.members.fetch(userId);
+    const g = db.prepare('SELECT shortname, display_name, rangicoon, role FROM gebruikers WHERE id = ?').get(userId);
+    const nieuweNaam = maakDienstNaam(roepnummer, g, g?.role);
     await member.setNickname(nieuweNaam);
+    res.json({ success: true, nieuweNaam });
   } catch (err) {
     console.error('Naam update mislukt:', err.message);
+    res.json({ success: true });
   }
-
-  res.json({ success: true, nieuweNaam });
 });
 
 // ---- API: Check indeling (voor gebruiker) ----
@@ -225,12 +220,13 @@ app.post('/api/eenheid-update', async (req, res) => {
   if (voertuig) db.prepare('UPDATE gebruikers SET voertuig = ? WHERE id = ?').run(voertuig, userId);
   if (roepnummer) {
     db.prepare('UPDATE indelingen SET roepnummer = ?, voertuig = ? WHERE user_id = ?').run(roepnummer, voertuig, userId);
-    // Update Discord naam
+    // Update Discord naam — gebruik rol uit request body als die meegegeven is
     try {
       const guild = await client.guilds.fetch(process.env.GUILD_ID);
       const member = await guild.members.fetch(userId);
       const gebruiker = db.prepare('SELECT shortname, display_name, rangicoon, role FROM gebruikers WHERE id = ?').get(userId);
-      await member.setNickname(maakDienstNaam(roepnummer, gebruiker, gebruiker?.role));
+      const rolVoorNaam = req.body.role || gebruiker?.role;
+      await member.setNickname(maakDienstNaam(roepnummer, gebruiker, rolVoorNaam));
     } catch (err) { console.error('Naam update mislukt:', err.message); }
   }
   res.json({ success: true });
@@ -250,6 +246,7 @@ app.post('/api/rol', async (req, res) => {
   const { userId, role, indienstStart, roepnummer, rangicoon } = req.body;
   if (!userId || !role) return res.status(400).json({ error: 'Ontbrekende velden' });
   const nu = indienstStart || Date.now();
+  // Zet altijd de nieuwe rol (overschrijft vorige)
   db.prepare('UPDATE gebruikers SET role = ?, indienst_start = COALESCE(indienst_start, ?) WHERE id = ?').run(role, nu, userId);
   if (rangicoon !== undefined) db.prepare('UPDATE gebruikers SET rangicoon = ? WHERE id = ?').run(rangicoon, userId);
   if (roepnummer) {
@@ -398,7 +395,7 @@ function maakDienstNaam(roepnummer, g, rol) {
   const korteNaam = g?.shortname || g?.display_name || '';
   const icoon = g?.rangicoon ? g.rangicoon.trim() : '';
   const prefix = icoon ? `${roepnummer}-${icoon}` : roepnummer;
-  const rolPrefix = rol === 'ovd' ? 'OVD-K ' : rol === 'opco' ? 'OpCo-K ' : '';
+  const rolPrefix = rol === 'ovd' ? 'OVD-K ' : rol === 'opco' ? 'OpCo-K ' : rol === 'ops' ? 'OPS ' : '';
   return `${rolPrefix}[${prefix}] ${korteNaam}`.trim();
 }
 
