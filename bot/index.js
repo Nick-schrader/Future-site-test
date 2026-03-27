@@ -162,9 +162,23 @@ app.post('/api/aanmelden', (req, res) => {
   res.json({ success: true });
 });
 
+// ---- API: Status alerts (6/7) ----
+app.get('/api/status-alerts', (_req, res) => {
+  res.json(db.prepare('SELECT * FROM status_alerts ORDER BY tijd ASC').all());
+});
+app.delete('/api/status-alerts/:id', (req, res) => {
+  db.prepare('DELETE FROM status_alerts WHERE id = ?').run(req.params.id);
+  res.json({ success: true });
+});
+
 // ---- API: Wachtrij ophalen (voor OVD/OPCO) ----
 app.get('/api/wachtrij', (_req, res) => {
-  res.json(getWachtrij.all());
+  const rijen = db.prepare(`
+    SELECT w.*, g.rollen FROM aanmeld_wachtrij w
+    LEFT JOIN gebruikers g ON w.user_id = g.id
+    ORDER BY w.tijd ASC
+  `).all();
+  res.json(rijen);
 });
 
 // ---- API: Indelen + Discord naam updaten ----
@@ -238,6 +252,14 @@ app.post('/api/status', (req, res) => {
   if (!userId) return res.status(400).json({ error: 'Geen userId' });
   if (status !== undefined) db.prepare('UPDATE gebruikers SET status = ? WHERE id = ?').run(status, userId);
   if (voertuig !== undefined) db.prepare('UPDATE gebruikers SET voertuig = ? WHERE id = ?').run(voertuig, userId);
+
+  // Sla alert op bij status 6 of 7
+  if (status === 6 || status === 7) {
+    const g = db.prepare('SELECT shortname, display_name, dienstnummer FROM gebruikers WHERE id = ?').get(userId);
+    const naam = (g?.shortname || g?.display_name || '') + (g?.dienstnummer ? ` (${g.dienstnummer})` : '');
+    db.prepare('INSERT INTO status_alerts (user_id, naam, status, tijd) VALUES (?, ?, ?, ?)').run(userId, naam, status, Date.now());
+  }
+
   res.json({ success: true });
 });
 
@@ -477,13 +499,30 @@ app.get('/api/kandidaten/:rol', (_req, res) => {
 });
 
 // ---- API: Rol toewijzen aan gebruiker ----
-app.post('/api/rol-toewijzen', (req, res) => {
+app.post('/api/rol-toewijzen', async (req, res) => {
   const { userId, nieuweRol, oudeRol } = req.body;
   if (!userId || !nieuweRol) return res.status(400).json({ error: 'Ontbrekende velden' });
   // Reset vorige persoon met die rol
   if (oudeRol) db.prepare("UPDATE gebruikers SET role = 'user' WHERE role = ? AND id != ?").run(oudeRol, userId);
   db.prepare('UPDATE gebruikers SET role = ? WHERE id = ?').run(nieuweRol, userId);
+
+  // Update DC naam
+  try {
+    const guild = await client.guilds.fetch(process.env.GUILD_ID);
+    const member = await guild.members.fetch(userId);
+    const g = db.prepare('SELECT shortname, display_name, rangicoon, role, dienstnummer FROM gebruikers WHERE id = ?').get(userId);
+    if (g?.dienstnummer) {
+      await member.setNickname(maakDienstNaam(g.dienstnummer, g, nieuweRol));
+    }
+  } catch (err) { console.error('Naam rol-toewijzen mislukt:', err.message); }
+
   res.json({ success: true });
+});
+
+// ---- API: Rol check (voor polling) ----
+app.get('/api/rol-check/:userId', (req, res) => {
+  const g = db.prepare('SELECT role, dienstnummer, voertuig, indienst_start FROM gebruikers WHERE id = ?').get(req.params.userId);
+  res.json({ role: g?.role || 'user', dienstnummer: g?.dienstnummer || '', voertuig: g?.voertuig || '', indienstStart: g?.indienst_start || null });
 });
 
 // ---- API: Verplaats gebruiker naar voice channel ----
@@ -573,26 +612,11 @@ app.get('/api/eenheden', async (_req, res) => {
     WHERE g.indienst_start IS NOT NULL
   `).all();
 
-  // Filter: verwijder de "slave" van een koppel (degene wiens partner al als master verschijnt)
-  const masterIds = new Set(eenheden.filter(e => e.koppel_id).map(e => e.id));
+  // Filter gekoppelde duplicaten
   const gefilterd = eenheden.filter(e => {
-    if (!e.koppel_id) return true; // niet gekoppeld, altijd tonen
-    // Toon alleen als de partner NIET ook een master is (voorkom dubbel)
-    // Toon de rij met het laagste id als "master"
+    if (!e.koppel_id) return true;
     return e.id < e.koppel_id;
   });
-
-  // Haal voice channel op per gebruiker
-  try {
-    const guild = await client.guilds.fetch(process.env.GUILD_ID);
-    for (const e of gefilterd) {
-      try {
-        const member = await guild.members.fetch({ user: e.id, force: true });
-        const channelId = member?.voice?.channelId;
-        e.call = channelId && CALL_CHANNELS[channelId] ? CALL_CHANNELS[channelId] : null;
-      } catch { e.call = null; }
-    }
-  } catch {}
 
   res.json(gefilterd);
 });

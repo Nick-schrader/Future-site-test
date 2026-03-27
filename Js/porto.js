@@ -111,49 +111,50 @@ function laadEenheden() {
         type: e.voertuig || '-',
         taak: 'Surveillance',
         status: e.status || 1,
-        call: e.call || 'Niet verbonden',
         userId: e.id,
         koppelId: e.koppel_id || null,
-        x: 20 + (parseInt(e.id, 36) % 60),
-        y: 20 + (parseInt(e.id, 36) % 50),
       }));
       renderEenheden();
-      renderGPS();
     }).catch(() => {});
 }
 
 function renderEenheden() {
   const tbody = document.getElementById('eenheden-tbody');
-  const kmar1 = appData.eenheden.filter(e => e.call === 'Kmar1');
-  const kmar2 = appData.eenheden.filter(e => e.call === 'Kmar2');
-  const kmar3 = appData.eenheden.filter(e => e.call === 'Kmar3');
-  const geenCall = appData.eenheden.filter(e => !['Kmar1','Kmar2','Kmar3'].includes(e.call));
-
   const u = getUser();
   const canEdit = ['ovd', 'opco', 'oc', 'ops'].includes(u.role);
 
-  const CHANNELS = {
-    'Kmar1': '1487069860004499477',
-    'Kmar2': '1487069880254464213',
-    'Kmar3': '1487069910487273522',
-  };
-
-  // Bewaar ingeklapte staat
   if (!window._groepIngeklapt) window._groepIngeklapt = {};
 
+  const GROEPEN = ['17', '18', '20'];
+  const groepen = {};
+  GROEPEN.forEach(p => groepen[p] = []);
+
+  appData.eenheden.forEach(e => {
+    const prefix = e.id && e.id.includes('-') ? e.id.split('-')[0] : null;
+    if (prefix && groepen[prefix] !== undefined) {
+      groepen[prefix].push(e);
+    } else {
+      if (!groepen['Overig']) groepen['Overig'] = [];
+      groepen['Overig'].push(e);
+    }
+  });
+
+  const labels = [...GROEPEN, ...(groepen['Overig'] ? ['Overig'] : [])];
+
   let html = '';
-  [['Kmar1', kmar1], ['Kmar2', kmar2], ['Kmar3', kmar3], ['Niet verbonden', geenCall]].forEach(([label, groep]) => {
-    const channelId = CHANNELS[label] || null;
-    const dropAttr = canEdit && channelId ? `ondragover="event.preventDefault()" ondrop="dropEenheid(event,'${channelId}')"` : '';
+  labels.forEach(prefix => {
+    const groep = groepen[prefix] || [];
+    const label = prefix === 'Overig' ? 'Overig' : `${prefix}-00`;
     const ingeklapt = window._groepIngeklapt[label] || false;
     const pijl = ingeklapt ? '▶' : '▼';
-    html += `<tr class="group-header" ${dropAttr} onclick="toggleGroep('${label}')" style="cursor:pointer">
+    html += `<tr class="group-header" onclick="toggleGroep('${label}')" style="cursor:pointer">
       <td colspan="6"><span style="margin-right:6px;font-size:0.7rem">${pijl}</span>${label} <span class="badge-tag">Totaal ${groep.length}</span></td>
     </tr>`;
     if (!ingeklapt) {
       groep.forEach(e => html += eenheidRow(e));
     }
   });
+
   tbody.innerHTML = html;
 }
 
@@ -161,10 +162,7 @@ function eenheidRow(e) {
   const u = getUser();
   const canEdit = ['ovd', 'opco', 'oc', 'ops'].includes(u.role);
   const click = canEdit ? `onclick="openVoertuigModal('${e.id}')"` : '';
-  const drag = canEdit && e.call !== 'Niet verbonden'
-    ? `draggable="true" ondragstart="dragEenheid(event,'${e.userId}')"`
-    : '';
-  return `<tr ${click} ${drag} style="${canEdit ? 'cursor:pointer' : ''}">
+  return `<tr ${click} style="${canEdit ? 'cursor:pointer' : ''}">
     <td>${e.id}</td><td>${e.medewerkers}</td><td>${e.voertuig}</td>
     <td>${e.type}</td><td>${e.taak}</td><td>${statusBadge(e.status)}</td>
   </tr>`;
@@ -245,35 +243,64 @@ function renderMeldingen() {
   const list = document.getElementById('meldingen-list');
   if (!list) return;
 
-  fetch(`${API_URL}/api/wachtrij`)
-    .then(r => r.json())
-    .then(wachtrij => {
+  Promise.all([
+    fetch(`${API_URL}/api/wachtrij`).then(r => r.json()),
+    fetch(`${API_URL}/api/status-alerts`).then(r => r.json()),
+  ]).then(([wachtrij, alerts]) => {
       // Speel geluid als er nieuwe aanmeldingen zijn
       if (wachtrij.length > vorigeWachtrijCount && vorigeWachtrijCount >= 0) {
         speelAanmeldGeluid();
       }
       vorigeWachtrijCount = wachtrij.length;
-
       window._wachtrij = wachtrij;
 
-      if (wachtrij.length === 0) {
+      let html = '';
+
+      // Status 6/7 alerts bovenaan in rood
+      alerts.forEach(a => {
+        const label = a.status === 7 ? '🔴 SPRAAK URGENT' : '🔵 SPRAAKAANVRAAG';
+        const kleur = a.status === 7 ? '#7f1d1d' : '#1e3a5f';
+        html += `
+          <div class="melding-item" style="background:${kleur};border:1px solid ${a.status === 7 ? '#f87171' : '#60a5fa'}">
+            <div>
+              <strong>${label}</strong>
+              <br/><span style="font-size:0.85rem">${a.naam}</span>
+            </div>
+            <button class="btn-ghost small" onclick="dismissAlert(${a.id})">✕</button>
+          </div>`;
+      });
+
+      if (wachtrij.length === 0 && alerts.length === 0) {
         list.innerHTML = '<div style="color:#888;font-size:0.85rem;padding:8px">Geen aanmeldingen</div>';
         return;
       }
 
-      list.innerHTML = wachtrij.map((w, i) => `
-        <div class="melding-item melding-aanmeld">
-          <div>
-            <strong>&#128100; ${w.naam}</strong>
-            ${w.bijzonderheden ? `<br/><em style="color:#888;font-size:0.78rem">${w.bijzonderheden}</em>` : ''}
-          </div>
-          <button class="btn-purple small" onclick="openIndelenModal(${i})">Indelen</button>
-        </div>
-      `).join('');
-    })
-    .catch(() => {
+      // Aanmeldingen
+      wachtrij.forEach((w, i) => {
+        let rollen = [];
+        try { rollen = JSON.parse(w.rollen || '[]'); } catch {}
+        const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
+        const heeftIbt = rolNamen.some(r => r.includes('IBT') || r.includes('ibt'));
+        html += `
+          <div class="melding-item melding-aanmeld">
+            <div>
+              <strong>&#128100; ${w.naam}</strong>
+              ${!heeftIbt ? `<br/><span style="color:#f87171;font-size:0.78rem;font-weight:bold">⚠ Geen IBT</span>` : ''}
+              ${w.bijzonderheden ? `<br/><em style="color:#888;font-size:0.78rem">${w.bijzonderheden}</em>` : ''}
+            </div>
+            <button class="btn-purple small" onclick="openIndelenModal(${i})">Indelen</button>
+          </div>`;
+      });
+
+      list.innerHTML = html;
+    }).catch(() => {
       if (list) list.innerHTML = '<div style="color:#888;font-size:0.85rem">Kan aanmeldingen niet laden</div>';
     });
+}
+
+function dismissAlert(id) {
+  fetch(`${API_URL}/api/status-alerts/${id}`, { method: 'DELETE' })
+    .then(() => renderMeldingen());
 }
 
 function clearMeldingen() {
@@ -731,7 +758,27 @@ function saveIndeling() {
 // Controleer of gebruiker is ingedeeld (voor normale gebruiker)
 function checkIndeling() {
   const u = getUser();
-  if (!u.id || u.ingedeeld) return;
+  if (!u.id) return;
+
+  // Check of rol veranderd is (werd je OVD/OPCO gekozen?)
+  if (!['ovd','opco','oc','ops'].includes(u.role)) {
+    fetch(`${API_URL}/api/rol-check/${u.id}`)
+      .then(r => r.json())
+      .then(data => {
+        if (['ovd','opco','oc','ops'].includes(data.role)) {
+          u.role = data.role;
+          if (data.dienstnummer) u.dienstnummer = data.dienstnummer;
+          if (data.voertuig) u.voertuig = data.voertuig;
+          if (data.indienstStart) u.indienstStart = data.indienstStart;
+          saveUser(u);
+          showToast('Je bent aangesteld als ' + data.role.toUpperCase() + '!');
+          setTimeout(() => window.location.reload(), 1000);
+          return;
+        }
+      }).catch(() => {});
+  }
+
+  if (u.ingedeeld) return;
   fetch(`${API_URL}/api/indeling/${u.id}`)
     .then(r => r.json())
     .then(data => {

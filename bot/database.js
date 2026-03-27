@@ -71,6 +71,17 @@ if (!bestaandeKolommen.includes('rangicoon')) {
   db.exec("ALTER TABLE gebruikers ADD COLUMN rangicoon TEXT");
 }
 
+// Status alerts tabel
+db.exec(`
+  CREATE TABLE IF NOT EXISTS status_alerts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT,
+    naam TEXT,
+    status INTEGER,
+    tijd INTEGER
+  );
+`);
+
 // ---- Gebruikers ----
 const upsertGebruiker = db.prepare(`
   INSERT INTO gebruikers (id, username, display_name, avatar, dienst, role, fullname, rollen)
