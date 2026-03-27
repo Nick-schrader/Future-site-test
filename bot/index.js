@@ -468,13 +468,11 @@ const CALL_CHANNELS = {
 // ---- API: Actieve OVD/OPCO kandidaten ----
 app.get('/api/kandidaten/:rol', (_req, res) => {
   const rol = _req.params.rol;
-  // Zoek actieve gebruikers met de juiste Discord rol
   const rolFilter = rol === 'ovd' ? '%OVD-K%' : rol === 'opco' ? '%OPCO-K%' : '%' + rol.toUpperCase() + '%';
   const kandidaten = db.prepare(`
     SELECT id, display_name, shortname FROM gebruikers
-    WHERE indienst_start IS NOT NULL
-    AND (rollen LIKE ? OR role = ?)
-  `).all(rolFilter, rol);
+    WHERE indienst_start IS NOT NULL AND rollen LIKE ?
+  `).all(rolFilter);
   res.json(kandidaten);
 });
 

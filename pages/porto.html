@@ -170,10 +170,10 @@
               </div>
               <div class="acties">
                 <h4>Acties</h4>
-                <div class="acties-btns">
-                  <button class="btn-purple small" onclick="overnemen('porto')">OVERNEMEN</button>
-                  <button class="btn-purple small" onclick="overnemen('ovd')">OVD OVERNEMEN</button>
-                  <button class="btn-purple small" onclick="overnemen('oc')">OC OVERNEMEN</button>
+                <div class="acties-btns" style="display:flex;flex-direction:column;gap:6px">
+                  <button id="btn-overname-opco" class="btn-purple small" style="width:100%" onclick="overnemen('opco')">OpCo overnemen</button>
+                  <button id="btn-overname-ovd" class="btn-purple small" style="width:100%" onclick="overnemen('ovd')">OvD overnemen</button>
+                  <button id="btn-overname-ops" class="btn-purple small" style="width:100%" onclick="overnemen('ops')">OPS overnemen</button>
                 </div>
               </div>
             </div>

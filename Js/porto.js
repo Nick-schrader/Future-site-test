@@ -49,6 +49,11 @@ window.onload = () => {
     if (!heeftOvd)  { const b = document.getElementById('btn-ovd');  if (b) b.remove(); }
     if (!heeftOc)   { const b = document.getElementById('btn-oc');   if (b) b.remove(); }
     if (!heeftOps)  { const b = document.getElementById('btn-ops');  if (b) b.remove(); }
+
+    // Verberg overnemen knoppen op basis van rollen
+    if (!heeftOpco) { const b = document.getElementById('btn-overname-opco'); if (b) b.remove(); }
+    if (!heeftOvd)  { const b = document.getElementById('btn-overname-ovd');  if (b) b.remove(); }
+    if (!heeftOps)  { const b = document.getElementById('btn-overname-ops');  if (b) b.remove(); }
     if (!heeftOpco && !heeftOvd && !heeftOc && !heeftOps) {
       const btns = document.getElementById('inloggen-btns');
       if (btns) btns.closest('.card').style.display = 'none';
@@ -487,9 +492,16 @@ function kiesKandidaat(userId, rol) {
 
 function overnemen(type) {
   const u = getUser();
-  if (type === 'ovd') u.role = 'ovd';
-  else if (type === 'oc') u.role = 'oc';
+  u.role = type;
   saveUser(u);
+
+  // Sync naar DB
+  fetch(`${API_URL}/api/rol`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId: u.id, role: type, indienstStart: u.indienstStart || Date.now(), roepnummer: u.dienstnummer, rangicoon: u.rangicoon || '' }),
+  });
+
   showToast(type.toUpperCase() + ' overgenomen');
   setTimeout(() => window.location.reload(), 800);
 }
