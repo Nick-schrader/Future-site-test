@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Porto Systeem - Aanmelden</title>
+  <link rel="stylesheet" href="Css/style.css" />
+</head>
+<body>
+  <div id="app">
+    <nav class="topbar">
+      <div class="logo">&#11041; Porto Systeem</div>
+      <div class="topbar-right">
+        <details class="profile-dropdown">
+          <summary class="avatar">
+            <img src="https://ui-avatars.com/api/?name=User&background=4ade80&color=000&size=36" alt="avatar" />
+          </summary>
+          <div class="profile-menu">
+            <div class="profile-menu-name">Geen info beschikbaar</div>
+            <a class="profile-menu-item" href="pages/account.html">Account</a>
+          </div>
+        </details>
+      </div>
+    </nav>
+
+    <div class="login-body">
+      <div class="modal-card">
+        <h2>Aanmelden</h2>
+        <div class="error-msg" id="login-error">
+          <span>&#9888;</span> Je account is niet volledig, aanmelden niet mogelijk
+        </div>
+        <a href="http://localhost:3001/auth/login" class="btn-purple btn-discord">
+          Inloggen met Discord
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = 'http://localhost:3001';
+
+    function checkInput() {
+      const val = document.getElementById('discord-id').value.trim();
+      document.getElementById('login-btn').disabled = val.length === 0;
+    }
+
+    async function doLogin() {
+      const discordId = document.getElementById('discord-id').value.trim();
+      const btn = document.getElementById('login-btn');
+      const loading = document.getElementById('login-loading');
+      const error = document.getElementById('login-error');
+
+      btn.disabled = true;
+      loading.style.display = 'block';
+      error.style.display = 'none';
+
+      try {
+        const res = await fetch(API + '/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ discordId })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          error.innerHTML = '<span>&#9888;</span> ' + (data.error || 'Onbekende fout');
+          error.style.display = 'flex';
+          btn.disabled = false;
+          loading.style.display = 'none';
+          return;
+        }
+
+        // Sla gebruiker op in sessionStorage
+        sessionStorage.setItem('loggedIn', '1');
+        sessionStorage.setItem('user', JSON.stringify({
+          username: data.user.username,
+          id: data.user.id,
+          displayName: data.user.displayName,
+          avatar: data.user.avatar,
+          dienst: data.user.dienst,
+          role: data.user.role,
+          rollen: data.user.rollen,
+          fullname: data.user.displayName,
+          shortname: '',
+          dsi: '',
+          dienstnummer: '',
+          phone: '',
+          refresh: 200,
+          streamer: false,
+          naamLock: false,
+        }));
+
+        window.location.href = 'pages/porto.html';
+
+      } catch (e) {
+        error.innerHTML = '<span>&#9888;</span> Kan geen verbinding maken met de bot. Is die online?';
+        error.style.display = 'flex';
+        btn.disabled = false;
+        loading.style.display = 'none';
+      }
+    }
+
+    if (sessionStorage.getItem('loggedIn')) {
+      window.location.href = 'pages/porto.html';
+    }
+  </script>
+</body>
+</html>

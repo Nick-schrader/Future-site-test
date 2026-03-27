@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Porto Systeem - Database</title>
+  <link rel="stylesheet" href="../Css/style.css" />
+</head>
+<body>
+  <div id="app">
+    <nav class="topbar">
+      <div class="logo">&#11041; Porto Systeem</div>
+      <div class="topbar-right">
+        <details class="profile-dropdown">
+          <summary class="avatar">
+            <img src="https://ui-avatars.com/api/?name=Admin&background=4ade80&color=000&size=36" alt="avatar" />
+          </summary>
+          <div class="profile-menu">
+            <div class="profile-menu-name">Database Viewer</div>
+            <a class="profile-menu-item" href="porto.html">Porto Systeem</a>
+            <a class="profile-menu-item" href="account.html">Account</a>
+          </div>
+        </details>
+      </div>
+    </nav>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <a class="sidebar-item" href="porto.html">
+          <span>&#128225;</span><span class="sidebar-label">Porto Systeem</span>
+        </a>
+        <a class="sidebar-item" href="account.html">
+          <span>&#128100;</span><span class="sidebar-label">Account</span>
+        </a>
+        <a class="sidebar-item active" href="admin.html">
+          <span>&#128202;</span><span class="sidebar-label">Database</span>
+        </a>
+      </aside>
+
+      <main class="content">
+        <div class="admin-tabs">
+          <button class="tab-btn active" onclick="showTab('gebruikers')">Gebruikers</button>
+          <button class="tab-btn" onclick="showTab('wachtrij')">Aanmeld Wachtrij</button>
+          <button class="tab-btn" onclick="showTab('indelingen')">Indelingen</button>
+        </div>
+
+        <div id="tab-gebruikers" class="tab-content">
+          <div class="card">
+            <div class="db-header">
+              <h3>Gebruikers</h3>
+              <button class="btn-purple small" onclick="loadTab('gebruikers')">&#8635; Vernieuwen</button>
+            </div>
+            <div class="table-wrap">
+              <table class="db-table" id="tbl-gebruikers">
+                <thead><tr><th>ID</th><th>Username</th><th>Display naam</th><th>Dienst</th><th>Rol</th><th>Dienstnummer</th><th>Voertuig</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-wachtrij" class="tab-content hidden">
+          <div class="card">
+            <div class="db-header">
+              <h3>Aanmeld Wachtrij</h3>
+              <button class="btn-purple small" onclick="loadTab('wachtrij')">&#8635; Vernieuwen</button>
+            </div>
+            <div class="table-wrap">
+              <table class="db-table" id="tbl-wachtrij">
+                <thead><tr><th>ID</th><th>User ID</th><th>Naam</th><th>Bijzonderheden</th><th>Tijd</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-indelingen" class="tab-content hidden">
+          <div class="card">
+            <div class="db-header">
+              <h3>Indelingen</h3>
+              <button class="btn-purple small" onclick="loadTab('indelingen')">&#8635; Vernieuwen</button>
+            </div>
+            <div class="table-wrap">
+              <table class="db-table" id="tbl-indelingen">
+                <thead><tr><th>ID</th><th>User ID</th><th>Roepnummer</th><th>Voertuig</th><th>Ingedeeld door</th><th>Tijd</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="../Js/app.js"></script>
+  <script>
+    const API = 'http://localhost:3001';
+
+    function showTab(naam) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-' + naam).classList.remove('hidden');
+      event.target.classList.add('active');
+      loadTab(naam);
+    }
+
+    async function loadTab(naam) {
+      const res = await fetch(API + '/api/db/' + naam);
+      const data = await res.json();
+      const tbody = document.querySelector('#tbl-' + naam + ' tbody');
+      if (!data.length) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#888">Geen data</td></tr>'; return; }
+
+      tbody.innerHTML = data.map(row => {
+        const cells = Object.values(row).map(v => {
+          if (typeof v === 'number' && v > 1000000000000) {
+            return `<td>${new Date(v).toLocaleString('nl-NL')}</td>`;
+          }
+          return `<td>${v ?? '-'}</td>`;
+        }).join('');
+        return `<tr>${cells}</tr>`;
+      }).join('');
+    }
+
+    // Laad eerste tab
+    loadTab('gebruikers');
+  </script>
+</body>
+</html>

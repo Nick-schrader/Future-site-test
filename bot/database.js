@@ -1,0 +1,130 @@
+const Database = require('better-sqlite3');
+const path = require('path');
+
+const db = new Database(path.join(__dirname, 'porto.db'));
+
+// Tabellen aanmaken
+db.exec(`
+  CREATE TABLE IF NOT EXISTS gebruikers (
+    id TEXT PRIMARY KEY,
+    username TEXT,
+    display_name TEXT,
+    avatar TEXT,
+    dienst TEXT,
+    role TEXT DEFAULT 'user',
+    fullname TEXT,
+    shortname TEXT,
+    dsi TEXT,
+    dienstnummer TEXT,
+    phone TEXT,
+    refresh INTEGER DEFAULT 200,
+    streamer INTEGER DEFAULT 0,
+    naam_lock INTEGER DEFAULT 0,
+    indienst_start INTEGER,
+    ingedeeld INTEGER DEFAULT 0,
+    voertuig TEXT,
+    status INTEGER,
+    rollen TEXT DEFAULT '[]'
+  );
+
+  CREATE TABLE IF NOT EXISTS aanmeld_wachtrij (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT,
+    naam TEXT,
+    bijzonderheden TEXT,
+    tijd INTEGER,
+    UNIQUE(user_id)
+  );
+
+  CREATE TABLE IF NOT EXISTS indelingen (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT,
+    roepnummer TEXT,
+    voertuig TEXT,
+    ingedeeld_door TEXT,
+    tijd INTEGER,
+    UNIQUE(user_id)
+  );
+
+  CREATE TABLE IF NOT EXISTS dienst_tijden (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT,
+    categorie TEXT,
+    week INTEGER,
+    start_tijd INTEGER,
+    eind_tijd INTEGER
+  );
+`);
+
+// Migraties: kolommen toevoegen als ze nog niet bestaan
+const bestaandeKolommen = db.prepare("PRAGMA table_info(gebruikers)").all().map(k => k.name);
+if (!bestaandeKolommen.includes('rollen')) {
+  db.exec("ALTER TABLE gebruikers ADD COLUMN rollen TEXT DEFAULT '[]'");
+}
+if (!bestaandeKolommen.includes('koppel_id')) {
+  db.exec("ALTER TABLE gebruikers ADD COLUMN koppel_id TEXT");
+}
+if (!bestaandeKolommen.includes('dcnaam')) {
+  db.exec("ALTER TABLE gebruikers ADD COLUMN dcnaam TEXT");
+}
+if (!bestaandeKolommen.includes('rangicoon')) {
+  db.exec("ALTER TABLE gebruikers ADD COLUMN rangicoon TEXT");
+}
+
+// ---- Gebruikers ----
+const upsertGebruiker = db.prepare(`
+  INSERT INTO gebruikers (id, username, display_name, avatar, dienst, role, fullname, rollen)
+  VALUES (@id, @username, @display_name, @avatar, @dienst, @role, @fullname, @rollen)
+  ON CONFLICT(id) DO UPDATE SET
+    username = excluded.username,
+    display_name = excluded.display_name,
+    avatar = excluded.avatar,
+    dienst = excluded.dienst,
+    role = excluded.role,
+    rollen = excluded.rollen
+`);
+
+const getGebruiker = db.prepare('SELECT * FROM gebruikers WHERE id = ?');
+
+const updateGebruikerInstellingen = db.prepare(`
+  UPDATE gebruikers SET
+    fullname = @fullname, shortname = @shortname, dcnaam = @dcnaam, rangicoon = @rangicoon
+  WHERE id = @id
+`);
+
+// ---- Aanmeld wachtrij ----
+const addAanmelding = db.prepare(`
+  INSERT INTO aanmeld_wachtrij (user_id, naam, bijzonderheden, tijd)
+  VALUES (@user_id, @naam, @bijzonderheden, @tijd)
+  ON CONFLICT(user_id) DO UPDATE SET
+    bijzonderheden = excluded.bijzonderheden,
+    tijd = excluded.tijd
+`);
+
+const getWachtrij = db.prepare('SELECT * FROM aanmeld_wachtrij ORDER BY tijd ASC');
+const removeAanmelding = db.prepare('DELETE FROM aanmeld_wachtrij WHERE user_id = ?');
+
+// ---- Indelingen ----
+const addIndeling = db.prepare(`
+  INSERT INTO indelingen (user_id, roepnummer, voertuig, ingedeeld_door, tijd)
+  VALUES (@user_id, @roepnummer, @voertuig, @ingedeeld_door, @tijd)
+  ON CONFLICT(user_id) DO UPDATE SET
+    roepnummer = excluded.roepnummer,
+    voertuig = excluded.voertuig,
+    ingedeeld_door = excluded.ingedeeld_door,
+    tijd = excluded.tijd
+`);
+
+const getIndeling = db.prepare('SELECT * FROM indelingen WHERE user_id = ?');
+
+module.exports = {
+  db,
+  upsertGebruiker,
+  getGebruiker,
+  updateGebruikerInstellingen,
+  addAanmelding,
+  getWachtrij,
+  removeAanmelding,
+  addIndeling,
+  getIndeling,
+};

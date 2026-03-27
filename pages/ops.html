@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Porto Systeem - OPS Overzicht</title>
+  <link rel="stylesheet" href="../Css/style.css" />
+</head>
+<body>
+  <div id="app">
+    <nav class="topbar">
+      <div class="logo">&#11041; Porto Systeem</div>
+      <div class="topbar-right">
+        <details class="profile-dropdown">
+          <summary class="avatar">
+            <img src="https://ui-avatars.com/api/?name=User&background=4ade80&color=000&size=36" alt="avatar" />
+          </summary>
+          <div class="profile-menu">
+            <div class="profile-menu-name">OPS</div>
+            <a class="profile-menu-item" href="account.html">Account</a>
+            <div class="profile-menu-item" onclick="logout()">Uitloggen</div>
+          </div>
+        </details>
+      </div>
+    </nav>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <a class="sidebar-item" href="porto.html">
+          <span class="sidebar-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.41 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.82a16 16 0 0 0 6.29 6.29l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span><span class="sidebar-label">Porto Systeem</span>
+        </a>
+        <a class="sidebar-item" href="account.html">
+          <span class="sidebar-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><span class="sidebar-label">Account</span>
+        </a>
+        <a class="sidebar-item active" href="ops.html">
+          <span class="sidebar-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span><span class="sidebar-label">OPS Overzicht</span>
+        </a>
+      </aside>
+
+      <main class="content">
+        <div class="card" style="margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+            <h3>Tijden Overzicht</h3>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <select id="week-filter" class="input-field" style="width:120px" onchange="filterTijden()">
+                <option value="">Alle weken</option>
+              </select>
+              <select id="cat-filter" class="input-field" style="width:140px" onchange="filterTijden()">
+                <option value="">Alle categorieën</option>
+                <option value="porto">Noodhulp</option>
+                <option value="opco">OPCO</option>
+                <option value="ovd">OVD</option>
+                <option value="oc">OC</option>
+              </select>
+              <select id="persoon-filter" class="input-field" style="width:160px" onchange="filterTijden()">
+                <option value="">Alle personen</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="db-table" id="ops-table">
+              <thead><tr><th>Naam</th><th>Categorie</th><th>Week</th><th>Uren</th><th></th></tr></thead>
+              <tbody id="ops-tbody"><tr><td colspan="4" style="color:#555;text-align:center">Laden...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-bottom:14px">Top 10 Meeste Uren</h3>
+          <div class="table-wrap">
+            <table class="db-table">
+              <thead><tr><th>#</th><th>Naam</th><th>Totaal</th></tr></thead>
+              <tbody id="top10-tbody"><tr><td colspan="3" style="color:#555;text-align:center">Laden...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <div id="toast" class="toast hidden">
+      <span>&#10003;</span> <span id="toast-msg"></span>
+      <button onclick="hideToast()">&#10005;</button>
+    </div>
+
+    <!-- VERWIJDER BEVESTIGING MODAL -->
+    <div id="verwijder-modal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <h2>Tijdregel verwijderen</h2>
+        <p style="color:#888;text-align:center;margin-bottom:16px">Weet je zeker dat je deze tijdregel wilt verwijderen? Dit kan niet ongedaan worden gemaakt.</p>
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <button class="btn-red" style="flex:1" onclick="bevestigVerwijder()">Ja, verwijderen</button>
+          <button class="btn-ghost" style="flex:1" onclick="document.getElementById('verwijder-modal').classList.add('hidden')">Annuleren</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../Js/app.js"></script>
+  <script src="../Js/ops.js"></script>
+</body>
+</html>
