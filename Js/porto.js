@@ -94,7 +94,7 @@ window.onload = () => {
 };
 
 function laadEenheden() {
-  fetch(`${API_URL}/api/eenheden')
+  fetch(`${API_URL}/api/eenheden`)
     .then(r => r.json())
     .then(data => {
       appData.eenheden = data.map(e => ({
@@ -179,7 +179,7 @@ function dropEenheid(event, channelId) {
   event.preventDefault();
   const userId = event.dataTransfer.getData('userId');
   if (!userId || !channelId) return;
-  fetch(`${API_URL}/api/voice-move', {
+  fetch(`${API_URL}/api/voice-move`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId, channelId }),
@@ -240,7 +240,7 @@ function renderMeldingen() {
   const list = document.getElementById('meldingen-list');
   if (!list) return;
 
-  fetch(`${API_URL}/api/wachtrij')
+  fetch(`${API_URL}/api/wachtrij`)
     .then(r => r.json())
     .then(wachtrij => {
       // Speel geluid als er nieuwe aanmeldingen zijn
@@ -286,7 +286,7 @@ function updateOCInfo() {
   if (roepnummer) roepnummer.textContent = u.dienstnummer || '-';
   if (voertuig) voertuig.textContent = u.voertuig || 'Niet geselecteerd';
 
-  fetch(`${API_URL}/api/dienst-rollen')
+  fetch(`${API_URL}/api/dienst-rollen`)
     .then(r => r.json())
     .then(data => {
       const opco = document.getElementById('oc-opco');
@@ -310,7 +310,7 @@ function setStatus(s) {
     if (el) el.style.display = 'none';
   });
   // Opslaan in DB
-  if (u.id) fetch(`${API_URL}/api/status', {
+  if (u.id) fetch(`${API_URL}/api/status`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId: u.id, status: s }),
   });
@@ -319,7 +319,7 @@ function setStatus(s) {
 
 function latRolVallen() {
   const u = getUser();
-  fetch(`${API_URL}/api/rol-laten-vallen', {
+  fetch(`${API_URL}/api/rol-laten-vallen`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId: u.id }),
@@ -377,7 +377,7 @@ function selectVoertuig(v) {
   if (document.getElementById('oc-voertuig')) document.getElementById('oc-voertuig').textContent = v;
   if (document.getElementById('ovd-oc-voertuig')) document.getElementById('ovd-oc-voertuig').textContent = v;
   // Opslaan in DB
-  if (u.id) fetch(`${API_URL}/api/status', {
+  if (u.id) fetch(`${API_URL}/api/status`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId: u.id, voertuig: v }),
   });
@@ -417,7 +417,7 @@ function openKoppelModal() {
 }
 
 function koppelEenheden(userId1, userId2) {
-  fetch(`${API_URL}/api/koppel', {
+  fetch(`${API_URL}/api/koppel`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId1, userId2 }),
@@ -460,7 +460,7 @@ function radVanFortuin() {
 
 function kiesKandidaat(userId, rol) {
   const u = getUser();
-  fetch(`${API_URL}/api/rol-toewijzen', {
+  fetch(`${API_URL}/api/rol-toewijzen`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId, nieuweRol: rol, oudeRol: rol }),
@@ -485,7 +485,7 @@ function aanmeldenDirect() {
   u.indienstStart = Date.now();
   saveUser(u);
 
-  fetch(`${API_URL}/api/aanmelden', {
+  fetch(`${API_URL}/api/aanmelden`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -523,7 +523,7 @@ function inloggenDirect(type) {
   saveUser(u);
 
   // Sync naar DB inclusief roepnummer
-  fetch(`${API_URL}/api/rol', {
+  fetch(`${API_URL}/api/rol`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId: u.id, role: u.role, indienstStart: u.indienstStart || Date.now(), roepnummer: roep, rangicoon: u.rangicoon || '' }),
@@ -571,7 +571,7 @@ function saveEenheidEdit() {
   const roepnummer = document.getElementById('edit-roepnummer').value.trim();
   const voertuig = document.getElementById('edit-voertuig').value;
 
-  fetch(`${API_URL}/api/eenheid-update', {
+  fetch(`${API_URL}/api/eenheid-update`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId: unit.userId, roepnummer, voertuig }),
@@ -612,7 +612,7 @@ function ovdAanmelden() {
   const u = getUser();
   u.indienstStart = Date.now();
   saveUser(u);
-  fetch(`${API_URL}/api/aanmelden', {
+  fetch(`${API_URL}/api/aanmelden`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -638,7 +638,7 @@ function ovdUpdateInfo() {
   if (roepnummer) roepnummer.textContent = u.dienstnummer || '-';
   if (voertuig) voertuig.textContent = u.voertuig || 'Niet geselecteerd';
 
-  fetch(`${API_URL}/api/dienst-rollen')
+  fetch(`${API_URL}/api/dienst-rollen`)
     .then(r => r.json())
     .then(data => {
       const opco = document.getElementById('ovd-oc-opco');
@@ -669,7 +669,7 @@ function saveIndeling() {
   if (!roepnummer) { showToast('Vul een roepnummer in'); return; }
 
   const u = getUser();
-  fetch(`${API_URL}/api/indelen', {
+  fetch(`${API_URL}/api/indelen`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId, roepnummer, voertuig, ingedeeldDoor: u.displayName || u.username }),

@@ -115,7 +115,7 @@ function switchRole() {
   saveUser(u);
 
   if (u.id) {
-    fetch(`${API_URL}/api/rol', {
+    fetch(`${API_URL}/api/rol`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId: u.id, role: u.role, indienstStart: u.indienstStart || Date.now() }),

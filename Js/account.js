@@ -38,7 +38,7 @@ function saveAccount() {
 
   // Sla ook op in database
   if (u.id) {
-    fetch(`${API_URL}/api/instellingen', {
+    fetch(`${API_URL}/api/instellingen`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(u),

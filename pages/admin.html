@@ -95,7 +95,7 @@
 
   <script src="../Js/app.js"></script>
   <script>
-    const API = 'http://localhost:3001';
+    const API = window.location.origin;
 
     function showTab(naam) {
       document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));

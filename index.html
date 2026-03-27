@@ -29,7 +29,7 @@
         <div class="error-msg" id="login-error">
           <span>&#9888;</span> Je account is niet volledig, aanmelden niet mogelijk
         </div>
-        <a href="http://localhost:3001/auth/login" class="btn-purple btn-discord">
+        <a id="discord-login-btn" href="/auth/login" class="btn-purple btn-discord">
           Inloggen met Discord
         </a>
       </div>
@@ -37,7 +37,7 @@
   </div>
 
   <script>
-    const API = 'http://localhost:3001';
+    const API = window.location.origin;
 
     function checkInput() {
       const val = document.getElementById('discord-id').value.trim();

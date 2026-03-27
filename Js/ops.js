@@ -7,7 +7,7 @@ window.onload = () => {
 };
 
 function laadTijden() {
-  fetch(`${API_URL}/api/tijden-overzicht')
+  fetch(`${API_URL}/api/tijden-overzicht`)
     .then(r => r.json())
     .then(data => {
       _alleTijden = data;
