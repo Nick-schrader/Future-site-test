@@ -420,7 +420,14 @@ app.post('/api/reset/:userId', async (req, res) => {
 
   db.prepare('DELETE FROM indelingen WHERE user_id = ?').run(userId);
   db.prepare('DELETE FROM aanmeld_wachtrij WHERE user_id = ?').run(userId);
-  db.prepare('UPDATE gebruikers SET indienst_start = NULL, status = NULL, voertuig = NULL, role = \'user\' WHERE id = ?').run(userId);
+
+  // Ontkoppel als gekoppeld
+  const gKoppel = db.prepare('SELECT koppel_id FROM gebruikers WHERE id = ?').get(userId);
+  if (gKoppel?.koppel_id) {
+    db.prepare('UPDATE gebruikers SET koppel_id = NULL WHERE id = ?').run(gKoppel.koppel_id);
+  }
+
+  db.prepare('UPDATE gebruikers SET indienst_start = NULL, status = NULL, voertuig = NULL, role = \'user\', koppel_id = NULL WHERE id = ?').run(userId);
 
   // Herstel Discord naam naar [dienstnummer->] shortname
   try {

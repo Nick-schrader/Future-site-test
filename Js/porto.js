@@ -571,7 +571,28 @@ function openVoertuigModal(id) {
   document.getElementById('edit-unit-naam').textContent = unit.medewerkers;
   document.getElementById('edit-roepnummer').value = unit.id !== unit.medewerkers ? unit.id : '';
   document.getElementById('edit-voertuig').value = unit.voertuig !== '-' ? unit.voertuig : 'Noodhulp';
+
+  // Toon koppelen of ontkoppelen knop
+  const isGekoppeld = !!unit.koppelId;
+  document.getElementById('koppel-btn').classList.toggle('hidden', isGekoppeld);
+  document.getElementById('ontkoppel-btn').classList.toggle('hidden', !isGekoppeld);
+
   document.getElementById('voertuig-modal').classList.remove('hidden');
+}
+
+function ontkoppelEenheid() {
+  const id = document.getElementById('edit-unit-id').value;
+  const unit = appData.eenheden.find(e => e.id === id);
+  if (!unit) return;
+  fetch(`${API_URL}/api/ontkoppel`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId: unit.userId }),
+  }).then(() => {
+    closeVoertuigModal();
+    laadEenheden();
+    showToast('Eenheden ontkoppeld');
+  });
 }
 
 function closeVoertuigModal() {
