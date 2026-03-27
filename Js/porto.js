@@ -103,7 +103,7 @@ function laadEenheden() {
     .then(r => r.json())
     .then(data => {
       appData.eenheden = data.map(e => ({
-        id: e.roepnummer || e.dienstnummer || e.id || '-',
+        id: e.roepnummer || e.dienstnummer || '-',
         medewerkers: e.koppel_id
           ? `${e.shortname || e.display_name} + ${e.koppel_naam || e.koppel_display || '?'}`
           : (e.shortname || e.display_name),
@@ -128,10 +128,14 @@ function renderEenheden() {
   const GROEPEN = ['17', '18', '20'];
   const groepen = {};
   GROEPEN.forEach(p => groepen[p] = []);
+  groepen['Wachtrij'] = [];
 
   appData.eenheden.forEach(e => {
-    const prefix = e.id && e.id.trim().length >= 2 ? e.id.trim().substring(0, 2) : null;
-    console.log('eenheid id:', e.id, '-> prefix:', prefix);
+    if (!e.id || e.id === '-') {
+      groepen['Wachtrij'].push(e);
+      return;
+    }
+    const prefix = e.id.trim().length >= 2 ? e.id.trim().substring(0, 2) : null;
     if (prefix && groepen[prefix] !== undefined) {
       groepen[prefix].push(e);
     } else {
@@ -140,12 +144,12 @@ function renderEenheden() {
     }
   });
 
-  const labels = [...GROEPEN, ...(groepen['Overig'] ? ['Overig'] : [])];
+  const labels = ['Wachtrij', ...GROEPEN, ...(groepen['Overig'] ? ['Overig'] : [])];
 
   let html = '';
   labels.forEach(prefix => {
     const groep = groepen[prefix] || [];
-    const label = prefix === 'Overig' ? 'Overig' : `${prefix} Nummer`;
+    const label = prefix === 'Overig' ? 'Overig' : prefix === 'Wachtrij' ? 'Wachtrij' : `${prefix} Nummer`;
     const ingeklapt = window._groepIngeklapt[label] || false;
     const pijl = ingeklapt ? '▶' : '▼';
     html += `<tr class="group-header" onclick="toggleGroep('${label}')" style="cursor:pointer">
