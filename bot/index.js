@@ -498,30 +498,36 @@ app.post('/api/voice-move', async (req, res) => {
 
 // ---- API: Koppelen ----
 app.post('/api/koppel', async (req, res) => {
-  const { userId1, userId2 } = req.body;
+  const { userId1, userId2, roepnummer } = req.body;
   if (!userId1 || !userId2) return res.status(400).json({ error: 'Ontbrekende velden' });
 
-  // Zelfde roepnummer voor beide — gebruik roepnummer van userId1
   const ind1 = db.prepare('SELECT roepnummer, voertuig FROM indelingen WHERE user_id = ?').get(userId1);
-  if (!ind1?.roepnummer) return res.status(400).json({ error: 'Eerste gebruiker heeft geen roepnummer' });
+  const ind2 = db.prepare('SELECT roepnummer, voertuig FROM indelingen WHERE user_id = ?').get(userId2);
+  const gekozenRoep = roepnummer || ind1?.roepnummer;
+  const voertuig = ind1?.voertuig || ind2?.voertuig || 'Noodhulp';
+
+  if (!gekozenRoep) return res.status(400).json({ error: 'Geen roepnummer beschikbaar' });
 
   // Koppel instellen
   db.prepare('UPDATE gebruikers SET koppel_id = ? WHERE id = ?').run(userId2, userId1);
   db.prepare('UPDATE gebruikers SET koppel_id = ? WHERE id = ?').run(userId1, userId2);
 
-  // Geef userId2 hetzelfde roepnummer en voertuig
-  db.prepare(`INSERT INTO indelingen (user_id, roepnummer, voertuig, ingedeeld_door, tijd)
-    VALUES (?, ?, ?, 'koppel', ?)
-    ON CONFLICT(user_id) DO UPDATE SET roepnummer = excluded.roepnummer, voertuig = excluded.voertuig
-  `).run(userId2, ind1.roepnummer, ind1.voertuig, Date.now());
+  // Beide krijgen hetzelfde roepnummer en voertuig
+  for (const uid of [userId1, userId2]) {
+    db.prepare(`INSERT INTO indelingen (user_id, roepnummer, voertuig, ingedeeld_door, tijd)
+      VALUES (?, ?, ?, 'koppel', ?)
+      ON CONFLICT(user_id) DO UPDATE SET roepnummer = excluded.roepnummer, voertuig = excluded.voertuig
+    `).run(uid, gekozenRoep, voertuig, Date.now());
+  }
 
-  // Update DC naam van userId2
+  // Update DC namen van beide
   try {
     const guild = await client.guilds.fetch(process.env.GUILD_ID);
-    const member2 = await guild.members.fetch(userId2);
-    const g2 = db.prepare('SELECT shortname, display_name, rangicoon FROM gebruikers WHERE id = ?').get(userId2);
-    const naam2 = maakDienstNaam(ind1.roepnummer, g2);
-    await member2.setNickname(naam2);
+    for (const uid of [userId1, userId2]) {
+      const member = await guild.members.fetch(uid);
+      const g = db.prepare('SELECT shortname, display_name, rangicoon, role FROM gebruikers WHERE id = ?').get(uid);
+      await member.setNickname(maakDienstNaam(gekozenRoep, g, g?.role));
+    }
   } catch (err) { console.error('Naam koppel update mislukt:', err.message); }
 
   res.json({ success: true });
@@ -555,17 +561,26 @@ app.get('/api/eenheden', async (_req, res) => {
   const eenheden = db.prepare(`
     SELECT g.id, g.display_name, g.shortname, g.dienstnummer, g.voertuig, g.status, g.dienst,
            g.koppel_id, i.roepnummer, i.ingedeeld_door,
-           k.shortname as koppel_naam, k.display_name as koppel_display
+           k.shortname as koppel_naam, k.display_name as koppel_display, k.id as koppel_user_id
     FROM gebruikers g
     LEFT JOIN indelingen i ON g.id = i.user_id
     LEFT JOIN gebruikers k ON g.koppel_id = k.id
     WHERE g.indienst_start IS NOT NULL
   `).all();
 
+  // Filter: verwijder de "slave" van een koppel (degene wiens partner al als master verschijnt)
+  const masterIds = new Set(eenheden.filter(e => e.koppel_id).map(e => e.id));
+  const gefilterd = eenheden.filter(e => {
+    if (!e.koppel_id) return true; // niet gekoppeld, altijd tonen
+    // Toon alleen als de partner NIET ook een master is (voorkom dubbel)
+    // Toon de rij met het laagste id als "master"
+    return e.id < e.koppel_id;
+  });
+
   // Haal voice channel op per gebruiker
   try {
     const guild = await client.guilds.fetch(process.env.GUILD_ID);
-    for (const e of eenheden) {
+    for (const e of gefilterd) {
       try {
         const member = await guild.members.fetch({ user: e.id, force: true });
         const channelId = member?.voice?.channelId;
@@ -574,7 +589,7 @@ app.get('/api/eenheden', async (_req, res) => {
     }
   } catch {}
 
-  res.json(eenheden);
+  res.json(gefilterd);
 });
 
 // ---- API: Naam aanpassen in Discord ----

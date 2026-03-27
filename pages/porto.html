@@ -262,7 +262,14 @@
       <div class="modal-card">
         <h2>Koppelen met</h2>
         <p style="color:#888;font-size:0.85rem;text-align:center;margin-bottom:8px">Kies een eenheid om mee te koppelen</p>
-        <div id="koppel-lijst" style="display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto"></div>
+        <div id="koppel-lijst" style="display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto"></div>
+        <div id="koppel-roepnummer-sectie" style="display:none;margin-top:12px">
+          <p style="color:#a78bfa;font-size:0.85rem;margin-bottom:6px">Kies het roepnummer voor de koppeleenheid:</p>
+          <div style="display:flex;gap:8px">
+            <button id="koppel-roep-btn1" class="btn-purple" style="flex:1" onclick="bevestigKoppel(0)">-</button>
+            <button id="koppel-roep-btn2" class="btn-purple" style="flex:1" onclick="bevestigKoppel(1)">-</button>
+          </div>
+        </div>
         <button class="btn-ghost" style="margin-top:8px;width:100%" onclick="document.getElementById('koppel-modal').classList.add('hidden')">Annuleren</button>
       </div>
     </div>

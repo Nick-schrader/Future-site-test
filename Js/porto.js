@@ -410,22 +410,36 @@ function openKoppelModal() {
       lijst.innerHTML = kandidaten.map(k => `
         <div style="display:flex;justify-content:space-between;align-items:center;background:#1e2130;padding:10px 14px;border-radius:6px">
           <span>${k.shortname || k.display_name} ${k.roepnummer ? '(' + k.roepnummer + ')' : ''}</span>
-          <button class="btn-purple small" onclick="koppelEenheden('${unit.userId}','${k.id}')">Koppelen</button>
+          <button class="btn-purple small" onclick="koppelEenheden('${unit.userId}','${k.id}','${unit.id}','${k.roepnummer || ''}')">Koppelen</button>
         </div>
       `).join('');
     });
 }
 
-function koppelEenheden(userId1, userId2) {
+let _koppelData = null;
+
+function koppelEenheden(userId1, userId2, roep1, roep2) {
+  _koppelData = { userId1, userId2, roepnummers: [roep1, roep2] };
+  document.getElementById('koppel-roep-btn1').textContent = roep1 || 'Geen roepnummer';
+  document.getElementById('koppel-roep-btn2').textContent = roep2 || 'Geen roepnummer';
+  document.getElementById('koppel-roepnummer-sectie').style.display = 'block';
+}
+
+function bevestigKoppel(keuze) {
+  if (!_koppelData) return;
+  const { userId1, userId2, roepnummers } = _koppelData;
+  const gekozenRoepnummer = roepnummers[keuze];
   fetch(`${API_URL}/api/koppel`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId1, userId2 }),
+    body: JSON.stringify({ userId1, userId2, roepnummer: gekozenRoepnummer }),
   }).then(r => r.json()).then(data => {
     document.getElementById('koppel-modal').classList.add('hidden');
+    document.getElementById('koppel-roepnummer-sectie').style.display = 'none';
+    _koppelData = null;
     if (data.error) { showToast('Fout: ' + data.error); return; }
     laadEenheden();
-    showToast('Eenheden gekoppeld');
+    showToast('Eenheden gekoppeld met roepnummer ' + gekozenRoepnummer);
   });
 }
 
