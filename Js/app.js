@@ -166,6 +166,8 @@ function hideToast() {
   if (rollen.some(r => r.includes('OPS'))) {
     const opsLink = document.getElementById('nav-ops');
     if (opsLink) opsLink.style.display = '';
+    const logsLink = document.getElementById('nav-logs');
+    if (logsLink) logsLink.style.display = '';
   }
 })();
 

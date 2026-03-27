@@ -4,7 +4,30 @@ let _alleTijden = [];
 
 window.onload = () => {
   laadTijden();
+  laadMeldingen();
 };
+
+function laadMeldingen() {
+  fetch(`${API_URL}/api/meldingen-inactiviteit`)
+    .then(r => r.json())
+    .then(data => {
+      const el = document.getElementById('meldingen-inactiviteit');
+      const card = document.getElementById('meldingen-card');
+      if (data.length === 0) {
+        card.style.display = 'none';
+        return;
+      }
+      el.innerHTML = data.map(m => `
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #3a1a1a">
+          <span style="color:#f87171">●</span>
+          <span style="color:#cdd6f4">${m.naam}</span>
+          <span style="color:#888;font-size:0.78rem">— niet indienst geweest afgelopen week</span>
+        </div>
+      `).join('');
+    }).catch(() => {
+      document.getElementById('meldingen-card').style.display = 'none';
+    });
+}
 
 function laadTijden() {
   fetch(`${API_URL}/api/tijden-overzicht`)
@@ -117,8 +140,9 @@ function verwijderTijd(userId, categorie, week) {
 function bevestigVerwijder() {
   if (!_verwijderData) return;
   const { userId, categorie, week } = _verwijderData;
+  const u = getUser();
   document.getElementById('verwijder-modal').classList.add('hidden');
-  fetch(`${API_URL}/api/tijden/${userId}/${categorie}/${week}`, { method: 'DELETE' })
+  fetch(`${API_URL}/api/tijden/${userId}/${categorie}/${week}?door=${encodeURIComponent(u.shortname || u.displayName || 'onbekend')}`, { method: 'DELETE' })
     .then(() => { _verwijderData = null; laadTijden(); showToast('Tijdregel verwijderd'); });
 }
 

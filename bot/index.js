@@ -371,7 +371,13 @@ app.get('/api/tijden-overzicht', (req, res) => {
 // ---- API: Dienst tijd verwijderen ----
 app.delete('/api/tijden/:userId/:categorie/:week', (req, res) => {
   const { userId, categorie, week } = req.params;
+  const door = req.query?.door || 'onbekend';
+  const g = db.prepare('SELECT shortname, display_name FROM gebruikers WHERE id = ?').get(userId);
+  const naam = g?.shortname || g?.display_name || userId;
   db.prepare('DELETE FROM dienst_tijden WHERE user_id = ? AND categorie = ? AND week = ?').run(userId, categorie, week);
+  db.prepare('INSERT INTO logs (actie, door, details, tijd) VALUES (?, ?, ?, ?)').run(
+    'uren_verwijderd', door, `${naam} | ${categorie} | Week ${week}`, Date.now()
+  );
   res.json({ success: true });
 });
 
@@ -517,6 +523,32 @@ app.post('/api/rol-toewijzen', async (req, res) => {
   } catch (err) { console.error('Naam rol-toewijzen mislukt:', err.message); }
 
   res.json({ success: true });
+});
+
+// ---- API: Inactiviteit meldingen ----
+app.get('/api/meldingen-inactiviteit', (req, res) => {
+  const huidigeWeek = getWeekNummer(new Date());
+  const vorigeWeek = huidigeWeek - 1;
+
+  // Haal alle gebruikers op met Kmar rol
+  const gebruikers = db.prepare("SELECT id, display_name, shortname, rollen FROM gebruikers WHERE rollen LIKE '%Kmar%'").all();
+
+  const meldingen = gebruikers.filter(g => {
+    // Check of ze de afgelopen week indienst zijn geweest
+    const dienst = db.prepare('SELECT COUNT(*) as cnt FROM dienst_tijden WHERE user_id = ? AND week >= ?').get(g.id, vorigeWeek);
+    return dienst.cnt === 0;
+  }).map(g => ({
+    naam: g.shortname || g.display_name,
+    user_id: g.id,
+  }));
+
+  res.json(meldingen);
+});
+
+// ---- API: Logs ----
+app.get('/api/logs', (_req, res) => {
+  const logs = db.prepare('SELECT * FROM logs ORDER BY tijd DESC LIMIT 200').all();
+  res.json(logs);
 });
 
 // ---- API: Rol check (voor polling) ----

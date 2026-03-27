@@ -82,6 +82,17 @@ db.exec(`
   );
 `);
 
+// Logs tabel
+db.exec(`
+  CREATE TABLE IF NOT EXISTS logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    actie TEXT,
+    door TEXT,
+    details TEXT,
+    tijd INTEGER
+  );
+`);
+
 // ---- Gebruikers ----
 const upsertGebruiker = db.prepare(`
   INSERT INTO gebruikers (id, username, display_name, avatar, dienst, role, fullname, rollen)

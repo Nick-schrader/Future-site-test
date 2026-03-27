@@ -636,8 +636,10 @@ function setStatusVoorEenheid(status) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId: unit.userId, status }),
   }).then(() => {
+    // Update lokaal zodat het direct zichtbaar is
+    unit.status = status;
     closeVoertuigModal();
-    laadEenheden();
+    renderEenheden();
     showToast(`${unit.medewerkers} → Status ${status}`);
   });
 }
