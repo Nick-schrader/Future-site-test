@@ -619,6 +619,7 @@ app.get('/api/eenheden', async (_req, res) => {
   });
 
   res.json(gefilterd);
+  console.log(`[EENHEDEN] ${gefilterd.length} eenheden:`, gefilterd.map(e => `${e.shortname||e.display_name} roep=${e.roepnummer} dienst=${e.dienstnummer}`));
 });
 
 // ---- API: Naam aanpassen in Discord ----
