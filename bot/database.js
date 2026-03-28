@@ -171,28 +171,32 @@ const specKolommen = db.prepare("PRAGMA table_info(specialisatie_instellingen)")
 if (!specKolommen.includes('vereiste_rol')) {
   db.exec("ALTER TABLE specialisatie_instellingen ADD COLUMN vereiste_rol TEXT");
 }
+// Migratie: tijdslot_eind updaten voor Zulu
+db.prepare("UPDATE specialisatie_instellingen SET tijdslot_eind = '06:00' WHERE voertuig = 'Zulu' AND (tijdslot_eind IS NULL OR tijdslot_eind = '')").run();
+// Migratie: min_eenheden instellen op basis van max voor bestaande rijen
+db.prepare("UPDATE specialisatie_instellingen SET min_eenheden = max_eenheden WHERE min_eenheden = 0 AND max_eenheden < 99 AND voertuig != 'Zulu'").run();
 
 // Standaard waarden invoegen als ze nog niet bestaan
 const defaults = [
-  { voertuig: 'Siv 1',    max: 2,  start: null, rol: 'SIV' },
-  { voertuig: 'Siv 2',    max: 4,  start: null, rol: 'SIV' },
-  { voertuig: 'Siv 3',    max: 6,  start: null, rol: 'SIV' },
-  { voertuig: 'GPT 1',    max: 3,  start: null, rol: 'GPT' },
-  { voertuig: 'GPT 2',    max: 6,  start: null, rol: 'GPT' },
-  { voertuig: 'Motor 1',  max: 4,  start: null, rol: 'Motor' },
-  { voertuig: 'Motor 2',  max: 6,  start: null, rol: 'Motor' },
-  { voertuig: 'Motor 3',  max: 10, start: null, rol: 'Motor' },
-  { voertuig: 'Boot 1',   max: 1,  start: null, rol: 'Boot' },
-  { voertuig: 'Boot 2',   max: 2,  start: null, rol: 'Boot' },
-  { voertuig: 'Zulu',     max: 99, start: '20:00', rol: 'Zulu' },
-  { voertuig: 'Noodhulp', max: 99, start: null, rol: null },
-  { voertuig: 'Offroad',  max: 99, start: null, rol: null },
+  { voertuig: 'Siv 1',    max: 2,  min: 2,  start: null,    eind: null,    rol: 'SIV' },
+  { voertuig: 'Siv 2',    max: 4,  min: 4,  start: null,    eind: null,    rol: 'SIV' },
+  { voertuig: 'Siv 3',    max: 6,  min: 6,  start: null,    eind: null,    rol: 'SIV' },
+  { voertuig: 'GPT 1',    max: 3,  min: 3,  start: null,    eind: null,    rol: 'GPT' },
+  { voertuig: 'GPT 2',    max: 6,  min: 6,  start: null,    eind: null,    rol: 'GPT' },
+  { voertuig: 'Motor 1',  max: 4,  min: 4,  start: null,    eind: null,    rol: 'Motor' },
+  { voertuig: 'Motor 2',  max: 6,  min: 6,  start: null,    eind: null,    rol: 'Motor' },
+  { voertuig: 'Motor 3',  max: 10, min: 10, start: null,    eind: null,    rol: 'Motor' },
+  { voertuig: 'Boot 1',   max: 1,  min: 1,  start: null,    eind: null,    rol: 'Boot' },
+  { voertuig: 'Boot 2',   max: 2,  min: 2,  start: null,    eind: null,    rol: 'Boot' },
+  { voertuig: 'Zulu',     max: 99, min: 0,  start: '20:00', eind: '06:00', rol: 'Zulu' },
+  { voertuig: 'Noodhulp', max: 99, min: 0,  start: null,    eind: null,    rol: null },
+  { voertuig: 'Offroad',  max: 99, min: 0,  start: null,    eind: null,    rol: null },
 ];
 const insertSpec = db.prepare(`
-  INSERT OR IGNORE INTO specialisatie_instellingen (voertuig, max_eenheden, min_eenheden, tijdslot_start, vereiste_rol)
-  VALUES (?, ?, 0, ?, ?)
+  INSERT OR IGNORE INTO specialisatie_instellingen (voertuig, max_eenheden, min_eenheden, tijdslot_start, tijdslot_eind, vereiste_rol)
+  VALUES (?, ?, ?, ?, ?, ?)
 `);
-defaults.forEach(d => insertSpec.run(d.voertuig, d.max, d.start, d.rol));
+defaults.forEach(d => insertSpec.run(d.voertuig, d.max, d.min || 0, d.start, d.eind || null, d.rol));
 
 // Systeem instellingen
 db.exec(`

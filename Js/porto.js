@@ -78,6 +78,8 @@ window.onload = async () => {
             u.dienstnummer = data.roepnummer;
             saveUser(u);
             document.getElementById('porto-main').classList.remove('hidden');
+            const lb = document.getElementById('porto-leaderboard');
+            if (lb) lb.classList.remove('hidden');
             updateOCInfo();
             if (u.status) {
               highlightStatus(u.status);
@@ -191,12 +193,11 @@ function renderLeaderboard() {
   const medals = ['🥇','🥈','🥉'];
   const html = gesorteerd.length
     ? gesorteerd.map((e, i) => `
-        <div class="leaderboard-row">
-          <span class="leaderboard-rank">${medals[i] || (i + 1)}</span>
-          <span class="leaderboard-naam">${e.medewerkers}</span>
-          <span class="leaderboard-tijd">${formatDuur(Date.now() - e.indienstStart)}</span>
+        <div class="oc-row">
+          <span>${medals[i] || i + 1} ${e.medewerkers}</span>
+          <span style="color:#4ade80;font-variant-numeric:tabular-nums">${formatDuur(Date.now() - e.indienstStart)}</span>
         </div>`).join('')
-    : '<div style="color:#888;font-size:0.8rem;padding:4px 0">Geen actieve eenheden</div>';
+    : '<div style="color:#888;font-size:0.82rem;padding:4px 0">Geen actieve eenheden</div>';
   ['leaderboard-list', 'leaderboard-list-ovd'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = html;
@@ -896,6 +897,10 @@ function checkIndeling() {
         if (wacht) wacht.classList.add('hidden');
         const main = document.getElementById(mainId);
         if (main) main.classList.remove('hidden');
+        if (!isOvdOpco) {
+          const lb = document.getElementById('porto-leaderboard');
+          if (lb) lb.classList.remove('hidden');
+        }
 
         if (isOvdOpco) ovdUpdateInfo();
         else updateOCInfo();

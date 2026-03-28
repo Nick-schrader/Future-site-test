@@ -186,13 +186,34 @@ app.post('/api/indelen', async (req, res) => {
   const { userId, roepnummer, voertuig, ingedeeldDoor } = req.body;
   if (!userId || !roepnummer || !voertuig) return res.status(400).json({ error: 'Ontbrekende velden' });
 
-  // Check specialisatie tijdslot (bv. Zulu alleen na 20:00)
+  // Check specialisatie tijdslot
   const spec = db.prepare('SELECT * FROM specialisatie_instellingen WHERE voertuig = ?').get(voertuig);
   if (spec?.tijdslot_start) {
     const nu = new Date();
-    const [h, m] = spec.tijdslot_start.split(':').map(Number);
-    const toegestaan = nu.getHours() > h || (nu.getHours() === h && nu.getMinutes() >= m);
-    if (!toegestaan) return res.status(400).json({ error: `${voertuig} is pas toegestaan vanaf ${spec.tijdslot_start}` });
+    const nowMinutes = nu.getHours() * 60 + nu.getMinutes();
+    const [sh, sm] = spec.tijdslot_start.split(':').map(Number);
+    const startMin = sh * 60 + sm;
+
+    let toegestaan;
+    if (spec.tijdslot_eind) {
+      const [eh, em] = spec.tijdslot_eind.split(':').map(Number);
+      const eindMin = eh * 60 + em;
+      if (startMin > eindMin) {
+        // Over middernacht: bv. 20:00 - 06:00
+        toegestaan = nowMinutes >= startMin || nowMinutes < eindMin;
+      } else {
+        toegestaan = nowMinutes >= startMin && nowMinutes < eindMin;
+      }
+    } else {
+      toegestaan = nowMinutes >= startMin;
+    }
+
+    if (!toegestaan) {
+      const tijdMsg = spec.tijdslot_eind
+        ? `${spec.tijdslot_start} - ${spec.tijdslot_eind}`
+        : `vanaf ${spec.tijdslot_start}`;
+      return res.status(400).json({ error: `${voertuig} is alleen toegestaan ${tijdMsg}` });
+    }
   }
 
   // Check vereiste Discord rol
@@ -203,6 +224,14 @@ app.post('/api/indelen', async (req, res) => {
     const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
     const heeftRol = rolNamen.some(r => r.toLowerCase().includes(spec.vereiste_rol.toLowerCase()));
     if (!heeftRol) return res.status(400).json({ error: `${voertuig} vereist de ${spec.vereiste_rol} specialisatie` });
+  }
+
+  // Check min eenheden totaal in dienst
+  if (spec?.min_eenheden && spec.min_eenheden > 0) {
+    const totaalIndienst = db.prepare("SELECT COUNT(*) as cnt FROM gebruikers WHERE indienst_start IS NOT NULL").get();
+    if (totaalIndienst.cnt < spec.min_eenheden) {
+      return res.status(400).json({ error: `${voertuig} vereist minimaal ${spec.min_eenheden} eenheden in dienst (nu: ${totaalIndienst.cnt})` });
+    }
   }
 
   // Check max eenheden
@@ -565,9 +594,9 @@ app.get('/api/specialisaties', (_req, res) => {
   res.json(db.prepare('SELECT * FROM specialisatie_instellingen').all());
 });
 app.post('/api/specialisaties', (req, res) => {
-  const { voertuig, max_eenheden, tijdslot_start, vereiste_rol } = req.body;
-  db.prepare('UPDATE specialisatie_instellingen SET max_eenheden = ?, tijdslot_start = ?, vereiste_rol = ? WHERE voertuig = ?')
-    .run(max_eenheden, tijdslot_start || null, vereiste_rol || null, voertuig);
+  const { voertuig, max_eenheden, min_eenheden, tijdslot_start, tijdslot_eind, vereiste_rol } = req.body;
+  db.prepare('UPDATE specialisatie_instellingen SET max_eenheden = ?, min_eenheden = ?, tijdslot_start = ?, tijdslot_eind = ?, vereiste_rol = ? WHERE voertuig = ?')
+    .run(max_eenheden, min_eenheden || 0, tijdslot_start || null, tijdslot_eind || null, vereiste_rol || null, voertuig);
   res.json({ success: true });
 });
 
