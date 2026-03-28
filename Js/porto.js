@@ -46,6 +46,7 @@ window.onload = async () => {
     }
   } else {
     document.getElementById('user-view').classList.remove('hidden');
+    document.querySelector('.content').scrollTop = 0;
     // Laad eenheden voor leaderboard ook in user view
     laadEenheden();
     setInterval(laadEenheden, 5000);
@@ -277,11 +278,9 @@ function renderSpecOverzicht() {
             }
           }
 
-          // Check min eenheden
-          const huidig = (window._specialisaties && appData.eenheden)
-            ? appData.eenheden.filter(e => e.type === s.voertuig).length
-            : 0;
-          const minOk = s.min_eenheden > 0 ? huidig >= s.min_eenheden : true;
+          // Check min eenheden - totaal in dienst, niet per voertuig type
+          const totaalIndienst = appData.eenheden ? appData.eenheden.length : 0;
+          const minOk = s.min_eenheden > 0 ? totaalIndienst >= s.min_eenheden : true;
           // Tijdslot alleen relevant als het voertuig een tijdslot heeft
           const tijdOk = s.tijdslot_start ? tijdslotActief : true;
           const ok = tijdOk && minOk;
@@ -290,7 +289,7 @@ function renderSpecOverzicht() {
           const status = ok ? '✓' : '✗';
           const rolLabel = s.vereiste_rol ? `${s.vereiste_rol}` : '';
           const tijdLabel2 = s.tijdslot_start ? ` · ${tijdLabel}` : '';
-          const minLabel = s.min_eenheden > 0 ? ` · Min ${s.min_eenheden} (${huidig})` : '';
+          const minLabel = s.min_eenheden > 0 ? ` · Min ${s.min_eenheden} (${totaalIndienst})` : '';
 
           return `<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid #2a2a3a;gap:8px">
             <span style="color:#a78bfa;font-weight:bold;font-size:0.8rem;min-width:80px">${s.voertuig}</span>

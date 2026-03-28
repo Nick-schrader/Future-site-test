@@ -132,12 +132,34 @@ function toggleActieMenuUser(event, userId) {
   document.querySelectorAll('.actie-dropdown').forEach(el => el.remove());
   const menu = document.createElement('div');
   menu.className = 'actie-dropdown';
-  menu.innerHTML = `<div class="actie-dropdown-item" onclick="resetTijd('${userId}')">↺ Resetten</div>`;
+  menu.innerHTML = `
+    <div class="actie-dropdown-item" onclick="aanpassenTijdTotaal('${userId}')">✏ Aanpassen</div>
+    <div class="actie-dropdown-item actie-delete" onclick="resetTijd('${userId}')">↺ Resetten</div>
+  `;
   const btn = event.currentTarget;
   const rect = btn.getBoundingClientRect();
   menu.style.cssText = `position:fixed;top:${rect.bottom + 4}px;right:${window.innerWidth - rect.right}px;z-index:999`;
   document.body.appendChild(menu);
   setTimeout(() => document.addEventListener('click', () => menu.remove(), { once: true }), 0);
+}
+
+function aanpassenTijdTotaal(userId) {
+  document.querySelectorAll('.actie-dropdown').forEach(el => el.remove());
+  // Gebruik huidige week en porto als default categorie
+  const nu = new Date();
+  const week = getWeekNummer(nu);
+  _aanpassenData = { userId, categorie: 'porto', week };
+  document.getElementById('aanpassen-minuten').value = '';
+  document.getElementById('aanpassen-reden').value = '';
+  // Toon categorie keuze
+  document.getElementById('aanpassen-modal').classList.remove('hidden');
+}
+
+function getWeekNummer(d) {
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
 }
 
 function toggleActieMenu(event, userId, categorie, week) {
@@ -198,6 +220,8 @@ function aanpassenTijd(userId, categorie, week) {
   _aanpassenData = { userId, categorie, week };
   document.getElementById('aanpassen-minuten').value = '';
   document.getElementById('aanpassen-reden').value = '';
+  const catEl = document.getElementById('aanpassen-categorie');
+  if (catEl) catEl.value = categorie;
   document.getElementById('aanpassen-modal').classList.remove('hidden');
 }
 
@@ -205,6 +229,9 @@ function bevestigAanpassen() {
   if (!_aanpassenData) return;
   const minuten = parseInt(document.getElementById('aanpassen-minuten').value);
   const reden = document.getElementById('aanpassen-reden').value.trim();
+  const catEl = document.getElementById('aanpassen-categorie');
+  if (catEl && !_aanpassenData.categorie) _aanpassenData.categorie = catEl.value;
+  else if (catEl) _aanpassenData.categorie = catEl.value;
   if (!reden) { showToast('Vul een reden in'); return; }
   if (isNaN(minuten)) { showToast('Vul een geldig aantal minuten in'); return; }
   const u = getUser();

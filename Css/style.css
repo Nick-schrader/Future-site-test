@@ -62,7 +62,7 @@ body {
 }
 
 /* LAYOUT */
-.layout { display: flex; height: calc(100vh - 52px); }
+.layout { display: flex; min-height: calc(100vh - 52px); }
 
 .sidebar {
   width: 64px;
@@ -97,7 +97,7 @@ body {
 .sidebar-label { opacity: 0; transition: opacity 0.2s; font-weight: 500; }
 .sidebar:hover .sidebar-label { opacity: 1; }
 
-.content { flex: 1; overflow-y: auto; padding: 20px; }
+.content { flex: 1; overflow-y: auto; padding: 20px; overflow-anchor: none; }
 
 /* PAGES */
 .page { display: block; }
