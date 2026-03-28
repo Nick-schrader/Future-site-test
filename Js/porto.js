@@ -841,31 +841,37 @@ function openIndelenModal(index) {
   if (specEl) specEl.textContent = '';
   document.getElementById('indelen-modal').classList.remove('hidden');
 
-  function verwerkRollen(rollen) {
+  // Haal rollen + specialisaties tegelijk op
+  Promise.all([
+    fetch(`${API_URL}/api/rollen/${w.user_id}`).then(r => r.json()).catch(() => {
+      let rollen = [];
+      try { rollen = JSON.parse(w.rollen || '[]'); } catch {}
+      return rollen;
+    }),
+    fetch(`${API_URL}/api/specialisaties`).then(r => r.json()).catch(() => []),
+  ]).then(([rollen, specialisaties]) => {
     const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
     const heeftIbt = rolNamen.some(r => r.includes('IBT') || r.includes('ibt'));
 
-    const specs = [];
-    if (rolNamen.some(r => r.toLowerCase().includes('siv'))) specs.push('Siv');
-    if (rolNamen.some(r => r.toLowerCase().includes('gpt'))) specs.push('GPT');
-    if (rolNamen.some(r => r.toLowerCase().includes('motor'))) specs.push('Motor');
-    if (rolNamen.some(r => r.toLowerCase().includes('boot'))) specs.push('Boot');
-    if (rolNamen.some(r => r.toLowerCase().includes('zulu'))) specs.push('Zulu');
+    // Bouw opties op basis van vereiste_rol in specialisaties
+    const opties = specialisaties
+      .filter(s => {
+        if (!s.vereiste_rol) return true; // geen vereiste = altijd beschikbaar (Noodhulp)
+        return rolNamen.some(r => r.toLowerCase().includes(s.vereiste_rol.toLowerCase()));
+      })
+      .map(s => s.voertuig);
+
+    const select = document.getElementById('indelen-voertuig');
+    select.innerHTML = opties.map(o => `<option value="${o}">${o}</option>`).join('');
+
+    const specs = specialisaties
+      .filter(s => s.vereiste_rol && rolNamen.some(r => r.toLowerCase().includes(s.vereiste_rol.toLowerCase())))
+      .map(s => s.vereiste_rol);
+    const uniekSpecs = [...new Set(specs)];
 
     document.getElementById('indelen-ibt-warn').style.display = heeftIbt ? 'none' : 'block';
-    if (specEl) specEl.textContent = specs.length ? 'Specialisaties: ' + specs.join(', ') : '';
-  }
-
-  // Haal rollen live op van Discord voor meest actuele data
-  fetch(`${API_URL}/api/rollen/${w.user_id}`)
-    .then(r => r.json())
-    .then(rollen => verwerkRollen(rollen))
-    .catch(() => {
-      // Fallback naar wachtrij data als live fetch mislukt
-      let rollen = [];
-      try { rollen = JSON.parse(w.rollen || '[]'); } catch {}
-      verwerkRollen(rollen);
-    });
+    if (specEl) specEl.textContent = uniekSpecs.length ? 'Specialisaties: ' + uniekSpecs.join(', ') : '';
+  });
 }
 
 function saveIndeling() {
