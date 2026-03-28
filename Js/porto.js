@@ -23,6 +23,9 @@ window.onload = async () => {
           if (data.status) u.status = data.status;
           if (data.voertuig) u.voertuig = data.voertuig;
           saveUser(u);
+          // Toon ovd-porto-main
+          const main = document.getElementById('ovd-porto-main');
+          if (main) { main.style.display = ''; }
           startIndienstTimer('ovd-oc-tijd');
           ovdUpdateInfo();
           if (u.status) {
@@ -35,6 +38,8 @@ window.onload = async () => {
           }
         }).catch(() => {
           if (!u.indienstStart) { u.indienstStart = Date.now(); saveUser(u); }
+          const main = document.getElementById('ovd-porto-main');
+          if (main) { main.style.display = ''; }
           startIndienstTimer('ovd-oc-tijd');
           ovdUpdateInfo();
         });
@@ -99,6 +104,7 @@ window.onload = async () => {
           u.voertuig = data.voertuig;
           u.dienstnummer = data.roepnummer;
           saveUser(u);
+          document.getElementById('porto-main').style.display = '';
           document.getElementById('porto-main').classList.remove('hidden');
           updateOCInfo();
           if (u.status) {
@@ -1087,7 +1093,7 @@ function checkIndeling() {
         const wacht = document.getElementById(wachtId);
         if (wacht) wacht.classList.add('hidden');
         const main = document.getElementById(mainId);
-        if (main) main.classList.remove('hidden');
+        if (main) { main.style.display = ''; main.classList.remove('hidden'); }
 
         if (isOvdOpco) ovdUpdateInfo();
         else updateOCInfo();
