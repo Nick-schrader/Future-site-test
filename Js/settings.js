@@ -27,7 +27,6 @@ function laadSpecialisaties() {
           <td><input type="text" value="${s.vereiste_rol || ''}" placeholder="bv. Motor" class="input-field" style="width:90px" id="rol-${s.voertuig.replace(/ /g,'_')}" /></td>
           <td><input type="text" value="${s.tijdslot_start || ''}" placeholder="bv. 20:00" class="input-field" style="width:80px" id="tijd-${s.voertuig.replace(/ /g,'_')}" /></td>
           <td><input type="text" value="${s.tijdslot_eind || ''}" placeholder="bv. 06:00" class="input-field" style="width:80px" id="tijdeind-${s.voertuig.replace(/ /g,'_')}" /></td>
-          <input type="hidden" value="${s.max_eenheden}" id="max-${s.voertuig.replace(/ /g,'_')}" />
           <td><button class="btn-purple small" onclick="slaSpecOp('${s.voertuig}')">Opslaan</button></td>
         </tr>
       `).join('');
@@ -47,14 +46,13 @@ function laadSpecialisaties() {
 function slaSpecOp(voertuig) {
   const key = voertuig.replace(/ /g, '_');
   const min = parseInt(document.getElementById(`min-${key}`).value) || 0;
-  const max = parseInt(document.getElementById(`max-${key}`).value);
   const rol = document.getElementById(`rol-${key}`).value.trim() || null;
   const tijd = document.getElementById(`tijd-${key}`).value.trim() || null;
   const tijdEind = document.getElementById(`tijdeind-${key}`).value.trim() || null;
   fetch(`${API_URL}/api/specialisaties`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ voertuig, max_eenheden: max, min_eenheden: min, vereiste_rol: rol, tijdslot_start: tijd, tijdslot_eind: tijdEind }),
+    body: JSON.stringify({ voertuig, min_eenheden: min, vereiste_rol: rol, tijdslot_start: tijd, tijdslot_eind: tijdEind }),
   }).then(() => showToast(`${voertuig} opgeslagen`));
 }
 

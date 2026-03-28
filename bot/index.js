@@ -253,14 +253,6 @@ app.post('/api/indelen', async (req, res) => {
     }
   }
 
-  // Check max eenheden
-  if (spec?.max_eenheden && spec.max_eenheden < 99) {
-    const huidigAantal = db.prepare("SELECT COUNT(*) as cnt FROM indelingen WHERE voertuig = ?").get(voertuig);
-    if (huidigAantal.cnt >= spec.max_eenheden) {
-      return res.status(400).json({ error: `Maximum aantal eenheden voor ${voertuig} bereikt (${spec.max_eenheden})` });
-    }
-  }
-
   addIndeling.run({ user_id: userId, roepnummer, voertuig, ingedeeld_door: ingedeeldDoor || '', tijd: Date.now() });
   // Sla voertuig type ook op in gebruikers tabel zodat het zichtbaar is in het overzicht
   db.prepare('UPDATE gebruikers SET voertuig = ? WHERE id = ?').run(voertuig, userId);
@@ -632,9 +624,9 @@ app.get('/api/specialisaties', (_req, res) => {
   res.json(db.prepare('SELECT * FROM specialisatie_instellingen').all());
 });
 app.post('/api/specialisaties', (req, res) => {
-  const { voertuig, max_eenheden, min_eenheden, tijdslot_start, tijdslot_eind, vereiste_rol } = req.body;
-  db.prepare('UPDATE specialisatie_instellingen SET max_eenheden = ?, min_eenheden = ?, tijdslot_start = ?, tijdslot_eind = ?, vereiste_rol = ? WHERE voertuig = ?')
-    .run(max_eenheden, min_eenheden || 0, tijdslot_start || null, tijdslot_eind || null, vereiste_rol || null, voertuig);
+  const { voertuig, min_eenheden, tijdslot_start, tijdslot_eind, vereiste_rol } = req.body;
+  db.prepare('UPDATE specialisatie_instellingen SET min_eenheden = ?, tijdslot_start = ?, tijdslot_eind = ?, vereiste_rol = ? WHERE voertuig = ?')
+    .run(min_eenheden || 0, tijdslot_start || null, tijdslot_eind || null, vereiste_rol || null, voertuig);
   res.json({ success: true });
 });
 
