@@ -222,14 +222,6 @@ function renderLeaderboard() {
   renderSpecOverzicht();
 }
 
-  ['leaderboard-list-ovd'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = html;
-  });
-
-  renderSpecOverzicht();
-}
-
 function renderSpecOverzicht() {
   const el = document.getElementById('spec-overzicht');
   if (!el) return;
