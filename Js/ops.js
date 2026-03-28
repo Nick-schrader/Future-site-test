@@ -94,10 +94,10 @@ function filterTijden() {
     <tr>
       <td>${d.naam}</td>
       <td><span class="badge badge-purple">${CAT_LABELS[d.categorie] || d.categorie}</span></td>
-      <td>Week ${d.week}</td>
+      <td>${d.week === 'Totaal' ? 'Totaal' : 'Week ' + d.week}</td>
       <td style="font-family:monospace">${d.uren}</td>
       <td style="text-align:right;position:relative">
-        <button class="btn-ghost" style="padding:2px 10px;font-size:1.1rem" onclick="toggleActieMenu(event,'${d.user_id}','${d.categorie}',${d.week})">&#8943;</button>
+        ${d.week !== 'Totaal' ? `<button class="btn-ghost" style="padding:2px 10px;font-size:1.1rem" onclick="toggleActieMenu(event,'${d.user_id}','${d.categorie}',${d.week})">&#8943;</button>` : `<button class="btn-ghost" style="padding:2px 10px;font-size:1.1rem" onclick="toggleActieMenuUser(event,'${d.user_id}')">&#8943;</button>`}
       </td>
     </tr>
   `).join('');
@@ -126,6 +126,19 @@ function renderTop10() {
 }
 
 let _verwijderData = null;
+
+function toggleActieMenuUser(event, userId) {
+  event.stopPropagation();
+  document.querySelectorAll('.actie-dropdown').forEach(el => el.remove());
+  const menu = document.createElement('div');
+  menu.className = 'actie-dropdown';
+  menu.innerHTML = `<div class="actie-dropdown-item" onclick="resetTijd('${userId}')">↺ Resetten</div>`;
+  const btn = event.currentTarget;
+  const rect = btn.getBoundingClientRect();
+  menu.style.cssText = `position:fixed;top:${rect.bottom + 4}px;right:${window.innerWidth - rect.right}px;z-index:999`;
+  document.body.appendChild(menu);
+  setTimeout(() => document.addEventListener('click', () => menu.remove(), { once: true }), 0);
+}
 
 function toggleActieMenu(event, userId, categorie, week) {
   event.stopPropagation();
