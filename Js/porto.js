@@ -28,8 +28,8 @@ window.onload = async () => {
             highlightStatus(u.status);
             ['status-error','ovd-status-error'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
           }
-          if (u.voertuig) {
-            highlightVoertuig(u.voertuig);
+          if (data.voertuigNaam) {
+            highlightVoertuig(data.voertuigNaam);
             ['voertuig-error','ovd-voertuig-error'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
           }
         }).catch(() => {
@@ -85,7 +85,7 @@ window.onload = async () => {
               highlightStatus(u.status);
               ['status-error','ovd-status-error'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
             }
-            highlightVoertuig(data.voertuig);
+            highlightVoertuig(data.voertuigNaam || data.voertuig || '');
             ['voertuig-error','ovd-voertuig-error'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
             startIndienstTimer('oc-tijd');
           } else {
@@ -190,11 +190,10 @@ function eenheidRow(e, isLangst) {
 function renderLeaderboard() {
   const metTijd = appData.eenheden.filter(e => e.indienstStart);
   const gesorteerd = [...metTijd].sort((a, b) => a.indienstStart - b.indienstStart).slice(0, 10);
-  const medals = ['🥇','🥈','🥉'];
   const html = gesorteerd.length
     ? gesorteerd.map((e, i) => `
         <div class="oc-row">
-          <span>${medals[i] || i + 1} ${e.medewerkers}</span>
+          <span>${i + 1}. ${e.medewerkers}</span>
           <span style="color:#4ade80;font-variant-numeric:tabular-nums">${formatDuur(Date.now() - e.indienstStart)}</span>
         </div>`).join('')
     : '<div style="color:#888;font-size:0.82rem;padding:4px 0">Geen actieve eenheden</div>';
@@ -455,25 +454,24 @@ function highlightStatus(s) {
 
 function selectVoertuig(v) {
   const u = getUser();
-  u.voertuig = v;
-  saveUser(u);
   highlightVoertuig(v);
   ['voertuig-error', 'ovd-voertuig-error'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
-  if (document.getElementById('oc-voertuig')) document.getElementById('oc-voertuig').textContent = v;
-  if (document.getElementById('ovd-oc-voertuig')) document.getElementById('ovd-oc-voertuig').textContent = v;
-  // Opslaan in DB
-  if (u.id) fetch(`${API_URL}/api/status`, {
+  // Eigen voertuig input bijwerken als die zichtbaar is
+  const inp = document.getElementById('eigen-voertuig-input');
+  if (inp) inp.value = v;
+  // Opslaan als voertuig_naam (vrij veld), niet als type
+  if (u.id) fetch(`${API_URL}/api/voertuig-naam`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId: u.id, voertuig: v }),
-  });
+    body: JSON.stringify({ userId: u.id, voertuigNaam: v }),
+  }).then(() => showToast('Voertuig ingesteld: ' + v));
 }
 
 function highlightVoertuig(v) {
   document.querySelectorAll('.voertuig-btn').forEach(b => {
-    b.classList.toggle('active', b.textContent.trim() === v.toUpperCase());
+    b.classList.toggle('active', b.textContent.trim().toLowerCase() === v.toLowerCase());
   });
 }
 
