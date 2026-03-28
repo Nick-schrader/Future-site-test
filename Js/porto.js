@@ -222,6 +222,14 @@ function renderLeaderboard() {
   renderSpecOverzicht();
 }
 
+  ['leaderboard-list-ovd'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = html;
+  });
+
+  renderSpecOverzicht();
+}
+
 function renderSpecOverzicht() {
   const el = document.getElementById('spec-overzicht');
   if (!el) return;
@@ -265,12 +273,13 @@ function renderSpecOverzicht() {
 
           const kleur = ok ? '#4ade80' : '#f87171';
           const status = ok ? '✓' : '✗';
-          const rolLabel = s.vereiste_rol ? `${s.vereiste_rol} · ` : '';
-          const minLabel = s.min_eenheden > 0 ? ` (${huidig}/${s.min_eenheden})` : '';
+          const rolLabel = s.vereiste_rol ? `${s.vereiste_rol}` : '';
+          const tijdLabel2 = s.tijdslot_start ? ` · ${tijdLabel}` : '';
+          const minLabel = s.min_eenheden > 0 ? ` · Min ${s.min_eenheden} (${huidig})` : '';
 
           return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #2a2a3a">
             <span style="color:#a78bfa;font-weight:bold">${s.voertuig}</span>
-            <span style="color:#888;font-size:0.78rem">${rolLabel}${tijdLabel}${minLabel}</span>
+            <span style="color:#888;font-size:0.78rem">${rolLabel}${tijdLabel2}${minLabel}</span>
             <span style="color:${kleur}">${status}</span>
           </div>`;
         }).join('');
@@ -354,6 +363,22 @@ function speelAanmeldGeluid() {
   gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
   osc.start(ctx.currentTime);
   osc.stop(ctx.currentTime + 0.5);
+}
+
+function speelVoertuigGeluid() {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const gain = ctx.createGain();
+  gain.connect(ctx.destination);
+  gain.gain.setValueAtTime(0.3, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+  [660, 880].forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    osc.connect(gain);
+    osc.frequency.value = freq;
+    osc.type = 'sine';
+    osc.start(ctx.currentTime + i * 0.15);
+    osc.stop(ctx.currentTime + i * 0.15 + 0.2);
+  });
 }
 
 function renderMeldingen() {
@@ -990,7 +1015,22 @@ function checkIndeling() {
       }).catch(() => {});
   }
 
-  if (u.ingedeeld) return;
+  if (u.ingedeeld) {
+    // Check of voertuig type veranderd is door OVD
+    fetch(`${API_URL}/api/indeling/${u.id}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.voertuig && data.voertuig !== u.voertuig) {
+          u.voertuig = data.voertuig;
+          saveUser(u);
+          speelVoertuigGeluid();
+          showToast('Voertuig type gewijzigd: ' + data.voertuig);
+          const isOvdOpco = ['ovd','opco','oc','ops'].includes(u.role);
+          if (isOvdOpco) ovdUpdateInfo(); else updateOCInfo();
+        }
+      }).catch(() => {});
+    return;
+  }
   fetch(`${API_URL}/api/indeling/${u.id}`)
     .then(r => r.json())
     .then(data => {
