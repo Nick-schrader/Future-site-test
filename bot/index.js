@@ -153,12 +153,26 @@ app.post('/api/instellingen', (req, res) => {
 });
 
 // ---- API: Aanmelden (STATUS 0) ----
-app.post('/api/aanmelden', (req, res) => {
+app.post('/api/aanmelden', async (req, res) => {
   const { userId, naam, bijzonderheden, rangicoon } = req.body;
   if (!userId) return res.status(400).json({ error: 'Geen userId' });
   addAanmelding.run({ user_id: userId, naam, bijzonderheden: bijzonderheden || '', tijd: Date.now() });
   db.prepare('UPDATE gebruikers SET indienst_start = ? WHERE id = ?').run(Date.now(), userId);
   if (rangicoon !== undefined) db.prepare('UPDATE gebruikers SET rangicoon = ? WHERE id = ?').run(rangicoon, userId);
+
+  // Rollen live updaten vanuit Discord zodat IBT check altijd klopt
+  try {
+    const guild = await client.guilds.fetch(process.env.GUILD_ID);
+    const member = await guild.members.fetch(userId);
+    const rollen = member.roles.cache
+      .filter(r => r.name !== '@everyone')
+      .sort((a, b) => b.position - a.position)
+      .map(r => ({ id: r.id, naam: r.name, kleur: r.hexColor === '#000000' ? '#99aab5' : r.hexColor }));
+    db.prepare('UPDATE gebruikers SET rollen = ? WHERE id = ?').run(JSON.stringify(rollen), userId);
+  } catch (e) {
+    console.warn('[AANMELDEN] Rollen sync mislukt:', e.message);
+  }
+
   res.json({ success: true });
 });
 
@@ -178,7 +192,12 @@ app.get('/api/wachtrij', (_req, res) => {
     LEFT JOIN gebruikers g ON w.user_id = g.id
     ORDER BY w.tijd ASC
   `).all();
-  res.json(rijen);
+  // Zorg dat rollen altijd een geldige JSON array is
+  const result = rijen.map(r => ({
+    ...r,
+    rollen: r.rollen && r.rollen !== '[]' ? r.rollen : '[]',
+  }));
+  res.json(result);
 });
 
 // ---- API: Indelen + Discord naam updaten ----
@@ -244,6 +263,19 @@ app.post('/api/indelen', async (req, res) => {
 
   addIndeling.run({ user_id: userId, roepnummer, voertuig, ingedeeld_door: ingedeeldDoor || '', tijd: Date.now() });
   removeAanmelding.run(userId);
+
+  // Auto-koppel: als er al iemand anders met hetzelfde roepnummer ingedeeld is
+  const bestaande = db.prepare(`
+    SELECT g.id FROM indelingen i
+    JOIN gebruikers g ON i.user_id = g.id
+    WHERE i.roepnummer = ? AND i.user_id != ? AND g.indienst_start IS NOT NULL AND g.koppel_id IS NULL
+  `).get(roepnummer, userId);
+
+  if (bestaande) {
+    db.prepare('UPDATE gebruikers SET koppel_id = ? WHERE id = ?').run(bestaande.id, userId);
+    db.prepare('UPDATE gebruikers SET koppel_id = ? WHERE id = ?').run(userId, bestaande.id);
+    console.log(`[KOPPEL] Auto-koppel: ${userId} <-> ${bestaande.id} op roepnummer ${roepnummer}`);
+  }
 
   // Zet naam in Discord
   try {
@@ -436,11 +468,15 @@ app.get('/api/tijden-overzicht', (req, res) => {
 app.delete('/api/tijden/:userId/:categorie/:week', (req, res) => {
   const { userId, categorie, week } = req.params;
   const door = req.query?.door || 'onbekend';
+  // Als door een Discord ID is, naam opzoeken
+  const doorNaam = /^\d{15,}$/.test(door)
+    ? (() => { const d = db.prepare('SELECT shortname, display_name FROM gebruikers WHERE id = ?').get(door); return d?.shortname || d?.display_name || door; })()
+    : door;
   const g = db.prepare('SELECT shortname, display_name FROM gebruikers WHERE id = ?').get(userId);
   const naam = g?.shortname || g?.display_name || userId;
   db.prepare('DELETE FROM dienst_tijden WHERE user_id = ? AND categorie = ? AND week = ?').run(userId, categorie, week);
   db.prepare('INSERT INTO logs (actie, door, details, tijd) VALUES (?, ?, ?, ?)').run(
-    'uren_verwijderd', door, `${naam} | ${categorie} | Week ${week}`, Date.now()
+    'uren_verwijderd', doorNaam, `${naam} | ${categorie} | Week ${week}`, Date.now()
   );
   res.json({ success: true });
 });

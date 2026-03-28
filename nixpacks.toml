@@ -5,4 +5,4 @@ nixPkgs = ["nodejs_20", "python3", "gcc", "gnumake"]
 cmds = ["npm install"]
 
 [start]
-cmd = "node bot/index.js"
+cmd = "mkdir -p /data && node bot/index.js"

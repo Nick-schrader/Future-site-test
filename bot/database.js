@@ -1,7 +1,10 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 
-const db = new Database(path.join(__dirname, 'porto.db'));
+// Gebruik persistent volume pad als beschikbaar (Railway/Render), anders lokaal
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'porto.db');
+const db = new Database(DB_PATH);
+console.log('[DB] Database pad:', DB_PATH);
 
 // Tabellen aanmaken
 db.exec(`

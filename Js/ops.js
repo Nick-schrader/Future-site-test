@@ -141,7 +141,7 @@ function bevestigVerwijder() {
   const { userId, categorie, week } = _verwijderData;
   const u = getUser();
   document.getElementById('verwijder-modal').classList.add('hidden');
-  fetch(`${API_URL}/api/tijden/${userId}/${categorie}/${week}?door=${encodeURIComponent(u.shortname || u.displayName || 'onbekend')}`, { method: 'DELETE' })
+  fetch(`${API_URL}/api/tijden/${userId}/${categorie}/${week}?door=${encodeURIComponent(u.shortname || u.fullname || u.username || 'onbekend')}`, { method: 'DELETE' })
     .then(() => { _verwijderData = null; laadTijden(); showToast('Tijdregel verwijderd'); });
 }
 
