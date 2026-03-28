@@ -234,7 +234,7 @@ function renderSpecOverzicht() {
       const nowMin = nu.getHours() * 60 + nu.getMinutes();
 
       const html = specialisaties
-        .filter(s => s.vereiste_rol || s.tijdslot_start)
+        .filter(s => s.vereiste_rol || s.tijdslot_start || s.min_eenheden > 0)
         .map(s => {
           let tijdslotActief = true;
           let tijdLabel = 'Altijd';
@@ -254,13 +254,23 @@ function renderSpecOverzicht() {
             }
           }
 
-          const kleur = tijdslotActief ? '#4ade80' : '#f87171';
-          const status = tijdslotActief ? '✓' : '✗';
+          // Check min eenheden
+          const huidig = (window._specialisaties && appData.eenheden)
+            ? appData.eenheden.filter(e => e.type === s.voertuig).length
+            : 0;
+          const minOk = s.min_eenheden > 0 ? huidig >= s.min_eenheden : true;
+          // Tijdslot alleen relevant als het voertuig een tijdslot heeft
+          const tijdOk = s.tijdslot_start ? tijdslotActief : true;
+          const ok = tijdOk && minOk;
+
+          const kleur = ok ? '#4ade80' : '#f87171';
+          const status = ok ? '✓' : '✗';
           const rolLabel = s.vereiste_rol ? `${s.vereiste_rol} · ` : '';
+          const minLabel = s.min_eenheden > 0 ? ` (${huidig}/${s.min_eenheden})` : '';
 
           return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #2a2a3a">
             <span style="color:#a78bfa;font-weight:bold">${s.voertuig}</span>
-            <span style="color:#888;font-size:0.78rem">${rolLabel}${tijdLabel}</span>
+            <span style="color:#888;font-size:0.78rem">${rolLabel}${tijdLabel}${minLabel}</span>
             <span style="color:${kleur}">${status}</span>
           </div>`;
         }).join('');
