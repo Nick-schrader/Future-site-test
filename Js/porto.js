@@ -67,42 +67,49 @@ window.onload = async () => {
       if (btns) btns.closest('.card').style.display = 'none';
     }
 
-    if (u.indienstStart) {
-      // Check eerst of indeling nog geldig is in database
-      fetch(`${API_URL}/api/indeling/${u.id}`)
-        .then(r => r.json())
-        .then(data => {
-          document.querySelector('.porto-aanmeld-section').classList.add('hidden');
-          // Herstel indienstStart vanuit DB als die er niet is
-          if (data.indienstStart && !u.indienstStart) {
-            u.indienstStart = data.indienstStart;
-            saveUser(u);
+    // Altijd DB checken voor correcte staat
+    fetch(`${API_URL}/api/indeling/${u.id}`)
+      .then(r => r.json())
+      .then(data => {
+        if (!data.indienstStart) {
+          // Niet in dienst - toon aanmeld sectie
+          u.indienstStart = null;
+          u.ingedeeld = false;
+          u.status = null;
+          u.voertuig = null;
+          u.dienstnummer = '';
+          saveUser(u);
+          document.querySelector('.porto-aanmeld-section').classList.remove('hidden');
+          return;
+        }
+        document.querySelector('.porto-aanmeld-section').classList.add('hidden');
+        if (data.indienstStart && !u.indienstStart) {
+          u.indienstStart = data.indienstStart;
+          saveUser(u);
+        }
+        if (data.ingedeeld) {
+          u.ingedeeld = true;
+          u.voertuig = data.voertuig;
+          u.dienstnummer = data.roepnummer;
+          saveUser(u);
+          document.getElementById('porto-main').classList.remove('hidden');
+          updateOCInfo();
+          if (u.status) {
+            highlightStatus(u.status);
+            ['status-error','ovd-status-error'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
           }
-          if (data.ingedeeld) {
-            u.ingedeeld = true;
-            u.voertuig = data.voertuig;
-            u.dienstnummer = data.roepnummer;
-            saveUser(u);
-            document.getElementById('porto-main').classList.remove('hidden');
-            updateOCInfo();
-            if (u.status) {
-              highlightStatus(u.status);
-              ['status-error','ovd-status-error'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
-            }
-            highlightVoertuig(data.voertuig || u.voertuig || '');
-            ['voertuig-error','ovd-voertuig-error'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
-            startIndienstTimer('oc-tijd');
-          } else {
-            u.ingedeeld = false;
-            saveUser(u);
-            document.getElementById('porto-wacht').classList.remove('hidden');
-            startIndienstTimer('oc-tijd');
-          }
-        }).catch(() => {
-          document.querySelector('.porto-aanmeld-section').classList.add('hidden');
+          highlightVoertuig(data.voertuig || u.voertuig || '');
+          ['voertuig-error','ovd-voertuig-error'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+          startIndienstTimer('oc-tijd');
+        } else {
+          u.ingedeeld = false;
+          saveUser(u);
           document.getElementById('porto-wacht').classList.remove('hidden');
-        });
-    }
+          startIndienstTimer('oc-tijd');
+        }
+      }).catch(() => {
+        document.querySelector('.porto-aanmeld-section').classList.remove('hidden');
+      });
   }
 };
 
