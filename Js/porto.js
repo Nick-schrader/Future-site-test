@@ -68,6 +68,10 @@ window.onload = async () => {
     }
 
     // Altijd DB checken voor correcte staat
+    if (!u.id) {
+      document.querySelector('.porto-aanmeld-section').classList.remove('hidden');
+      return;
+    }
     fetch(`${API_URL}/api/indeling/${u.id}`)
       .then(r => r.json())
       .then(data => {

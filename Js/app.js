@@ -42,13 +42,11 @@ async function syncUserFromDB() {
     const merged = {
       ...u,
       ...data,
-      // Zorg dat DB waarden altijd winnen voor dienst-gerelateerde velden
       role: data.role || u.role || 'user',
-      status: data.status ?? u.status,
-      voertuig: data.voertuig ?? u.voertuig,
-      indienstStart: data.indienstStart ?? u.indienstStart,
+      status: data.status ?? null,
+      voertuig: data.voertuig ?? null,
+      indienstStart: data.indienstStart ?? null,
       dienstnummer: data.dienstnummer || u.dienstnummer || '',
-      // Rollen: gebruik DB waarden als die er zijn, anders behoud sessionStorage
       rollen: (data.rollen && data.rollen.length > 0) ? data.rollen : (u.rollen || []),
     };
     saveUser(merged);
