@@ -224,44 +224,49 @@ function renderLeaderboard() {
 
 function renderSpecOverzicht() {
   const el = document.getElementById('spec-overzicht');
-  if (!el || !window._specialisaties) return;
+  if (!el) return;
 
-  const nu = new Date();
-  const nowMin = nu.getHours() * 60 + nu.getMinutes();
+  fetch(`${API_URL}/api/specialisaties`)
+    .then(r => r.json())
+    .then(specialisaties => {
+      window._specialisaties = specialisaties;
+      const nu = new Date();
+      const nowMin = nu.getHours() * 60 + nu.getMinutes();
 
-  const html = window._specialisaties
-    .filter(s => s.vereiste_rol || s.tijdslot_start)
-    .map(s => {
-      // Check tijdslot
-      let tijdslotActief = true;
-      let tijdLabel = '';
-      if (s.tijdslot_start) {
-        const [sh, sm] = s.tijdslot_start.split(':').map(Number);
-        const startMin = sh * 60 + sm;
-        if (s.tijdslot_eind) {
-          const [eh, em] = s.tijdslot_eind.split(':').map(Number);
-          const eindMin = eh * 60 + em;
-          tijdslotActief = startMin > eindMin
-            ? (nowMin >= startMin || nowMin < eindMin)
-            : (nowMin >= startMin && nowMin < eindMin);
-          tijdLabel = `${s.tijdslot_start} - ${s.tijdslot_eind}`;
-        } else {
-          tijdslotActief = nowMin >= startMin;
-          tijdLabel = `vanaf ${s.tijdslot_start}`;
-        }
-      }
+      const html = specialisaties
+        .filter(s => s.vereiste_rol || s.tijdslot_start)
+        .map(s => {
+          let tijdslotActief = true;
+          let tijdLabel = 'Altijd';
+          if (s.tijdslot_start) {
+            const [sh, sm] = s.tijdslot_start.split(':').map(Number);
+            const startMin = sh * 60 + sm;
+            if (s.tijdslot_eind) {
+              const [eh, em] = s.tijdslot_eind.split(':').map(Number);
+              const eindMin = eh * 60 + em;
+              tijdslotActief = startMin > eindMin
+                ? (nowMin >= startMin || nowMin < eindMin)
+                : (nowMin >= startMin && nowMin < eindMin);
+              tijdLabel = `${s.tijdslot_start} - ${s.tijdslot_eind}`;
+            } else {
+              tijdslotActief = nowMin >= startMin;
+              tijdLabel = `vanaf ${s.tijdslot_start}`;
+            }
+          }
 
-      const kleur = tijdslotActief ? '#4ade80' : '#f87171';
-      const status = tijdslotActief ? '✓' : '✗';
+          const kleur = tijdslotActief ? '#4ade80' : '#f87171';
+          const status = tijdslotActief ? '✓' : '✗';
+          const rolLabel = s.vereiste_rol ? `${s.vereiste_rol} · ` : '';
 
-      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #2a2a3a">
-        <span style="color:#a78bfa;font-weight:bold">${s.voertuig}</span>
-        <span style="color:#888;font-size:0.78rem">${s.vereiste_rol ? s.vereiste_rol + ' · ' : ''}${tijdLabel || 'Altijd'}</span>
-        <span style="color:${kleur}">${status}</span>
-      </div>`;
-    }).join('');
+          return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #2a2a3a">
+            <span style="color:#a78bfa;font-weight:bold">${s.voertuig}</span>
+            <span style="color:#888;font-size:0.78rem">${rolLabel}${tijdLabel}</span>
+            <span style="color:${kleur}">${status}</span>
+          </div>`;
+        }).join('');
 
-  el.innerHTML = html || '<span style="color:#888">Geen specialisaties ingesteld</span>';
+      el.innerHTML = html || '<span style="color:#888">Geen specialisaties ingesteld</span>';
+    }).catch(() => {});
 }
 
 function formatDuur(ms) {
