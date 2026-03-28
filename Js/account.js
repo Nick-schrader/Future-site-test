@@ -1,5 +1,6 @@
 // ---- ACCOUNT PAGE ----
 window.onload = async () => {
+  if (!sessionStorage.getItem('loggedIn')) { window.location.href = '../index.html'; return; }
   await syncUserFromDB();
   const u = getUser();
 

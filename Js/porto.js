@@ -8,7 +8,7 @@ window.onload = async () => {
     document.getElementById('ovd-view').classList.remove('hidden');
     laadEenheden();
     renderMeldingen();
-    setInterval(() => { laadEenheden(); renderMeldingen(); }, 3000);
+    setInterval(() => { laadEenheden(); renderMeldingen(); ovdUpdateInfo(); }, 3000);
     setInterval(renderLeaderboard, 1000);
     setInterval(checkIndeling, 3000);
 
@@ -43,6 +43,7 @@ window.onload = async () => {
     // Laad eenheden voor leaderboard ook in user view
     laadEenheden();
     setInterval(laadEenheden, 5000);
+    setInterval(updateOCInfo, 3000);
     setInterval(renderLeaderboard, 1000);
 
     // Verberg inloggen knoppen op basis van DC rollen

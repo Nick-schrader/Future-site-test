@@ -1,5 +1,10 @@
 // ---- SETTINGS PAGE ----
 window.onload = async () => {
+  // Login check
+  if (!sessionStorage.getItem('loggedIn')) {
+    window.location.href = '../index.html';
+    return;
+  }
   // Haal altijd verse rollen op voordat we de toegang checken
   await laadDiscordRollen();
   const u = getUser();
@@ -19,10 +24,10 @@ function laadSpecialisaties() {
         <tr>
           <td>${s.voertuig}</td>
           <td><input type="number" value="${s.min_eenheden || 0}" min="0" max="99" class="input-field" style="width:70px" id="min-${s.voertuig.replace(/ /g,'_')}" /></td>
-          <td><input type="number" value="${s.max_eenheden}" min="1" max="99" class="input-field" style="width:70px" id="max-${s.voertuig.replace(/ /g,'_')}" /></td>
           <td><input type="text" value="${s.vereiste_rol || ''}" placeholder="bv. Motor" class="input-field" style="width:90px" id="rol-${s.voertuig.replace(/ /g,'_')}" /></td>
           <td><input type="text" value="${s.tijdslot_start || ''}" placeholder="bv. 20:00" class="input-field" style="width:80px" id="tijd-${s.voertuig.replace(/ /g,'_')}" /></td>
           <td><input type="text" value="${s.tijdslot_eind || ''}" placeholder="bv. 06:00" class="input-field" style="width:80px" id="tijdeind-${s.voertuig.replace(/ /g,'_')}" /></td>
+          <input type="hidden" value="${s.max_eenheden}" id="max-${s.voertuig.replace(/ /g,'_')}" />
           <td><button class="btn-purple small" onclick="slaSpecOp('${s.voertuig}')">Opslaan</button></td>
         </tr>
       `).join('');

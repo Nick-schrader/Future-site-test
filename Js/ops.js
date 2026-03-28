@@ -3,6 +3,7 @@ const CAT_LABELS = { porto: 'Noodhulp', opco: 'OPCO', ovd: 'OVD', oc: 'OC' };
 let _alleTijden = [];
 
 window.onload = () => {
+  if (!sessionStorage.getItem('loggedIn')) { window.location.href = '../index.html'; return; }
   laadTijden();
   laadMeldingen();
 };
