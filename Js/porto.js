@@ -84,6 +84,9 @@ window.onload = async () => {
           u.dienstnummer = '';
           saveUser(u);
           document.querySelector('.porto-aanmeld-section').classList.remove('hidden');
+          // Reset scroll naar boven
+          const content = document.querySelector('.content');
+          if (content) content.scrollTop = 0;
           return;
         }
         document.querySelector('.porto-aanmeld-section').classList.add('hidden');

@@ -384,6 +384,10 @@ input:checked + .slider:before { transform: translateX(16px); }
 .porto-aanmeld-section {
   display: flex;
   gap: 16px;
+  align-items: flex-start;
+  position: relative;
+  z-index: 1;
+}
   margin-bottom: 20px;
   justify-content: center;
   align-items: flex-start;
