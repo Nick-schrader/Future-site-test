@@ -1058,5 +1058,4 @@ function checkIndeling() {
     }).catch(() => {});
 }
 
-// Poll elke 3 seconden of je bent ingedeeld
-setInterval(checkIndeling, 3000);
+
