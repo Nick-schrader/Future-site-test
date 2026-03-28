@@ -262,6 +262,8 @@ app.post('/api/indelen', async (req, res) => {
   }
 
   addIndeling.run({ user_id: userId, roepnummer, voertuig, ingedeeld_door: ingedeeldDoor || '', tijd: Date.now() });
+  // Sla voertuig type ook op in gebruikers tabel zodat het zichtbaar is in het overzicht
+  db.prepare('UPDATE gebruikers SET voertuig = ? WHERE id = ?').run(voertuig, userId);
   removeAanmelding.run(userId);
 
   // Auto-koppel: als er al iemand anders met hetzelfde roepnummer ingedeeld is

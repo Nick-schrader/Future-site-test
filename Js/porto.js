@@ -465,19 +465,18 @@ function highlightStatus(s) {
 
 function selectVoertuig(v) {
   const u = getUser();
-  u.voertuig = v;
-  saveUser(u);
   highlightVoertuig(v);
   ['voertuig-error', 'ovd-voertuig-error'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
-  if (document.getElementById('ovd-oc-voertuig')) document.getElementById('ovd-oc-voertuig').textContent = v;
-  // Sla voertuig TYPE op in DB (door OVD/OPCO)
-  if (u.id) fetch(`${API_URL}/api/status`, {
+  if (document.getElementById('ovd-oc-voertuig-naam')) document.getElementById('ovd-oc-voertuig-naam').textContent = v;
+  if (document.getElementById('oc-voertuig-naam')) document.getElementById('oc-voertuig-naam').textContent = v;
+  // Sla op als eigen voertuignaam
+  if (u.id) fetch(`${API_URL}/api/voertuig-naam`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId: u.id, voertuig: v }),
-  }).then(() => showToast('Voertuig type: ' + v));
+    body: JSON.stringify({ userId: u.id, voertuigNaam: v }),
+  }).then(() => showToast('Voertuig: ' + v));
 }
 
 function highlightVoertuig(v) {
@@ -809,6 +808,7 @@ function ovdUpdateInfo() {
       .then(data => {
         const vn = document.getElementById('ovd-oc-voertuig-naam');
         if (vn) vn.textContent = data.voertuigNaam || '-';
+        if (data.voertuigNaam) highlightVoertuig(data.voertuigNaam);
       }).catch(() => {});
   }
 
