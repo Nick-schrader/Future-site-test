@@ -343,6 +343,14 @@ app.post('/api/status', (req, res) => {
   if (status !== undefined) db.prepare('UPDATE gebruikers SET status = ? WHERE id = ?').run(status, userId);
   if (voertuig !== undefined) db.prepare('UPDATE gebruikers SET voertuig = ? WHERE id = ?').run(voertuig, userId);
 
+  // Sync status naar koppel
+  if (status !== undefined) {
+    const g = db.prepare('SELECT koppel_id FROM gebruikers WHERE id = ?').get(userId);
+    if (g?.koppel_id) {
+      db.prepare('UPDATE gebruikers SET status = ? WHERE id = ?').run(status, g.koppel_id);
+    }
+  }
+
   // Speel geluid bij status 6 of 7
   if (status === 6 || status === 7) {
     db.prepare('INSERT INTO status_alerts (user_id, naam, status, tijd) VALUES (?, ?, ?, ?)').run(
