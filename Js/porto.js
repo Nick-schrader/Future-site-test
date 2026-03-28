@@ -106,26 +106,28 @@ window.onload = async () => {
 };
 
 function laadEenheden() {
-  fetch(`${API_URL}/api/eenheden`)
-    .then(r => r.json())
-    .then(data => {
-      appData.eenheden = data.map(e => ({
-        id: e.roepnummer || e.dienstnummer || '-',
-        medewerkers: e.koppel_id
-          ? `${e.shortname || e.display_name} + ${e.koppel_naam || e.koppel_display || '?'}`
-          : (e.shortname || e.display_name),
-        voertuig: e.voertuig_naam || '-',
-        type: e.voertuig || '-',
-        taak: 'Surveillance',
-        status: e.status || 1,
-        userId: e.id,
-        koppelId: e.koppel_id || null,
-        rollen: e.rollen || '[]',
-        indienstStart: e.indienst_start || null,
-      }));
-      renderEenheden();
-      renderLeaderboard();
-    }).catch(() => {});
+  Promise.all([
+    fetch(`${API_URL}/api/eenheden`).then(r => r.json()),
+    fetch(`${API_URL}/api/specialisaties`).then(r => r.json()).catch(() => []),
+  ]).then(([data, specs]) => {
+    window._specialisaties = specs;
+    appData.eenheden = data.map(e => ({
+      id: e.roepnummer || e.dienstnummer || '-',
+      medewerkers: e.koppel_id
+        ? `${e.shortname || e.display_name} + ${e.koppel_naam || e.koppel_display || '?'}`
+        : (e.shortname || e.display_name),
+      voertuig: e.voertuig_naam || '-',
+      type: e.voertuig || '-',
+      taak: 'Surveillance',
+      status: e.status || 1,
+      userId: e.id,
+      koppelId: e.koppel_id || null,
+      rollen: e.rollen || '[]',
+      indienstStart: e.indienst_start || null,
+    }));
+    renderEenheden();
+    renderLeaderboard();
+  }).catch(() => {});
 }
 
 function renderEenheden() {
@@ -163,9 +165,26 @@ function renderEenheden() {
     const ingeklapt = window._groepIngeklapt[label] || false;
     const pijl = ingeklapt ? '▶' : '▼';
 
-    // Langst in dienst berekening niet meer nodig
+    // Check min eenheden warnings voor specialisaties in deze groep
+    let warnings = '';
+    if (prefix !== 'Wachtrij' && window._specialisaties) {
+      // Tel per voertuig type hoeveel eenheden er zijn (over alle groepen)
+      const telPerType = {};
+      appData.eenheden.forEach(e => {
+        if (e.type && e.type !== '-') telPerType[e.type] = (telPerType[e.type] || 0) + 1;
+      });
+      window._specialisaties.forEach(s => {
+        if (s.min_eenheden > 0) {
+          const huidig = telPerType[s.voertuig] || 0;
+          if (huidig < s.min_eenheden) {
+            warnings += `<span style="color:#f87171;margin-left:8px" title="${s.voertuig}: ${huidig}/${s.min_eenheden} eenheden">⚠ ${s.voertuig} (${huidig}/${s.min_eenheden})</span>`;
+          }
+        }
+      });
+    }
+
     html += `<tr class="group-header" onclick="toggleGroep('${label}')" style="cursor:pointer">
-      <td colspan="7"><span style="margin-right:6px;font-size:0.7rem">${pijl}</span>${label} <span class="badge-tag">Totaal ${groep.length}</span></td>
+      <td colspan="7"><span style="margin-right:6px;font-size:0.7rem">${pijl}</span>${label} <span class="badge-tag">Totaal ${groep.length}</span>${warnings}</td>
     </tr>`;
     if (!ingeklapt) {
       groep.forEach(e => html += eenheidRow(e));
