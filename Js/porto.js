@@ -114,6 +114,7 @@ function laadEenheden() {
         userId: e.id,
         koppelId: e.koppel_id || null,
         rollen: e.rollen || '[]',
+        indienstStart: e.indienst_start || null,
       }));
       renderEenheden();
     }).catch(() => {});
@@ -153,8 +154,14 @@ function renderEenheden() {
     const label = prefix === 'Overig' ? 'Overig' : prefix === 'Wachtrij' ? 'Wachtrij' : `${prefix} Nummer`;
     const ingeklapt = window._groepIngeklapt[label] || false;
     const pijl = ingeklapt ? '▶' : '▼';
+
+    // Langst in dienst in deze groep
+    const metTijd = groep.filter(e => e.indienstStart);
+    const langst = metTijd.length ? metTijd.reduce((a, b) => a.indienstStart < b.indienstStart ? a : b) : null;
+    const langstInfo = langst ? ` — langst: ${langst.medewerkers}` : '';
+
     html += `<tr class="group-header" onclick="toggleGroep('${label}')" style="cursor:pointer">
-      <td colspan="6"><span style="margin-right:6px;font-size:0.7rem">${pijl}</span>${label} <span class="badge-tag">Totaal ${groep.length}</span></td>
+      <td colspan="6"><span style="margin-right:6px;font-size:0.7rem">${pijl}</span>${label} <span class="badge-tag">Totaal ${groep.length}</span><span style="color:#888;font-size:0.75rem;margin-left:8px">${langstInfo}</span></td>
     </tr>`;
     if (!ingeklapt) {
       groep.forEach(e => html += eenheidRow(e));

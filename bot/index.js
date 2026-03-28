@@ -186,6 +186,15 @@ app.post('/api/indelen', async (req, res) => {
   const { userId, roepnummer, voertuig, ingedeeldDoor } = req.body;
   if (!userId || !roepnummer || !voertuig) return res.status(400).json({ error: 'Ontbrekende velden' });
 
+  // Check specialisatie tijdslot (bv. Zulu alleen na 20:00)
+  const spec = db.prepare('SELECT * FROM specialisatie_instellingen WHERE voertuig = ?').get(voertuig);
+  if (spec?.tijdslot_start) {
+    const nu = new Date();
+    const [h, m] = spec.tijdslot_start.split(':').map(Number);
+    const toegestaan = nu.getHours() > h || (nu.getHours() === h && nu.getMinutes() >= m);
+    if (!toegestaan) return res.status(400).json({ error: `${voertuig} is pas toegestaan vanaf ${spec.tijdslot_start}` });
+  }
+
   addIndeling.run({ user_id: userId, roepnummer, voertuig, ingedeeld_door: ingedeeldDoor || '', tijd: Date.now() });
   removeAanmelding.run(userId);
 
@@ -525,6 +534,17 @@ app.post('/api/rol-toewijzen', async (req, res) => {
   res.json({ success: true });
 });
 
+// ---- API: Specialisatie instellingen ----
+app.get('/api/specialisaties', (_req, res) => {
+  res.json(db.prepare('SELECT * FROM specialisatie_instellingen').all());
+});
+app.post('/api/specialisaties', (req, res) => {
+  const { voertuig, max_eenheden, tijdslot_start } = req.body;
+  db.prepare('UPDATE specialisatie_instellingen SET max_eenheden = ?, tijdslot_start = ? WHERE voertuig = ?')
+    .run(max_eenheden, tijdslot_start || null, voertuig);
+  res.json({ success: true });
+});
+
 // ---- API: Inactiviteit meldingen ----
 app.get('/api/meldingen-inactiviteit', (req, res) => {
   const huidigeWeek = getWeekNummer(new Date());
@@ -636,7 +656,7 @@ app.get('/api/koppel-kandidaten/:userId', (req, res) => {
 app.get('/api/eenheden', async (_req, res) => {
   const eenheden = db.prepare(`
     SELECT g.id, g.display_name, g.shortname, g.dienstnummer, g.voertuig, g.status, g.dienst,
-           g.koppel_id, g.rollen, i.roepnummer, i.ingedeeld_door,
+           g.koppel_id, g.rollen, g.indienst_start, i.roepnummer, i.ingedeeld_door,
            k.shortname as koppel_naam, k.display_name as koppel_display, k.id as koppel_user_id
     FROM gebruikers g
     LEFT JOIN indelingen i ON g.id = i.user_id

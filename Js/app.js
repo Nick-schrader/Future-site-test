@@ -168,6 +168,8 @@ function hideToast() {
     if (opsLink) opsLink.style.display = '';
     const logsLink = document.getElementById('nav-logs');
     if (logsLink) logsLink.style.display = '';
+    const settingsLink = document.getElementById('nav-settings');
+    if (settingsLink) settingsLink.style.display = '';
   }
 })();
 

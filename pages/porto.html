@@ -39,6 +39,9 @@
         <a class="sidebar-item" href="logs.html" id="nav-logs" style="display:none">
           <span class="sidebar-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span><span class="sidebar-label">Logs</span>
         </a>
+        <a class="sidebar-item" href="settings.html" id="nav-settings" style="display:none">
+          <span class="sidebar-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span class="sidebar-label">Instellingen</span>
+        </a>
       </aside>
 
       <main class="content">
@@ -196,22 +199,6 @@
                 <button class="status-btn s10" onclick="setStatus(10)">STATUS 10<br/><small>UIT DIENST</small></button>
               </div>
             </div>
-            <div class="card voertuig-card">
-              <h3>Voertuig</h3>
-              <div id="voertuig-error" class="error-msg">&#9888; Je voertuig is niet geselecteerd!</div>
-              <div class="voertuig-grid">
-                <button class="voertuig-btn" onclick="selectVoertuig('Noodhulp')">NOODHULP</button>
-                <button class="voertuig-btn" onclick="selectVoertuig('Vito')">VITO</button>
-                <button class="voertuig-btn" onclick="selectVoertuig('Amarok')">AMAROK</button>
-                <button class="voertuig-btn" onclick="selectVoertuig('Audi A6')">AUDI A6</button>
-                <button class="voertuig-btn" onclick="selectVoertuig('Unmarked Onroad')">UNMARKED ONROAD</button>
-                <button class="voertuig-btn" onclick="selectVoertuig('Unmarked Offroad')">UNMARKED OFFROAD</button>
-                <button class="voertuig-btn" onclick="selectVoertuig('Offroad Motor')">OFFROAD MOTOR</button>
-                <button class="voertuig-btn" onclick="selectVoertuig('Onroad Motor')">ONROAD MOTOR</button>
-                <button class="voertuig-btn" onclick="selectVoertuig('Motor Koppel')">MOTOR KOPPEL</button>
-                <button class="voertuig-btn" onclick="selectVoertuig('Zulu')">ZULU</button>
-              </div>
-            </div>
           </div> <!-- einde porto-main -->
         </div> <!-- einde user-view -->
 
@@ -250,8 +237,14 @@
         <div class="form-group">
           <label>Voertuig</label>
           <select id="indelen-voertuig" class="input-field">
-            <option>Noodhulp</option><option>Vito</option><option>Amarok</option>
-            <option>Audi A6</option><option>Zulu</option><option>Motor</option>
+            <option>Noodhulp</option>
+            <option>Offroad</option>
+            <option>Siv</option>
+            <option>GPT</option>
+            <option>Motor</option>
+            <option>Boot</option>
+            <option>Zulu</option>
+          </select>
             <option>Unmarked Onroad</option><option>Unmarked Offroad</option>
             <option>Offroad Motor</option><option>Motor Koppel</option>
           </select>
@@ -303,9 +296,14 @@
         <div class="form-group">
           <label>Voertuig</label>
           <select id="edit-voertuig" class="input-field">
-            <option>Noodhulp</option><option>Vito</option><option>Amarok</option>
-            <option>Audi A6</option><option>Unmarked Onroad</option><option>Unmarked Offroad</option>
-            <option>Offroad Motor</option><option>Onroad Motor</option><option>Motor Koppel</option><option>Zulu</option>
+            <option>Noodhulp</option>
+            <option>Offroad</option>
+            <option>Siv</option>
+            <option>GPT</option>
+            <option>Motor</option>
+            <option>Boot</option>
+            <option>Zulu</option>
+          </select>
           </select>
         </div>
         <div style="display:flex;gap:10px;margin-top:4px;align-items:stretch">

@@ -12,9 +12,8 @@ function laadMeldingen() {
     .then(r => r.json())
     .then(data => {
       const el = document.getElementById('meldingen-inactiviteit');
-      const card = document.getElementById('meldingen-card');
       if (data.length === 0) {
-        card.style.display = 'none';
+        el.innerHTML = '<span style="color:#4ade80">✓ Iedereen is de afgelopen week indienst geweest</span>';
         return;
       }
       el.innerHTML = data.map(m => `
@@ -25,7 +24,7 @@ function laadMeldingen() {
         </div>
       `).join('');
     }).catch(() => {
-      document.getElementById('meldingen-card').style.display = 'none';
+      document.getElementById('meldingen-inactiviteit').innerHTML = '<span style="color:#888">Kan meldingen niet laden</span>';
     });
 }
 

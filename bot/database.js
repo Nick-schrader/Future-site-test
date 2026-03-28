@@ -150,3 +150,34 @@ module.exports = {
   addIndeling,
   getIndeling,
 };
+
+// Specialisatie instellingen
+db.exec(`
+  CREATE TABLE IF NOT EXISTS specialisatie_instellingen (
+    voertuig TEXT PRIMARY KEY,
+    max_eenheden INTEGER,
+    min_eenheden INTEGER DEFAULT 0,
+    tijdslot_start TEXT,
+    tijdslot_eind TEXT
+  );
+`);
+
+// Standaard waarden invoegen als ze nog niet bestaan
+const defaults = [
+  { voertuig: 'Siv 1',    max: 2,  min: 0, start: null, eind: null },
+  { voertuig: 'Siv 2',    max: 4,  min: 0, start: null, eind: null },
+  { voertuig: 'Siv 3',    max: 6,  min: 0, start: null, eind: null },
+  { voertuig: 'GPT 1',    max: 3,  min: 0, start: null, eind: null },
+  { voertuig: 'GPT 2',    max: 6,  min: 0, start: null, eind: null },
+  { voertuig: 'Motor 1',  max: 4,  min: 0, start: null, eind: null },
+  { voertuig: 'Motor 2',  max: 6,  min: 0, start: null, eind: null },
+  { voertuig: 'Motor 3',  max: 10, min: 0, start: null, eind: null },
+  { voertuig: 'Boot 1',   max: 1,  min: 0, start: null, eind: null },
+  { voertuig: 'Boot 2',   max: 2,  min: 0, start: null, eind: null },
+  { voertuig: 'Zulu',     max: 99, min: 0, start: '20:00', eind: null },
+];
+const insertSpec = db.prepare(`
+  INSERT OR IGNORE INTO specialisatie_instellingen (voertuig, max_eenheden, min_eenheden, tijdslot_start, tijdslot_eind)
+  VALUES (?, ?, ?, ?, ?)
+`);
+defaults.forEach(d => insertSpec.run(d.voertuig, d.max, d.min, d.start, d.eind));
