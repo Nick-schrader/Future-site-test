@@ -477,8 +477,45 @@ app.delete('/api/tijden/:userId/:categorie/:week', (req, res) => {
   const g = db.prepare('SELECT shortname, display_name FROM gebruikers WHERE id = ?').get(userId);
   const naam = g?.shortname || g?.display_name || userId;
   db.prepare('DELETE FROM dienst_tijden WHERE user_id = ? AND categorie = ? AND week = ?').run(userId, categorie, week);
+  const reden = req.query?.reden || '';
   db.prepare('INSERT INTO logs (actie, door, details, tijd) VALUES (?, ?, ?, ?)').run(
-    'uren_verwijderd', doorNaam, `${naam} | ${categorie} | Week ${week}`, Date.now()
+    'uren_verwijderd', doorNaam, `${naam} | ${categorie} | Week ${week}${reden ? ' | ' + reden : ''}`, Date.now()
+  );
+  res.json({ success: true });
+});
+
+// ---- API: Tijden aanpassen (minuten toevoegen/aftrekken) ----
+app.post('/api/tijden-aanpassen', (req, res) => {
+  const { userId, categorie, week, minuten, reden, door } = req.body;
+  if (!userId || !reden || isNaN(minuten)) return res.status(400).json({ error: 'Ontbrekende velden' });
+  const ms = minuten * 60000;
+  const nu = Date.now();
+  if (ms > 0) {
+    db.prepare('INSERT INTO dienst_tijden (user_id, categorie, week, start_tijd, eind_tijd) VALUES (?, ?, ?, ?, ?)').run(userId, categorie, week, nu - ms, nu);
+  } else {
+    const laatste = db.prepare('SELECT id, start_tijd, eind_tijd FROM dienst_tijden WHERE user_id = ? AND categorie = ? AND week = ? ORDER BY id DESC LIMIT 1').get(userId, categorie, week);
+    if (laatste) {
+      const nieuwEind = Math.max(laatste.start_tijd, laatste.eind_tijd + ms);
+      db.prepare('UPDATE dienst_tijden SET eind_tijd = ? WHERE id = ?').run(nieuwEind, laatste.id);
+    }
+  }
+  const g = db.prepare('SELECT shortname, display_name FROM gebruikers WHERE id = ?').get(userId);
+  const naam = g?.shortname || g?.display_name || userId;
+  db.prepare('INSERT INTO logs (actie, door, details, tijd) VALUES (?, ?, ?, ?)').run(
+    'uren_aangepast', door || 'onbekend', `${naam} | ${categorie} | Week ${week} | ${minuten > 0 ? '+' : ''}${minuten} min | ${reden}`, Date.now()
+  );
+  res.json({ success: true });
+});
+
+// ---- API: Tijden resetten (alle uren van persoon verwijderen) ----
+app.delete('/api/tijden-reset/:userId', (req, res) => {
+  const { userId } = req.params;
+  const { reden, door } = req.body;
+  const g = db.prepare('SELECT shortname, display_name FROM gebruikers WHERE id = ?').get(userId);
+  const naam = g?.shortname || g?.display_name || userId;
+  db.prepare('DELETE FROM dienst_tijden WHERE user_id = ?').run(userId);
+  db.prepare('INSERT INTO logs (actie, door, details, tijd) VALUES (?, ?, ?, ?)').run(
+    'uren_gereset', door || 'onbekend', `${naam} | ${reden || 'geen reden'}`, Date.now()
   );
   res.json({ success: true });
 });

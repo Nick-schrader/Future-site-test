@@ -71,6 +71,19 @@ function filterTijden() {
   if (cat) gefilterd = gefilterd.filter(d => d.categorie === cat);
   if (persoon) gefilterd = gefilterd.filter(d => d.naam === persoon);
 
+  // Als geen week filter: toon totaal per persoon per categorie
+  if (!week) {
+    const totaalPerPersoon = {};
+    gefilterd.forEach(d => {
+      const key = `${d.naam}_${d.categorie}`;
+      if (!totaalPerPersoon[key]) totaalPerPersoon[key] = { naam: d.naam, categorie: d.categorie, user_id: d.user_id, ms: 0 };
+      totaalPerPersoon[key].ms += tijdNaarMs(d.uren);
+    });
+    gefilterd = Object.values(totaalPerPersoon).map(t => ({
+      naam: t.naam, categorie: t.categorie, user_id: t.user_id, week: 'Totaal', uren: msNaarTijd(t.ms)
+    }));
+  }
+
   const tbody = document.getElementById('ops-tbody');
   if (gefilterd.length === 0) {
     tbody.innerHTML = '<tr><td colspan="4" style="color:#555;text-align:center">Geen data</td></tr>';
@@ -121,7 +134,11 @@ function toggleActieMenu(event, userId, categorie, week) {
 
   const menu = document.createElement('div');
   menu.className = 'actie-dropdown';
-  menu.innerHTML = `<div class="actie-dropdown-item actie-delete" onclick="verwijderTijd('${userId}','${categorie}',${week})">&#128465; Verwijderen</div>`;
+  menu.innerHTML = `
+    <div class="actie-dropdown-item" onclick="aanpassenTijd('${userId}','${categorie}',${week})">✏ Aanpassen</div>
+    <div class="actie-dropdown-item" onclick="resetTijd('${userId}')">↺ Resetten</div>
+    <div class="actie-dropdown-item actie-delete" onclick="verwijderTijd('${userId}','${categorie}',${week})">🗑 Verwijderen</div>
+  `;
 
   const btn = event.currentTarget;
   const rect = btn.getBoundingClientRect();
@@ -139,10 +156,12 @@ function verwijderTijd(userId, categorie, week) {
 
 function bevestigVerwijder() {
   if (!_verwijderData) return;
+  const reden = document.getElementById('verwijder-reden').value.trim();
+  if (!reden) { showToast('Vul een reden in'); return; }
   const { userId, categorie, week } = _verwijderData;
   const u = getUser();
   document.getElementById('verwijder-modal').classList.add('hidden');
-  fetch(`${API_URL}/api/tijden/${userId}/${categorie}/${week}?door=${encodeURIComponent(u.shortname || u.fullname || u.username || 'onbekend')}`, { method: 'DELETE' })
+  fetch(`${API_URL}/api/tijden/${userId}/${categorie}/${week}?door=${encodeURIComponent(u.shortname || u.fullname || u.username || 'onbekend')}&reden=${encodeURIComponent(reden)}`, { method: 'DELETE' })
     .then(() => { _verwijderData = null; laadTijden(); showToast('Tijdregel verwijderd'); });
 }
 
@@ -156,4 +175,50 @@ function msNaarTijd(ms) {
   const m = String(Math.floor((ms % 3600000) / 60000)).padStart(2, '0');
   const s = String(Math.floor((ms % 60000) / 1000)).padStart(2, '0');
   return `${h}:${m}:${s}`;
+}
+
+let _aanpassenData = null;
+let _resetUserId = null;
+
+function aanpassenTijd(userId, categorie, week) {
+  document.querySelectorAll('.actie-dropdown').forEach(el => el.remove());
+  _aanpassenData = { userId, categorie, week };
+  document.getElementById('aanpassen-minuten').value = '';
+  document.getElementById('aanpassen-reden').value = '';
+  document.getElementById('aanpassen-modal').classList.remove('hidden');
+}
+
+function bevestigAanpassen() {
+  if (!_aanpassenData) return;
+  const minuten = parseInt(document.getElementById('aanpassen-minuten').value);
+  const reden = document.getElementById('aanpassen-reden').value.trim();
+  if (!reden) { showToast('Vul een reden in'); return; }
+  if (isNaN(minuten)) { showToast('Vul een geldig aantal minuten in'); return; }
+  const u = getUser();
+  document.getElementById('aanpassen-modal').classList.add('hidden');
+  fetch(`${API_URL}/api/tijden-aanpassen`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ..._aanpassenData, minuten, reden, door: u.shortname || u.fullname || u.username }),
+  }).then(() => { _aanpassenData = null; laadTijden(); showToast('Uren aangepast'); });
+}
+
+function resetTijd(userId) {
+  document.querySelectorAll('.actie-dropdown').forEach(el => el.remove());
+  _resetUserId = userId;
+  document.getElementById('reset-reden').value = '';
+  document.getElementById('reset-modal').classList.remove('hidden');
+}
+
+function bevestigReset() {
+  if (!_resetUserId) return;
+  const reden = document.getElementById('reset-reden').value.trim();
+  if (!reden) { showToast('Vul een reden in'); return; }
+  const u = getUser();
+  document.getElementById('reset-modal').classList.add('hidden');
+  fetch(`${API_URL}/api/tijden-reset/${_resetUserId}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reden, door: u.shortname || u.fullname || u.username }),
+  }).then(() => { _resetUserId = null; laadTijden(); showToast('Uren gereset'); });
 }

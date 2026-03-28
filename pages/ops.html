@@ -93,9 +93,49 @@
       <div class="modal-card">
         <h2>Tijdregel verwijderen</h2>
         <p style="color:#888;text-align:center;margin-bottom:16px">Weet je zeker dat je deze tijdregel wilt verwijderen? Dit kan niet ongedaan worden gemaakt.</p>
+        <div class="form-group" style="margin-bottom:12px">
+          <label>Reden</label>
+          <input type="text" id="verwijder-reden" class="input-field" placeholder="Reden voor verwijdering..." />
+        </div>
         <div style="display:flex;gap:10px;margin-top:8px">
           <button class="btn-red" style="flex:1" onclick="bevestigVerwijder()">Ja, verwijderen</button>
           <button class="btn-ghost" style="flex:1" onclick="document.getElementById('verwijder-modal').classList.add('hidden')">Annuleren</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AANPASSEN MODAL -->
+    <div id="aanpassen-modal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <h2>Uren aanpassen</h2>
+        <p style="color:#888;text-align:center;margin-bottom:12px">Voeg minuten toe of trek ze af</p>
+        <div class="form-group">
+          <label>Minuten (positief = toevoegen, negatief = aftrekken)</label>
+          <input type="number" id="aanpassen-minuten" class="input-field" placeholder="bv. 30 of -15" />
+        </div>
+        <div class="form-group">
+          <label>Reden</label>
+          <input type="text" id="aanpassen-reden" class="input-field" placeholder="Reden voor aanpassing..." />
+        </div>
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <button class="btn-purple" style="flex:1" onclick="bevestigAanpassen()">Opslaan</button>
+          <button class="btn-ghost" style="flex:1" onclick="document.getElementById('aanpassen-modal').classList.add('hidden')">Annuleren</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESET MODAL -->
+    <div id="reset-modal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <h2>Uren resetten</h2>
+        <p style="color:#888;text-align:center;margin-bottom:12px">Alle uren van deze persoon verwijderen</p>
+        <div class="form-group">
+          <label>Reden</label>
+          <input type="text" id="reset-reden" class="input-field" placeholder="Reden voor reset..." />
+        </div>
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <button class="btn-red" style="flex:1" onclick="bevestigReset()">Resetten</button>
+          <button class="btn-ghost" style="flex:1" onclick="document.getElementById('reset-modal').classList.add('hidden')">Annuleren</button>
         </div>
       </div>
     </div>

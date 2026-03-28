@@ -1,6 +1,7 @@
 // ---- PORTO PAGE ----
 window.onload = async () => {
   await syncUserFromDB();
+  fetch(`${API_URL}/api/instellingen-systeem`).then(r=>r.json()).then(d=>{ if(d.ping_interval) window._pingInterval = parseInt(d.ping_interval); }).catch(()=>{});
   const u = getUser();
   const isOvdOpco = ['ovd', 'opco', 'oc', 'ops'].includes(u.role);
 
@@ -386,6 +387,15 @@ function renderMeldingen() {
       }
       vorigeWachtrijCount = wachtrij.length;
 
+      // Herhaal ping na interval als er nog aanmeldingen zijn
+      if (wachtrij.length > 0) {
+        clearTimeout(window._pingHerhaalTimer);
+        const interval = (window._pingInterval || 30) * 1000;
+        window._pingHerhaalTimer = setTimeout(() => speelAanmeldGeluid(), interval);
+      } else {
+        clearTimeout(window._pingHerhaalTimer);
+      }
+
       // Speel geluid bij nieuwe status 6/7 alerts
       if (alerts.length > (window._vorigeAlerts || 0)) {
         speelAanmeldGeluid();
@@ -406,11 +416,19 @@ function renderMeldingen() {
         try { rollen = JSON.parse(w.rollen || '[]'); } catch {}
         const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
         const heeftIbt = rolNamen.some(r => r.includes('IBT') || r.includes('ibt'));
+        const specs = [];
+        if (rolNamen.some(r => r.toLowerCase().includes('siv'))) specs.push('SIV');
+        if (rolNamen.some(r => r.toLowerCase().includes('gpt'))) specs.push('GPT');
+        if (rolNamen.some(r => r.toLowerCase().includes('motor'))) specs.push('Motor');
+        if (rolNamen.some(r => r.toLowerCase().includes('boot'))) specs.push('Boot');
+        if (rolNamen.some(r => r.toLowerCase().includes('zulu'))) specs.push('Zulu');
+        if (rolNamen.some(r => r.toLowerCase().includes('offroad'))) specs.push('Offroad');
         return `
         <div class="melding-item melding-aanmeld">
           <div>
             <strong>&#128100; ${w.naam}</strong>
             ${!heeftIbt ? `<br/><span style="color:#f87171;font-size:0.78rem;font-weight:bold">⚠ Geen IBT</span>` : ''}
+            ${specs.length ? `<br/><span style="color:#a78bfa;font-size:0.78rem">${specs.join(', ')}</span>` : ''}
             ${w.bijzonderheden ? `<br/><em style="color:#888;font-size:0.78rem">${w.bijzonderheden}</em>` : ''}
           </div>
           <button class="btn-purple small" onclick="openIndelenModal(${i})">Indelen</button>
@@ -486,6 +504,12 @@ function updateOCInfo() {
       const ovd = document.getElementById('oc-ovd');
       if (opco) opco.textContent = data.opco !== '-' ? data.opco : (u.role === 'opco' ? (u.shortname || u.displayName || '-') : '-');
       if (ovd) ovd.textContent = data.ovd !== '-' ? data.ovd : (u.role === 'ovd' ? (u.shortname || u.displayName || '-') : '-');
+      const btn = document.getElementById('btn-status0');
+      if (btn) {
+        const geenDienst = data.ovd === '-' && data.opco === '-';
+        btn.style.opacity = geenDienst ? '0.5' : '1';
+        btn.style.outline = geenDienst ? '2px solid #f87171' : '';
+      }
     }).catch(() => {});
 }
 
@@ -691,7 +715,12 @@ function overnemen(type) {
   setTimeout(() => window.location.reload(), 800);
 }
 
-function aanmeldenDirect() {
+async function aanmeldenDirect() {
+  const dienstRollen = await fetch(`${API_URL}/api/dienst-rollen`).then(r=>r.json()).catch(()=>({ovd:'-',opco:'-'}));
+  if (dienstRollen.ovd === '-' && dienstRollen.opco === '-') {
+    showToast('Aanmelden niet mogelijk: geen OVD/OPCO actief');
+    return;
+  }
   const u = getUser();
   u.indienstStart = Date.now();
   saveUser(u);
@@ -729,6 +758,10 @@ function inloggenDirect(type) {
   if (type === 'OPS' && !rollen.some(r => r.includes('OPS'))) {
     showToast('Je hebt de OPS rol niet'); return;
   }
+
+  if (type === 'OVD') roep = '17-00';
+  if (type === 'OPCO') roep = '17-01';
+  document.getElementById('inloggen-roepnummer').value = roep;
 
   u.role = type.toLowerCase();
   u.dienstnummer = roep;

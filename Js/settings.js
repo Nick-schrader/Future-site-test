@@ -39,6 +39,7 @@ function laadSpecialisaties() {
       if (d.max_koppel) document.getElementById('max-koppel').value = d.max_koppel;
       const toggle = document.getElementById('dc-namen-aan');
       if (toggle) toggle.checked = d.dc_namen_aan !== '0';
+      if (d.ping_interval) document.getElementById('ping-interval').value = d.ping_interval;
     })
     .catch(() => {});
 }
@@ -81,4 +82,13 @@ function slaDcFormaatOp() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ dc_formaat: formaat, dc_formaat_na: formaatNa }),
   }).then(() => showToast('DC naam formaat opgeslagen'));
+}
+
+function slaPingIntervalOp() {
+  const val = parseInt(document.getElementById('ping-interval').value) || 30;
+  fetch(`${API_URL}/api/instellingen-systeem`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ping_interval: val }),
+  }).then(() => showToast('Ping interval opgeslagen'));
 }
