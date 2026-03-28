@@ -9,6 +9,7 @@ window.onload = async () => {
     laadEenheden();
     renderMeldingen();
     setInterval(() => { laadEenheden(); renderMeldingen(); }, 3000);
+    setInterval(renderLeaderboard, 10000);
     setInterval(checkIndeling, 3000);
 
     // Altijd DB checken voor status/voertuig/indienstStart
@@ -108,7 +109,7 @@ function laadEenheden() {
         medewerkers: e.koppel_id
           ? `${e.shortname || e.display_name} + ${e.koppel_naam || e.koppel_display || '?'}`
           : (e.shortname || e.display_name),
-        voertuig: e.voertuig || '-',
+        voertuig: e.voertuig_naam || '-',
         type: e.voertuig || '-',
         taak: 'Surveillance',
         status: e.status || 1,
@@ -118,6 +119,7 @@ function laadEenheden() {
         indienstStart: e.indienst_start || null,
       }));
       renderEenheden();
+      renderLeaderboard();
     }).catch(() => {});
 }
 
@@ -181,6 +183,24 @@ function eenheidRow(e, isLangst) {
     <td>${e.id}</td><td>${e.medewerkers}</td><td>${e.voertuig}</td>
     <td>${e.type}</td><td>${e.taak}</td><td>${tijdIndienst}${langstBadge}</td><td>${statusBadge(e.status)}</td>
   </tr>`;
+}
+
+function renderLeaderboard() {
+  const metTijd = appData.eenheden.filter(e => e.indienstStart);
+  const gesorteerd = [...metTijd].sort((a, b) => a.indienstStart - b.indienstStart).slice(0, 10);
+  const medals = ['🥇','🥈','🥉'];
+  const html = gesorteerd.length
+    ? gesorteerd.map((e, i) => `
+        <div class="leaderboard-row">
+          <span class="leaderboard-rank">${medals[i] || (i + 1)}</span>
+          <span class="leaderboard-naam">${e.medewerkers}</span>
+          <span class="leaderboard-tijd">${formatDuur(Date.now() - e.indienstStart)}</span>
+        </div>`).join('')
+    : '<div style="color:#888;font-size:0.8rem;padding:4px 0">Geen actieve eenheden</div>';
+  ['leaderboard-list', 'leaderboard-list-ovd'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = html;
+  });
 }
 
 function formatDuur(ms) {
@@ -324,6 +344,16 @@ function clearMeldingen() {
   showToast('Alle meldingen verwijderd');
 }
 
+function slaEigenVoertuigOp() {
+  const u = getUser();
+  const naam = document.getElementById('eigen-voertuig-input')?.value.trim() || '';
+  fetch(`${API_URL}/api/voertuig-naam`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId: u.id, voertuigNaam: naam }),
+  }).then(() => showToast('Voertuig opgeslagen'));
+}
+
 function updateOCInfo() {
   const u = getUser();
   const naam = document.getElementById('oc-naam');
@@ -332,6 +362,16 @@ function updateOCInfo() {
   if (naam) naam.textContent = u.shortname || u.displayName || '-';
   if (roepnummer) roepnummer.textContent = u.dienstnummer || '-';
   if (voertuig) voertuig.textContent = u.voertuig || 'Niet geselecteerd';
+
+  // Laad eigen voertuignaam vanuit DB
+  if (u.id) {
+    fetch(`${API_URL}/api/indeling/${u.id}`)
+      .then(r => r.json())
+      .then(data => {
+        const inp = document.getElementById('eigen-voertuig-input');
+        if (inp && data.voertuigNaam) inp.value = data.voertuigNaam;
+      }).catch(() => {});
+  }
 
   fetch(`${API_URL}/api/dienst-rollen`)
     .then(r => r.json())

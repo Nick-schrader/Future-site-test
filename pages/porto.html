@@ -97,6 +97,10 @@
                     <button class="btn-red small" style="width:100%" onclick="latRolVallen()">LAAT VALLEN</button>
                   </div>
                 </div>
+                <div class="leaderboard-card" style="margin-top:8px">
+                  <div class="leaderboard-title">&#127942; Langst in dienst</div>
+                  <div id="leaderboard-list-ovd"></div>
+                </div>
               </div>
               <div class="card status-card">
                 <h3>Status</h3>
@@ -174,7 +178,16 @@
                 <div class="oc-row"><span>OPCO:</span><span id="oc-opco">-</span></div>
                 <div class="oc-row"><span>OVD:</span><span id="oc-ovd">-</span></div>
               </div>
+              <div class="leaderboard-card">
+                <div class="leaderboard-title">&#127942; Langst in dienst</div>
+                <div id="leaderboard-list"></div>
+              </div>
               <div class="acties">
+                <h4>Eigen voertuig</h4>
+                <div style="display:flex;gap:6px;margin-bottom:10px">
+                  <input type="text" id="eigen-voertuig-input" class="input-field" placeholder="Bijv. kenteken of naam..." style="flex:1;font-size:0.85rem" />
+                  <button class="btn-purple small" onclick="slaEigenVoertuigOp()">Opslaan</button>
+                </div>
                 <h4>Acties</h4>
                 <div class="acties-btns" style="display:flex;flex-direction:column;gap:6px">
                   <button id="btn-overname-opco" class="btn-purple small" style="width:100%" onclick="overnemen('opco')">OpCo overnemen</button>

@@ -233,9 +233,9 @@ app.post('/api/indelen', async (req, res) => {
 // ---- API: Check indeling (voor gebruiker) ----
 app.get('/api/indeling/:userId', (req, res) => {
   const indeling = getIndeling.get(req.params.userId);
-  const gebruiker = db.prepare('SELECT indienst_start, status, voertuig FROM gebruikers WHERE id = ?').get(req.params.userId);
-  if (!indeling) return res.json({ ingedeeld: false, indienstStart: gebruiker?.indienst_start || null, status: gebruiker?.status || null, voertuig: gebruiker?.voertuig || null });
-  res.json({ ingedeeld: true, roepnummer: indeling.roepnummer, voertuig: indeling.voertuig || gebruiker?.voertuig, indienstStart: gebruiker?.indienst_start || null, status: gebruiker?.status || null });
+  const gebruiker = db.prepare('SELECT indienst_start, status, voertuig, voertuig_naam FROM gebruikers WHERE id = ?').get(req.params.userId);
+  if (!indeling) return res.json({ ingedeeld: false, indienstStart: gebruiker?.indienst_start || null, status: gebruiker?.status || null, voertuig: gebruiker?.voertuig || null, voertuigNaam: gebruiker?.voertuig_naam || null });
+  res.json({ ingedeeld: true, roepnummer: indeling.roepnummer, voertuig: indeling.voertuig || gebruiker?.voertuig, voertuigNaam: gebruiker?.voertuig_naam || null, indienstStart: gebruiker?.indienst_start || null, status: gebruiker?.status || null });
 });
 
 // ---- API: Database viewer ----
@@ -270,6 +270,14 @@ app.post('/api/eenheid-update', async (req, res) => {
       await member.setNickname(maakDienstNaam(roepnummer, gebruiker, rolVoorNaam));
     } catch (err) { console.error('Naam update mislukt:', err.message); }
   }
+  res.json({ success: true });
+});
+
+// ---- API: Eigen voertuignaam updaten (door gebruiker zelf) ----
+app.post('/api/voertuig-naam', (req, res) => {
+  const { userId, voertuigNaam } = req.body;
+  if (!userId) return res.status(400).json({ error: 'Geen userId' });
+  db.prepare('UPDATE gebruikers SET voertuig_naam = ? WHERE id = ?').run(voertuigNaam || null, userId);
   res.json({ success: true });
 });
 
@@ -479,7 +487,7 @@ app.post('/api/reset/:userId', async (req, res) => {
     db.prepare('UPDATE gebruikers SET koppel_id = NULL WHERE id = ?').run(gKoppel.koppel_id);
   }
 
-  db.prepare('UPDATE gebruikers SET indienst_start = NULL, status = NULL, voertuig = NULL, role = \'user\', koppel_id = NULL WHERE id = ?').run(userId);
+  db.prepare('UPDATE gebruikers SET indienst_start = NULL, status = NULL, voertuig = NULL, voertuig_naam = NULL, role = \'user\', koppel_id = NULL WHERE id = ?').run(userId);
 
   // Herstel Discord naam naar [dienstnummer->] shortname
   try {
@@ -717,7 +725,7 @@ app.get('/api/koppel-kandidaten/:userId', (req, res) => {
 // ---- API: Actieve eenheden ----
 app.get('/api/eenheden', async (_req, res) => {
   const eenheden = db.prepare(`
-    SELECT g.id, g.display_name, g.shortname, g.dienstnummer, g.voertuig, g.status, g.dienst,
+    SELECT g.id, g.display_name, g.shortname, g.dienstnummer, g.voertuig, g.voertuig_naam, g.status, g.dienst,
            g.koppel_id, g.rollen, g.indienst_start, i.roepnummer, i.ingedeeld_door,
            k.shortname as koppel_naam, k.display_name as koppel_display, k.id as koppel_user_id
     FROM gebruikers g

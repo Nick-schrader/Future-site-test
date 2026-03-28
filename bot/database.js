@@ -70,6 +70,9 @@ if (!bestaandeKolommen.includes('dcnaam')) {
 if (!bestaandeKolommen.includes('rangicoon')) {
   db.exec("ALTER TABLE gebruikers ADD COLUMN rangicoon TEXT");
 }
+if (!bestaandeKolommen.includes('voertuig_naam')) {
+  db.exec("ALTER TABLE gebruikers ADD COLUMN voertuig_naam TEXT");
+}
 
 // Status alerts tabel
 db.exec(`
