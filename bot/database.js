@@ -158,26 +158,44 @@ db.exec(`
     max_eenheden INTEGER,
     min_eenheden INTEGER DEFAULT 0,
     tijdslot_start TEXT,
-    tijdslot_eind TEXT
+    tijdslot_eind TEXT,
+    vereiste_rol TEXT
   );
 `);
 
+// Migratie: vereiste_rol kolom toevoegen
+const specKolommen = db.prepare("PRAGMA table_info(specialisatie_instellingen)").all().map(k => k.name);
+if (!specKolommen.includes('vereiste_rol')) {
+  db.exec("ALTER TABLE specialisatie_instellingen ADD COLUMN vereiste_rol TEXT");
+}
+
 // Standaard waarden invoegen als ze nog niet bestaan
 const defaults = [
-  { voertuig: 'Siv 1',    max: 2,  min: 0, start: null, eind: null },
-  { voertuig: 'Siv 2',    max: 4,  min: 0, start: null, eind: null },
-  { voertuig: 'Siv 3',    max: 6,  min: 0, start: null, eind: null },
-  { voertuig: 'GPT 1',    max: 3,  min: 0, start: null, eind: null },
-  { voertuig: 'GPT 2',    max: 6,  min: 0, start: null, eind: null },
-  { voertuig: 'Motor 1',  max: 4,  min: 0, start: null, eind: null },
-  { voertuig: 'Motor 2',  max: 6,  min: 0, start: null, eind: null },
-  { voertuig: 'Motor 3',  max: 10, min: 0, start: null, eind: null },
-  { voertuig: 'Boot 1',   max: 1,  min: 0, start: null, eind: null },
-  { voertuig: 'Boot 2',   max: 2,  min: 0, start: null, eind: null },
-  { voertuig: 'Zulu',     max: 99, min: 0, start: '20:00', eind: null },
+  { voertuig: 'Siv 1',    max: 2,  start: null, rol: 'SIV' },
+  { voertuig: 'Siv 2',    max: 4,  start: null, rol: 'SIV' },
+  { voertuig: 'Siv 3',    max: 6,  start: null, rol: 'SIV' },
+  { voertuig: 'GPT 1',    max: 3,  start: null, rol: 'GPT' },
+  { voertuig: 'GPT 2',    max: 6,  start: null, rol: 'GPT' },
+  { voertuig: 'Motor 1',  max: 4,  start: null, rol: 'Motor' },
+  { voertuig: 'Motor 2',  max: 6,  start: null, rol: 'Motor' },
+  { voertuig: 'Motor 3',  max: 10, start: null, rol: 'Motor' },
+  { voertuig: 'Boot 1',   max: 1,  start: null, rol: 'Boot' },
+  { voertuig: 'Boot 2',   max: 2,  start: null, rol: 'Boot' },
+  { voertuig: 'Zulu',     max: 99, start: '20:00', rol: 'Zulu' },
+  { voertuig: 'Noodhulp', max: 99, start: null, rol: null },
+  { voertuig: 'Offroad',  max: 99, start: null, rol: null },
 ];
 const insertSpec = db.prepare(`
-  INSERT OR IGNORE INTO specialisatie_instellingen (voertuig, max_eenheden, min_eenheden, tijdslot_start, tijdslot_eind)
-  VALUES (?, ?, ?, ?, ?)
+  INSERT OR IGNORE INTO specialisatie_instellingen (voertuig, max_eenheden, min_eenheden, tijdslot_start, vereiste_rol)
+  VALUES (?, ?, 0, ?, ?)
 `);
-defaults.forEach(d => insertSpec.run(d.voertuig, d.max, d.min, d.start, d.eind));
+defaults.forEach(d => insertSpec.run(d.voertuig, d.max, d.start, d.rol));
+
+// Systeem instellingen
+db.exec(`
+  CREATE TABLE IF NOT EXISTS systeem_instellingen (
+    sleutel TEXT PRIMARY KEY,
+    waarde TEXT
+  );
+`);
+db.prepare("INSERT OR IGNORE INTO systeem_instellingen (sleutel, waarde) VALUES ('max_koppel', '2')").run();

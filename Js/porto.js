@@ -1,5 +1,6 @@
 // ---- PORTO PAGE ----
-window.onload = () => {
+window.onload = async () => {
+  await syncUserFromDB();
   const u = getUser();
   const isOvdOpco = ['ovd', 'opco', 'oc', 'ops'].includes(u.role);
 
@@ -158,27 +159,34 @@ function renderEenheden() {
     // Langst in dienst in deze groep
     const metTijd = groep.filter(e => e.indienstStart);
     const langst = metTijd.length ? metTijd.reduce((a, b) => a.indienstStart < b.indienstStart ? a : b) : null;
-    const langstInfo = langst ? ` — langst: ${langst.medewerkers}` : '';
 
     html += `<tr class="group-header" onclick="toggleGroep('${label}')" style="cursor:pointer">
-      <td colspan="6"><span style="margin-right:6px;font-size:0.7rem">${pijl}</span>${label} <span class="badge-tag">Totaal ${groep.length}</span><span style="color:#888;font-size:0.75rem;margin-left:8px">${langstInfo}</span></td>
+      <td colspan="7"><span style="margin-right:6px;font-size:0.7rem">${pijl}</span>${label} <span class="badge-tag">Totaal ${groep.length}</span></td>
     </tr>`;
     if (!ingeklapt) {
-      groep.forEach(e => html += eenheidRow(e));
+      groep.forEach(e => html += eenheidRow(e, langst?.userId === e.userId));
     }
   });
 
   tbody.innerHTML = html;
 }
 
-function eenheidRow(e) {
+function eenheidRow(e, isLangst) {
   const u = getUser();
   const canEdit = ['ovd', 'opco', 'oc', 'ops'].includes(u.role);
   const click = canEdit ? `onclick="openVoertuigModal('${e.id}')"` : '';
+  const tijdIndienst = e.indienstStart ? formatDuur(Date.now() - e.indienstStart) : '-';
+  const langstBadge = isLangst ? ' <span class="badge badge-purple" style="font-size:0.65rem">langst</span>' : '';
   return `<tr ${click} style="${canEdit ? 'cursor:pointer' : ''}">
     <td>${e.id}</td><td>${e.medewerkers}</td><td>${e.voertuig}</td>
-    <td>${e.type}</td><td>${e.taak}</td><td>${statusBadge(e.status)}</td>
+    <td>${e.type}</td><td>${e.taak}</td><td>${tijdIndienst}${langstBadge}</td><td>${statusBadge(e.status)}</td>
   </tr>`;
+}
+
+function formatDuur(ms) {
+  const h = String(Math.floor(ms / 3600000)).padStart(2, '0');
+  const m = String(Math.floor((ms % 3600000) / 60000)).padStart(2, '0');
+  return `${h}:${m}`;
 }
 
 function toggleGroep(label) {
@@ -770,7 +778,20 @@ function openIndelenModal(index) {
   try { rollen = JSON.parse(w.rollen || '[]'); } catch {}
   const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
   const heeftIbt = rolNamen.some(r => r.includes('IBT') || r.includes('ibt'));
+
+  // Specialisaties bepalen
+  const specs = [];
+  if (rolNamen.some(r => r.toLowerCase().includes('siv'))) specs.push('Siv');
+  if (rolNamen.some(r => r.toLowerCase().includes('gpt'))) specs.push('GPT');
+  if (rolNamen.some(r => r.toLowerCase().includes('motor'))) specs.push('Motor');
+  if (rolNamen.some(r => r.toLowerCase().includes('boot'))) specs.push('Boot');
+  if (rolNamen.some(r => r.toLowerCase().includes('zulu'))) specs.push('Zulu');
+
   document.getElementById('indelen-ibt-warn').style.display = heeftIbt ? 'none' : 'block';
+
+  // Toon specialisaties
+  const specEl = document.getElementById('indelen-specs');
+  if (specEl) specEl.textContent = specs.length ? 'Specialisaties: ' + specs.join(', ') : '';
 
   document.getElementById('indelen-modal').classList.remove('hidden');
 }
@@ -786,7 +807,8 @@ function saveIndeling() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId, roepnummer, voertuig, ingedeeldDoor: u.displayName || u.username }),
-  }).then(() => {
+  }).then(r => r.json()).then(data => {
+    if (data.error) { showToast('⚠ ' + data.error); return; }
     document.getElementById('indelen-modal').classList.add('hidden');
     renderMeldingen();
     showToast(roepnummer + ' ingedeeld met ' + voertuig);

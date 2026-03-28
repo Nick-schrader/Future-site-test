@@ -1,5 +1,6 @@
 // ---- ACCOUNT PAGE ----
-window.onload = () => {
+window.onload = async () => {
+  await syncUserFromDB();
   const u = getUser();
 
   // Vul info card

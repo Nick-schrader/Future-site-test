@@ -195,6 +195,24 @@ app.post('/api/indelen', async (req, res) => {
     if (!toegestaan) return res.status(400).json({ error: `${voertuig} is pas toegestaan vanaf ${spec.tijdslot_start}` });
   }
 
+  // Check vereiste Discord rol
+  if (spec?.vereiste_rol) {
+    const g = db.prepare('SELECT rollen FROM gebruikers WHERE id = ?').get(userId);
+    let rollen = [];
+    try { rollen = JSON.parse(g?.rollen || '[]'); } catch {}
+    const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
+    const heeftRol = rolNamen.some(r => r.toLowerCase().includes(spec.vereiste_rol.toLowerCase()));
+    if (!heeftRol) return res.status(400).json({ error: `${voertuig} vereist de ${spec.vereiste_rol} specialisatie` });
+  }
+
+  // Check max eenheden
+  if (spec?.max_eenheden && spec.max_eenheden < 99) {
+    const huidigAantal = db.prepare("SELECT COUNT(*) as cnt FROM indelingen WHERE voertuig = ?").get(voertuig);
+    if (huidigAantal.cnt >= spec.max_eenheden) {
+      return res.status(400).json({ error: `Maximum aantal eenheden voor ${voertuig} bereikt (${spec.max_eenheden})` });
+    }
+  }
+
   addIndeling.run({ user_id: userId, roepnummer, voertuig, ingedeeld_door: ingedeeldDoor || '', tijd: Date.now() });
   removeAanmelding.run(userId);
 
@@ -539,9 +557,23 @@ app.get('/api/specialisaties', (_req, res) => {
   res.json(db.prepare('SELECT * FROM specialisatie_instellingen').all());
 });
 app.post('/api/specialisaties', (req, res) => {
-  const { voertuig, max_eenheden, tijdslot_start } = req.body;
-  db.prepare('UPDATE specialisatie_instellingen SET max_eenheden = ?, tijdslot_start = ? WHERE voertuig = ?')
-    .run(max_eenheden, tijdslot_start || null, voertuig);
+  const { voertuig, max_eenheden, tijdslot_start, vereiste_rol } = req.body;
+  db.prepare('UPDATE specialisatie_instellingen SET max_eenheden = ?, tijdslot_start = ?, vereiste_rol = ? WHERE voertuig = ?')
+    .run(max_eenheden, tijdslot_start || null, vereiste_rol || null, voertuig);
+  res.json({ success: true });
+});
+
+// ---- API: Systeem instellingen ----
+app.get('/api/instellingen-systeem', (_req, res) => {
+  const rows = db.prepare('SELECT sleutel, waarde FROM systeem_instellingen').all();
+  const obj = {};
+  rows.forEach(r => obj[r.sleutel] = r.waarde);
+  res.json(obj);
+});
+app.post('/api/instellingen-systeem', (req, res) => {
+  Object.entries(req.body).forEach(([k, v]) => {
+    db.prepare('INSERT OR REPLACE INTO systeem_instellingen (sleutel, waarde) VALUES (?, ?)').run(k, String(v));
+  });
   res.json({ success: true });
 });
 
@@ -569,6 +601,30 @@ app.get('/api/meldingen-inactiviteit', (req, res) => {
 app.get('/api/logs', (_req, res) => {
   const logs = db.prepare('SELECT * FROM logs ORDER BY tijd DESC LIMIT 200').all();
   res.json(logs);
+});
+
+// ---- API: Gebruiker data ophalen ----
+app.get('/api/me/:userId', (req, res) => {
+  const g = db.prepare('SELECT * FROM gebruikers WHERE id = ?').get(req.params.userId);
+  if (!g) return res.status(404).json({ error: 'Niet gevonden' });
+  let rollen = [];
+  try { rollen = JSON.parse(g.rollen || '[]'); } catch {}
+  res.json({
+    id: g.id,
+    username: g.username,
+    displayName: g.display_name,
+    fullname: g.fullname,
+    shortname: g.shortname,
+    dcnaam: g.dcnaam,
+    rangicoon: g.rangicoon,
+    dienstnummer: g.dienstnummer,
+    voertuig: g.voertuig,
+    status: g.status,
+    role: g.role,
+    rollen,
+    indienstStart: g.indienst_start,
+    dienst: g.dienst,
+  });
 });
 
 // ---- API: Rol check (voor polling) ----
@@ -603,6 +659,12 @@ app.post('/api/koppel', async (req, res) => {
   const voertuig = ind1?.voertuig || ind2?.voertuig || 'Noodhulp';
 
   if (!gekozenRoep) return res.status(400).json({ error: 'Geen roepnummer beschikbaar' });
+
+  // Check max koppel
+  const maxKoppelRow = db.prepare("SELECT waarde FROM systeem_instellingen WHERE sleutel = 'max_koppel'").get();
+  const maxKoppel = parseInt(maxKoppelRow?.waarde || '2');
+  const g1 = db.prepare('SELECT koppel_id FROM gebruikers WHERE id = ?').get(userId1);
+  if (g1?.koppel_id) return res.status(400).json({ error: 'Eenheid is al gekoppeld' });
 
   // Koppel instellen
   db.prepare('UPDATE gebruikers SET koppel_id = ? WHERE id = ?').run(userId2, userId1);

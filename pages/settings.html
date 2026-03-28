@@ -44,9 +44,26 @@
         <div class="card">
           <h3 style="margin-bottom:16px">Specialisatie limieten</h3>
           <table class="db-table">
-            <thead><tr><th>Voertuig</th><th>Max eenheden</th><th>Tijdslot (vanaf)</th><th></th></tr></thead>
+            <thead><tr><th>Voertuig</th><th>Max eenheden</th><th>Vereiste rol</th><th>Tijdslot (vanaf)</th><th></th></tr></thead>
             <tbody id="spec-tbody"></tbody>
           </table>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <h3 style="margin-bottom:16px">DC naam instellingen</h3>
+          <div class="toggle-row" style="margin-bottom:12px">
+            <label class="toggle"><input type="checkbox" id="dc-namen-aan" onchange="toggleDcNamen(this)" /><span class="slider"></span></label>
+            <span>DC namen aanpassen door bot</span>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <h3 style="margin-bottom:16px">Koppel instellingen</h3>
+          <div class="form-group">
+            <label>Max eenheden per koppel</label>
+            <input type="number" id="max-koppel" class="input-field" style="width:100px" value="2" min="2" max="4" />
+          </div>
+          <button class="btn-purple" onclick="slaKoppelOp()">Opslaan</button>
         </div>
       </main>
     </div>

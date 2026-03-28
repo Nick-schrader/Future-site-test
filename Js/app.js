@@ -30,6 +30,21 @@ function saveUser(u) {
   sessionStorage.setItem('user', JSON.stringify(u));
 }
 
+// Haal verse gebruikersdata op uit DB en merge met sessionStorage
+async function syncUserFromDB() {
+  const u = getUser();
+  if (!u.id) return;
+  try {
+    const res = await fetch(`${API_URL}/api/me/${u.id}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    // Merge DB data in lokale user, behoud lokale velden die niet in DB zitten
+    const merged = { ...u, ...data };
+    saveUser(merged);
+    return merged;
+  } catch {}
+}
+
 // ---- AUTH CHECK ----
 // Alleen porto pagina vereist login, account mag altijd
 (function() {
