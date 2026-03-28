@@ -270,10 +270,10 @@ function renderSpecOverzicht() {
           const tijdLabel2 = s.tijdslot_start ? ` · ${tijdLabel}` : '';
           const minLabel = s.min_eenheden > 0 ? ` · Min ${s.min_eenheden} (${huidig})` : '';
 
-          return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #2a2a3a">
-            <span style="color:#a78bfa;font-weight:bold">${s.voertuig}</span>
-            <span style="color:#888;font-size:0.78rem">${rolLabel}${tijdLabel2}${minLabel}</span>
-            <span style="color:${kleur}">${status}</span>
+          return `<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid #2a2a3a">
+            <span style="color:#a78bfa;font-weight:bold;font-size:0.8rem">${s.voertuig}</span>
+            <span style="color:#888;font-size:0.75rem">${rolLabel}${tijdLabel2}${minLabel}</span>
+            <span style="color:${kleur};font-size:0.8rem">${status}</span>
           </div>`;
         }).join('');
 
@@ -542,6 +542,7 @@ function latRolVallen() {
     body: JSON.stringify({ userId: u.id }),
   }).then(() => {
     u.role = 'user';
+    u.ingedeeld = false; // reset zodat de indeling opnieuw gecheckt wordt na reload
     saveUser(u);
     showToast('Rol losgelaten — je blijft in dienst als eenheid');
     setTimeout(() => window.location.reload(), 800);
