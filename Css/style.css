@@ -242,6 +242,8 @@ body {
   gap: 16px;
 }
 .porto-user-grid.hidden { display: none !important; }
+#porto-main { contain: layout; }
+#ovd-porto-main { contain: layout; }
 .oc-card { display: flex; flex-direction: column; gap: 8px; }
 .oc-row { display: flex; justify-content: space-between; font-size: 0.82rem; padding: 4px 0; border-bottom: 1px solid #2a2d3e; }
 .oc-row span:first-child { color: #888; }
@@ -385,12 +387,10 @@ input:checked + .slider:before { transform: translateX(16px); }
   display: flex;
   gap: 16px;
   align-items: flex-start;
+  justify-content: center;
+  margin-bottom: 20px;
   position: relative;
   z-index: 1;
-}
-  margin-bottom: 20px;
-  justify-content: center;
-  align-items: flex-start;
 }
 .porto-aanmeld-section .card {
   width: 320px;
