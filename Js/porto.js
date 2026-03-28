@@ -349,7 +349,13 @@ function slaEigenVoertuigOp() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId: u.id, voertuigNaam: naam }),
-  }).then(() => showToast('Voertuig opgeslagen'));
+  }).then(() => {
+    const huidig = document.getElementById('eigen-voertuig-huidig');
+    if (huidig) huidig.textContent = naam ? 'Huidig: ' + naam : '';
+    const vn1 = document.getElementById('oc-voertuig-naam');
+    if (vn1) vn1.textContent = naam || '-';
+    showToast('Voertuig opgeslagen: ' + naam);
+  });
 }
 
 function updateOCInfo() {
@@ -361,13 +367,20 @@ function updateOCInfo() {
   if (roepnummer) roepnummer.textContent = u.dienstnummer || '-';
   if (voertuig) voertuig.textContent = u.voertuig || 'Niet geselecteerd';
 
-  // Laad eigen voertuignaam vanuit DB
+  // Laad voertuig_naam vanuit DB en vul input
   if (u.id) {
     fetch(`${API_URL}/api/indeling/${u.id}`)
       .then(r => r.json())
       .then(data => {
-        const inp = document.getElementById('eigen-voertuig-input');
-        if (inp && data.voertuigNaam) inp.value = data.voertuigNaam;
+        const vn = document.getElementById('oc-voertuig-naam');
+        if (vn) vn.textContent = data.voertuigNaam || '-';
+        // Vul eigen voertuig input
+        const input = document.getElementById('eigen-voertuig-input');
+        if (input && data.voertuigNaam) {
+          input.value = data.voertuigNaam;
+          const huidig = document.getElementById('eigen-voertuig-huidig');
+          if (huidig) huidig.textContent = 'Huidig: ' + data.voertuigNaam;
+        }
       }).catch(() => {});
   }
 
@@ -459,9 +472,8 @@ function selectVoertuig(v) {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
-  if (document.getElementById('oc-voertuig')) document.getElementById('oc-voertuig').textContent = v;
   if (document.getElementById('ovd-oc-voertuig')) document.getElementById('ovd-oc-voertuig').textContent = v;
-  // Opslaan als voertuig type in DB
+  // Sla voertuig TYPE op in DB (door OVD/OPCO)
   if (u.id) fetch(`${API_URL}/api/status`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId: u.id, voertuig: v }),
@@ -663,7 +675,7 @@ function openVoertuigModal(id) {
   document.getElementById('edit-unit-id').value = id;
   document.getElementById('edit-unit-naam').textContent = unit.medewerkers;
   document.getElementById('edit-roepnummer').value = unit.id !== unit.medewerkers ? unit.id : '';
-  document.getElementById('edit-voertuig').value = unit.voertuig !== '-' ? unit.voertuig : 'Noodhulp';
+  document.getElementById('edit-voertuig').value = unit.type !== '-' ? unit.type : 'Noodhulp';
 
   // IBT check
   let rollen = [];
@@ -790,6 +802,16 @@ function ovdUpdateInfo() {
   if (roepnummer) roepnummer.textContent = u.dienstnummer || '-';
   if (voertuig) voertuig.textContent = u.voertuig || 'Niet geselecteerd';
 
+  // Laad voertuig_naam vanuit DB
+  if (u.id) {
+    fetch(`${API_URL}/api/indeling/${u.id}`)
+      .then(r => r.json())
+      .then(data => {
+        const vn = document.getElementById('ovd-oc-voertuig-naam');
+        if (vn) vn.textContent = data.voertuigNaam || '-';
+      }).catch(() => {});
+  }
+
   fetch(`${API_URL}/api/dienst-rollen`)
     .then(r => r.json())
     .then(data => {
@@ -812,26 +834,37 @@ function openIndelenModal(index) {
   document.getElementById('indelen-naam').textContent = w.naam + ' indelen';
   document.getElementById('indelen-roepnummer').value = '';
 
-  let rollen = [];
-  try { rollen = JSON.parse(w.rollen || '[]'); } catch {}
-  const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
-  const heeftIbt = rolNamen.some(r => r.includes('IBT') || r.includes('ibt'));
-
-  // Specialisaties bepalen
-  const specs = [];
-  if (rolNamen.some(r => r.toLowerCase().includes('siv'))) specs.push('Siv');
-  if (rolNamen.some(r => r.toLowerCase().includes('gpt'))) specs.push('GPT');
-  if (rolNamen.some(r => r.toLowerCase().includes('motor'))) specs.push('Motor');
-  if (rolNamen.some(r => r.toLowerCase().includes('boot'))) specs.push('Boot');
-  if (rolNamen.some(r => r.toLowerCase().includes('zulu'))) specs.push('Zulu');
-
-  document.getElementById('indelen-ibt-warn').style.display = heeftIbt ? 'none' : 'block';
-
-  // Toon specialisaties
+  // Toon modal alvast, IBT/specs worden bijgewerkt zodra rollen binnen zijn
+  document.getElementById('indelen-ibt-warn').style.display = 'none';
   const specEl = document.getElementById('indelen-specs');
-  if (specEl) specEl.textContent = specs.length ? 'Specialisaties: ' + specs.join(', ') : '';
-
+  if (specEl) specEl.textContent = '';
   document.getElementById('indelen-modal').classList.remove('hidden');
+
+  function verwerkRollen(rollen) {
+    const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
+    const heeftIbt = rolNamen.some(r => r.includes('IBT') || r.includes('ibt'));
+
+    const specs = [];
+    if (rolNamen.some(r => r.toLowerCase().includes('siv'))) specs.push('Siv');
+    if (rolNamen.some(r => r.toLowerCase().includes('gpt'))) specs.push('GPT');
+    if (rolNamen.some(r => r.toLowerCase().includes('motor'))) specs.push('Motor');
+    if (rolNamen.some(r => r.toLowerCase().includes('boot'))) specs.push('Boot');
+    if (rolNamen.some(r => r.toLowerCase().includes('zulu'))) specs.push('Zulu');
+
+    document.getElementById('indelen-ibt-warn').style.display = heeftIbt ? 'none' : 'block';
+    if (specEl) specEl.textContent = specs.length ? 'Specialisaties: ' + specs.join(', ') : '';
+  }
+
+  // Haal rollen live op van Discord voor meest actuele data
+  fetch(`${API_URL}/api/rollen/${w.user_id}`)
+    .then(r => r.json())
+    .then(rollen => verwerkRollen(rollen))
+    .catch(() => {
+      // Fallback naar wachtrij data als live fetch mislukt
+      let rollen = [];
+      try { rollen = JSON.parse(w.rollen || '[]'); } catch {}
+      verwerkRollen(rollen);
+    });
 }
 
 function saveIndeling() {

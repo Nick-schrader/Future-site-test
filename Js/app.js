@@ -48,6 +48,8 @@ async function syncUserFromDB() {
       voertuig: data.voertuig ?? u.voertuig,
       indienstStart: data.indienstStart ?? u.indienstStart,
       dienstnummer: data.dienstnummer || u.dienstnummer || '',
+      // Rollen: gebruik DB waarden als die er zijn, anders behoud sessionStorage
+      rollen: (data.rollen && data.rollen.length > 0) ? data.rollen : (u.rollen || []),
     };
     saveUser(merged);
     return merged;

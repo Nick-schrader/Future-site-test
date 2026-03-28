@@ -85,7 +85,8 @@
                   <div class="oc-row"><span>Naam:</span><span id="ovd-oc-naam">-</span></div>
                   <div class="oc-row"><span>Rol:</span><span id="ovd-oc-rol">-</span></div>
                   <div class="oc-row"><span>Roepnummer:</span><span id="ovd-oc-roepnummer">-</span></div>
-                  <div class="oc-row"><span>Voertuig:</span><span id="ovd-oc-voertuig">Niet geselecteerd</span></div>
+                  <div class="oc-row"><span>Voertuig type:</span><span id="ovd-oc-voertuig">Niet geselecteerd</span></div>
+                  <div class="oc-row"><span>Voertuig:</span><span id="ovd-oc-voertuig-naam">-</span></div>
                   <div class="oc-row"><span>Tijd Indienst:</span><span id="ovd-oc-tijd">00:00</span></div>
                   <div class="oc-row"><span>OPCO:</span><span id="ovd-oc-opco">-</span></div>
                   <div class="oc-row"><span>OVD:</span><span id="ovd-oc-ovd">-</span></div>
@@ -115,8 +116,8 @@
                 </div>
               </div>
               <div class="card voertuig-card">
-                <h3>Voertuig</h3>
-                <div id="ovd-voertuig-error" class="error-msg">&#9888; Je voertuig is niet geselecteerd!</div>
+                <h3>Voertuig Type</h3>
+                <div id="ovd-voertuig-error" class="error-msg">&#9888; Voertuig type is niet geselecteerd!</div>
                 <div class="voertuig-grid">
                   <button class="voertuig-btn" onclick="selectVoertuig('Noodhulp')">NOODHULP</button>
                   <button class="voertuig-btn" onclick="selectVoertuig('Vito')">VITO</button>
@@ -174,7 +175,8 @@
               <div id="oc-info">
                 <div class="oc-row"><span>Naam:</span><span id="oc-naam">-</span></div>
                 <div class="oc-row"><span>Roepnummer:</span><span id="oc-roepnummer">-</span></div>
-                <div class="oc-row"><span>Voertuig klasse:</span><span id="oc-voertuig">Niet geselecteerd</span></div>
+                <div class="oc-row"><span>Voertuig type:</span><span id="oc-voertuig">Niet geselecteerd</span></div>
+                <div class="oc-row"><span>Voertuig:</span><span id="oc-voertuig-naam">-</span></div>
                 <div class="oc-row"><span>Actieve taak:</span><span id="oc-taak">Surveillance</span></div>
                 <div class="oc-row"><span>Tijd Indienst:</span><span id="oc-tijd">00:00</span></div>
                 <div class="oc-row"><span>OPCO:</span><span id="oc-opco">-</span></div>
@@ -207,19 +209,12 @@
             </div>
             <div class="card voertuig-card">
               <h3>Voertuig</h3>
-              <div id="voertuig-error" class="error-msg">&#9888; Je voertuig is niet geselecteerd!</div>
-              <div class="voertuig-grid">
-                <button class="voertuig-btn" onclick="selectVoertuig('Noodhulp')">NOODHULP</button>
-                <button class="voertuig-btn" onclick="selectVoertuig('Vito')">VITO</button>
-                <button class="voertuig-btn" onclick="selectVoertuig('Amarok')">AMAROK</button>
-                <button class="voertuig-btn" onclick="selectVoertuig('Audi A6')">AUDI A6</button>
-                <button class="voertuig-btn" onclick="selectVoertuig('Unmarked Onroad')">UNMARKED ONROAD</button>
-                <button class="voertuig-btn" onclick="selectVoertuig('Unmarked Offroad')">UNMARKED OFFROAD</button>
-                <button class="voertuig-btn" onclick="selectVoertuig('Offroad Motor')">OFFROAD MOTOR</button>
-                <button class="voertuig-btn" onclick="selectVoertuig('Onroad Motor')">ONROAD MOTOR</button>
-                <button class="voertuig-btn" onclick="selectVoertuig('Motor Koppel')">MOTOR KOPPEL</button>
-                <button class="voertuig-btn" onclick="selectVoertuig('Zulu')">ZULU</button>
+              <p style="color:#888;font-size:0.82rem;margin-bottom:8px">Vul je eigen voertuignaam in (bv. Amarok, Vito...)</p>
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="text" id="eigen-voertuig-input" class="input-field" placeholder="Voertuignaam..." style="flex:1" />
+                <button class="btn-purple small" onclick="slaEigenVoertuigOp()">Opslaan</button>
               </div>
+              <p id="eigen-voertuig-huidig" style="color:#a78bfa;font-size:0.82rem;margin-top:8px"></p>
             </div>
           </div> <!-- einde porto-main -->
         </div> <!-- einde user-view -->

@@ -1,7 +1,8 @@
 // ---- SETTINGS PAGE ----
-window.onload = () => {
+window.onload = async () => {
+  // Haal altijd verse rollen op voordat we de toegang checken
+  await laadDiscordRollen();
   const u = getUser();
-  // Alleen OPS mag deze pagina zien
   const rollen = (u.rollen || []).map(r => r.naam || r);
   if (!rollen.some(r => r.includes('OPS'))) {
     window.location.href = 'porto.html';
