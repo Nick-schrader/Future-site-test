@@ -9,7 +9,7 @@ window.onload = async () => {
     laadEenheden();
     renderMeldingen();
     setInterval(() => { laadEenheden(); renderMeldingen(); }, 3000);
-    setInterval(renderLeaderboard, 10000);
+    setInterval(renderLeaderboard, 1000);
     setInterval(checkIndeling, 3000);
 
     // Altijd DB checken voor status/voertuig/indienstStart
@@ -29,7 +29,7 @@ window.onload = async () => {
             ['status-error','ovd-status-error'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
           }
           if (data.voertuigNaam) {
-            highlightVoertuig(data.voertuigNaam);
+            highlightVoertuig(data.voertuig || '');
             ['voertuig-error','ovd-voertuig-error'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
           }
         }).catch(() => {
@@ -40,6 +40,10 @@ window.onload = async () => {
     }
   } else {
     document.getElementById('user-view').classList.remove('hidden');
+    // Laad eenheden voor leaderboard ook in user view
+    laadEenheden();
+    setInterval(laadEenheden, 5000);
+    setInterval(renderLeaderboard, 1000);
 
     // Verberg inloggen knoppen op basis van DC rollen
     const rollen = (u.rollen || []).map(r => r.naam || r);
@@ -78,14 +82,12 @@ window.onload = async () => {
             u.dienstnummer = data.roepnummer;
             saveUser(u);
             document.getElementById('porto-main').classList.remove('hidden');
-            const lb = document.getElementById('porto-leaderboard');
-            if (lb) lb.classList.remove('hidden');
             updateOCInfo();
             if (u.status) {
               highlightStatus(u.status);
               ['status-error','ovd-status-error'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
             }
-            highlightVoertuig(data.voertuigNaam || data.voertuig || '');
+            highlightVoertuig(data.voertuig || u.voertuig || '');
             ['voertuig-error','ovd-voertuig-error'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
             startIndienstTimer('oc-tijd');
           } else {
@@ -160,30 +162,26 @@ function renderEenheden() {
     const ingeklapt = window._groepIngeklapt[label] || false;
     const pijl = ingeklapt ? '▶' : '▼';
 
-    // Langst in dienst in deze groep
-    const metTijd = groep.filter(e => e.indienstStart);
-    const langst = metTijd.length ? metTijd.reduce((a, b) => a.indienstStart < b.indienstStart ? a : b) : null;
-
+    // Langst in dienst berekening niet meer nodig
     html += `<tr class="group-header" onclick="toggleGroep('${label}')" style="cursor:pointer">
       <td colspan="7"><span style="margin-right:6px;font-size:0.7rem">${pijl}</span>${label} <span class="badge-tag">Totaal ${groep.length}</span></td>
     </tr>`;
     if (!ingeklapt) {
-      groep.forEach(e => html += eenheidRow(e, langst?.userId === e.userId));
+      groep.forEach(e => html += eenheidRow(e));
     }
   });
 
   tbody.innerHTML = html;
 }
 
-function eenheidRow(e, isLangst) {
+function eenheidRow(e) {
   const u = getUser();
   const canEdit = ['ovd', 'opco', 'oc', 'ops'].includes(u.role);
   const click = canEdit ? `onclick="openVoertuigModal('${e.id}')"` : '';
   const tijdIndienst = e.indienstStart ? formatDuur(Date.now() - e.indienstStart) : '-';
-  const langstBadge = isLangst ? ' <span class="badge badge-purple" style="font-size:0.65rem">langst</span>' : '';
   return `<tr ${click} style="${canEdit ? 'cursor:pointer' : ''}">
     <td>${e.id}</td><td>${e.medewerkers}</td><td>${e.voertuig}</td>
-    <td>${e.type}</td><td>${e.taak}</td><td>${tijdIndienst}${langstBadge}</td><td>${statusBadge(e.status)}</td>
+    <td>${e.type}</td><td>${e.taak}</td><td>${tijdIndienst}</td><td>${statusBadge(e.status)}</td>
   </tr>`;
 }
 
@@ -197,7 +195,7 @@ function renderLeaderboard() {
           <span style="color:#4ade80;font-variant-numeric:tabular-nums">${formatDuur(Date.now() - e.indienstStart)}</span>
         </div>`).join('')
     : '<div style="color:#888;font-size:0.82rem;padding:4px 0">Geen actieve eenheden</div>';
-  ['leaderboard-list', 'leaderboard-list-ovd'].forEach(id => {
+  ['leaderboard-list-ovd'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = html;
   });
@@ -454,19 +452,20 @@ function highlightStatus(s) {
 
 function selectVoertuig(v) {
   const u = getUser();
+  u.voertuig = v;
+  saveUser(u);
   highlightVoertuig(v);
   ['voertuig-error', 'ovd-voertuig-error'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
-  // Eigen voertuig input bijwerken als die zichtbaar is
-  const inp = document.getElementById('eigen-voertuig-input');
-  if (inp) inp.value = v;
-  // Opslaan als voertuig_naam (vrij veld), niet als type
-  if (u.id) fetch(`${API_URL}/api/voertuig-naam`, {
+  if (document.getElementById('oc-voertuig')) document.getElementById('oc-voertuig').textContent = v;
+  if (document.getElementById('ovd-oc-voertuig')) document.getElementById('ovd-oc-voertuig').textContent = v;
+  // Opslaan als voertuig type in DB
+  if (u.id) fetch(`${API_URL}/api/status`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId: u.id, voertuigNaam: v }),
-  }).then(() => showToast('Voertuig ingesteld: ' + v));
+    body: JSON.stringify({ userId: u.id, voertuig: v }),
+  }).then(() => showToast('Voertuig type: ' + v));
 }
 
 function highlightVoertuig(v) {
@@ -895,10 +894,6 @@ function checkIndeling() {
         if (wacht) wacht.classList.add('hidden');
         const main = document.getElementById(mainId);
         if (main) main.classList.remove('hidden');
-        if (!isOvdOpco) {
-          const lb = document.getElementById('porto-leaderboard');
-          if (lb) lb.classList.remove('hidden');
-        }
 
         if (isOvdOpco) ovdUpdateInfo();
         else updateOCInfo();

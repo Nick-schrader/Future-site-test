@@ -210,13 +210,23 @@
                 <button class="status-btn s10" onclick="setStatus(10)">STATUS 10<br/><small>UIT DIENST</small></button>
               </div>
             </div>
-          </div>
-          <div id="porto-leaderboard" class="hidden" style="margin-top:16px;width:280px">
-            <div class="card">
-              <h3>Langst in dienst</h3>
-              <div id="leaderboard-list"></div>
+            <div class="card voertuig-card">
+              <h3>Voertuig</h3>
+              <div id="voertuig-error" class="error-msg">&#9888; Je voertuig is niet geselecteerd!</div>
+              <div class="voertuig-grid">
+                <button class="voertuig-btn" onclick="selectVoertuig('Noodhulp')">NOODHULP</button>
+                <button class="voertuig-btn" onclick="selectVoertuig('Vito')">VITO</button>
+                <button class="voertuig-btn" onclick="selectVoertuig('Amarok')">AMAROK</button>
+                <button class="voertuig-btn" onclick="selectVoertuig('Audi A6')">AUDI A6</button>
+                <button class="voertuig-btn" onclick="selectVoertuig('Unmarked Onroad')">UNMARKED ONROAD</button>
+                <button class="voertuig-btn" onclick="selectVoertuig('Unmarked Offroad')">UNMARKED OFFROAD</button>
+                <button class="voertuig-btn" onclick="selectVoertuig('Offroad Motor')">OFFROAD MOTOR</button>
+                <button class="voertuig-btn" onclick="selectVoertuig('Onroad Motor')">ONROAD MOTOR</button>
+                <button class="voertuig-btn" onclick="selectVoertuig('Motor Koppel')">MOTOR KOPPEL</button>
+                <button class="voertuig-btn" onclick="selectVoertuig('Zulu')">ZULU</button>
+              </div>
             </div>
-          </div>
+          </div> <!-- einde porto-main -->
         </div> <!-- einde user-view -->
 
       </main>

@@ -38,8 +38,17 @@ async function syncUserFromDB() {
     const res = await fetch(`${API_URL}/api/me/${u.id}`);
     if (!res.ok) return;
     const data = await res.json();
-    // Merge DB data in lokale user, behoud lokale velden die niet in DB zitten
-    const merged = { ...u, ...data };
+    // DB is altijd leidend voor deze velden
+    const merged = {
+      ...u,
+      ...data,
+      // Zorg dat DB waarden altijd winnen voor dienst-gerelateerde velden
+      role: data.role || u.role || 'user',
+      status: data.status ?? u.status,
+      voertuig: data.voertuig ?? u.voertuig,
+      indienstStart: data.indienstStart ?? u.indienstStart,
+      dienstnummer: data.dienstnummer || u.dienstnummer || '',
+    };
     saveUser(merged);
     return merged;
   } catch {}
