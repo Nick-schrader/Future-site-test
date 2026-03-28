@@ -135,7 +135,7 @@
               </div>
             </div>
           </div>
-          <div style="margin-top:16px;display:flex;gap:16px;align-items:stretch">
+          <div style="margin-top:16px;display:flex;gap:16px;align-items:stretch"></div>
             <div class="card" style="width:280px;flex-shrink:0">
               <h3>Langst in dienst</h3>
               <div id="leaderboard-list-ovd"></div>
@@ -153,7 +153,7 @@
             <div class="card">
               <h3>Aanmelden</h3>
               <input type="text" id="aanmeld-bijzonderheden" placeholder="Bijzonderheden" class="input-field" style="margin-bottom:10px" />
-              <button class="btn-purple" onclick="aanmeldenDirect()">STATUS 0</button>
+              <button class="btn-purple" id="btn-status0" onclick="aanmeldenDirect()">STATUS 0</button>
             </div>
             <div class="card">
               <h3>Inloggen</h3>
@@ -226,6 +226,8 @@
                 <button class="voertuig-btn" onclick="selectVoertuig('Offroad Motor')">OFFROAD MOTOR</button>
                 <button class="voertuig-btn" onclick="selectVoertuig('Onroad Motor')">ONROAD MOTOR</button>
                 <button class="voertuig-btn" onclick="selectVoertuig('Motor Koppel')">MOTOR KOPPEL</button>
+                <button class="voertuig-btn" onclick="selectVoertuig('Unmarked Motor')">UNMARKED MOTOR</button>
+                <button class="voertuig-btn" onclick="selectVoertuig('Sleepwagen')">SLEEPWAGEN</button>
                 <button class="voertuig-btn" onclick="selectVoertuig('Zulu')">ZULU</button>
               </div>
             </div>
