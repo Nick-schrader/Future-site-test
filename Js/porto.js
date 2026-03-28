@@ -213,10 +213,55 @@ function renderLeaderboard() {
           <span style="color:#4ade80;font-variant-numeric:tabular-nums">${formatDuur(Date.now() - e.indienstStart)}</span>
         </div>`).join('')
     : '<div style="color:#888;font-size:0.82rem;padding:4px 0">Geen actieve eenheden</div>';
+
   ['leaderboard-list-ovd'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = html;
   });
+
+  renderSpecOverzicht();
+}
+
+function renderSpecOverzicht() {
+  const el = document.getElementById('spec-overzicht');
+  if (!el || !window._specialisaties) return;
+
+  const nu = new Date();
+  const nowMin = nu.getHours() * 60 + nu.getMinutes();
+
+  const html = window._specialisaties
+    .filter(s => s.vereiste_rol || s.tijdslot_start)
+    .map(s => {
+      // Check tijdslot
+      let tijdslotActief = true;
+      let tijdLabel = '';
+      if (s.tijdslot_start) {
+        const [sh, sm] = s.tijdslot_start.split(':').map(Number);
+        const startMin = sh * 60 + sm;
+        if (s.tijdslot_eind) {
+          const [eh, em] = s.tijdslot_eind.split(':').map(Number);
+          const eindMin = eh * 60 + em;
+          tijdslotActief = startMin > eindMin
+            ? (nowMin >= startMin || nowMin < eindMin)
+            : (nowMin >= startMin && nowMin < eindMin);
+          tijdLabel = `${s.tijdslot_start} - ${s.tijdslot_eind}`;
+        } else {
+          tijdslotActief = nowMin >= startMin;
+          tijdLabel = `vanaf ${s.tijdslot_start}`;
+        }
+      }
+
+      const kleur = tijdslotActief ? '#4ade80' : '#f87171';
+      const status = tijdslotActief ? '✓' : '✗';
+
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #2a2a3a">
+        <span style="color:#a78bfa;font-weight:bold">${s.voertuig}</span>
+        <span style="color:#888;font-size:0.78rem">${s.vereiste_rol ? s.vereiste_rol + ' · ' : ''}${tijdLabel || 'Altijd'}</span>
+        <span style="color:${kleur}">${status}</span>
+      </div>`;
+    }).join('');
+
+  el.innerHTML = html || '<span style="color:#888">Geen specialisaties ingesteld</span>';
 }
 
 function formatDuur(ms) {
@@ -488,9 +533,8 @@ function selectVoertuig(v) {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
-  if (document.getElementById('ovd-oc-voertuig-naam')) document.getElementById('ovd-oc-voertuig-naam').textContent = v;
   if (document.getElementById('oc-voertuig-naam')) document.getElementById('oc-voertuig-naam').textContent = v;
-  // Sla op als eigen voertuignaam
+  if (document.getElementById('ovd-oc-voertuig-naam')) document.getElementById('ovd-oc-voertuig-naam').textContent = v;
   if (u.id) fetch(`${API_URL}/api/voertuig-naam`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId: u.id, voertuigNaam: v }),
@@ -881,10 +925,8 @@ function openIndelenModal(index) {
     const select = document.getElementById('indelen-voertuig');
     select.innerHTML = opties.map(o => `<option value="${o}">${o}</option>`).join('');
 
-    const specs = specialisaties
-      .filter(s => s.vereiste_rol && rolNamen.some(r => r.toLowerCase().includes(s.vereiste_rol.toLowerCase())))
-      .map(s => s.vereiste_rol);
-    const uniekSpecs = [...new Set(specs)];
+    const specs = opties.filter(o => o !== 'Noodhulp');
+    const uniekSpecs = [...new Set(specs.map(s => s.replace(/ \d+$/, '')))];
 
     document.getElementById('indelen-ibt-warn').style.display = heeftIbt ? 'none' : 'block';
     if (specEl) specEl.textContent = uniekSpecs.length ? 'Specialisaties: ' + uniekSpecs.join(', ') : '';

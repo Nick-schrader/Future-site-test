@@ -176,6 +176,8 @@ if (!specKolommen.includes('vereiste_rol')) {
 }
 // Migratie: tijdslot_eind updaten voor Zulu
 db.prepare("UPDATE specialisatie_instellingen SET tijdslot_eind = '06:00' WHERE voertuig = 'Zulu' AND (tijdslot_eind IS NULL OR tijdslot_eind = '')").run();
+// Migratie: vereiste_rol instellen voor Offroad
+db.prepare("UPDATE specialisatie_instellingen SET vereiste_rol = 'OFFROAD' WHERE voertuig = 'Offroad' AND (vereiste_rol IS NULL OR vereiste_rol = '')").run();
 // Migratie: min_eenheden instellen op basis van max voor bestaande rijen
 db.prepare("UPDATE specialisatie_instellingen SET min_eenheden = max_eenheden WHERE min_eenheden = 0 AND max_eenheden < 99 AND voertuig != 'Zulu'").run();
 
