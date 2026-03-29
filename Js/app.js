@@ -23,7 +23,15 @@ const defaultUser = {
 
 function getUser() {
   const saved = sessionStorage.getItem('user');
-  return saved ? JSON.parse(saved) : { ...defaultUser };
+  if (!saved || saved === 'null' || saved === 'undefined') {
+    return { ...defaultUser };
+  }
+  try {
+    const parsed = JSON.parse(saved);
+    return parsed && parsed.id ? parsed : { ...defaultUser };
+  } catch (e) {
+    return { ...defaultUser };
+  }
 }
 
 function saveUser(u) {
