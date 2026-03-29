@@ -475,8 +475,12 @@ function renderMeldingen() {
           }, alertInterval);
         }
       } else {
-        clearTimeout(window._alertPingTimer);
-        window._alertPingTimer = null;
+        // No alerts - clear timer immediately and stop any pending callbacks
+        if (window._alertPingTimer) {
+          clearTimeout(window._alertPingTimer);
+          window._alertPingTimer = null;
+          console.log('Cleared alert ping timer - no alerts');
+        }
       }
       
       window._currentAlerts = alerts;
