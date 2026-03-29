@@ -437,23 +437,12 @@ function renderMeldingen() {
     fetch(`${API_URL}/api/wachtrij`).then(r => r.json()),
     fetch(`${API_URL}/api/status-alerts`).then(r => r.json()),
   ]).then(([wachtrij, alerts]) => {
-      console.log('=== PING DEBUG START ===');
-      console.log('Current alerts:', alerts);
-      console.log('Alert details:', alerts.map(a => ({ id: a.id, userId: a.userId, status: a.status, name: a.name })));
-      console.log('Current wachtrij:', wachtrij);
-      console.log('Previous alerts count:', window._vorigeAlerts);
-      console.log('Current alerts timer exists:', !!window._alertPingTimer);
-      console.log('Wachtrij timer exists:', !!window._pingHerhaalTimer);
-      
       // Update direct (FIX voor ghost pings)
       window._currentAlerts = alerts;
 
       // Alleen geluid bij nieuwe alerts
       if (window._vorigeAlerts !== null && alerts.length > window._vorigeAlerts) {
-        console.log('🔔 Playing sound for NEW alerts (from', window._vorigeAlerts, 'to', alerts.length, ')');
         speelAanmeldGeluid();
-      } else {
-        console.log('🔇 No sound - alerts count:', alerts.length, 'previous:', window._vorigeAlerts);
       }
 
       vorigeWachtrijCount = wachtrij.length;
@@ -464,15 +453,12 @@ function renderMeldingen() {
           clearTimeout(window._pingHerhaalTimer);
 
           const interval = (window._pingInterval || 30) * 1000;
-          console.log('⏰ Setting WACHTRIJ timer for', interval/1000, 'seconds');
 
           window._pingHerhaalTimer = setTimeout(() => {
 
             window._pingHerhaalTimer = null;
-            console.log('🔔 WACHTRIJ timer triggered! Current wachtrij:', window._wachtrij);
 
             if (!window._wachtrij || window._wachtrij.length === 0) {
-              console.log('🚫 WACHTRIJ timer cancelled - no wachtrij items');
               return;
             }
 
@@ -480,43 +466,31 @@ function renderMeldingen() {
             Promise.all([
               fetch(`${API_URL}/api/wachtrij`).then(r => r.json())
             ]).then(([currentWachtrij]) => {
-              console.log('🔍 Checking aanmelding validity - current wachtrij:', currentWachtrij);
               
               // Check if previous wachtrij items still exist
               const validWachtrij = window._wachtrij.filter(prevItem => {
                 const stillExists = currentWachtrij.some(currItem => 
                   currItem.naam === prevItem.naam || currItem.userId === prevItem.userId
                 );
-                if (!stillExists) {
-                  console.log('🚫 Aanmelding user no longer in wachtrij:', prevItem.naam);
-                }
                 return stillExists;
               });
 
-              console.log('🔍 Valid aanmeldingen after check:', validWachtrij.length, 'of', window._wachtrij.length);
-
               if (validWachtrij.length === 0) {
-                console.log('🚫 WACHTRIJ timer cancelled - no valid aanmeldingen');
                 return;
               }
 
-              console.log('🔔 Playing sound for', validWachtrij.length, 'valid aanmeldingen');
               speelAanmeldGeluid();
               renderMeldingen();
-            }).catch(err => {
-              console.error('Error checking aanmelding validity:', err);
+            }).catch(() => {
               // If check fails, play sound anyway to be safe
               speelAanmeldGeluid();
               renderMeldingen();
             });
 
           }, interval);
-        } else {
-          console.log('🔄 WACHTRIJ timer already exists, not setting new one');
         }
       } else {
         if (window._pingHerhaalTimer) {
-          console.log('🛑 Clearing WACHTRIJ timer - no wachtrij items');
           clearTimeout(window._pingHerhaalTimer);
           window._pingHerhaalTimer = null;
         }
@@ -528,16 +502,13 @@ function renderMeldingen() {
         if (!window._alertPingTimer) {
 
           const alertInterval = (window._pingInterval || 30) * 1000;
-          console.log('⏰ Setting ALERT timer for', alertInterval/1000, 'seconds');
 
           window._alertPingTimer = setTimeout(() => {
 
             window._alertPingTimer = null;
-            console.log('🔔 ALERT timer triggered! Current alerts:', window._currentAlerts);
 
             // EXTRA CHECK (belangrijk)
             if (!window._currentAlerts || window._currentAlerts.length === 0) {
-              console.log('🚫 ALERT timer cancelled - no alerts');
               return;
             }
 
@@ -548,37 +519,28 @@ function renderMeldingen() {
               const validAlerts = window._currentAlerts.filter(alert => {
                 const user = gebruikers.find(e => e.id === alert.userId);
                 // Only keep alert if user exists and still has alert status
-                console.log('Checking alert:', alert.id, 'user status:', user ? user.status : 'not found', 'alert status:', alert.status);
                 return user && user.status === alert.status;
               });
 
-              console.log('🔍 Valid alerts after status check:', validAlerts.length, 'of', window._currentAlerts.length);
-
               if (validAlerts.length === 0) {
-                console.log('🚫 ALERT timer cancelled - no valid alerts (status changed)');
                 return;
               }
 
-              console.log('🔔 Playing sound for', validAlerts.length, 'valid alerts');
               speelAanmeldGeluid();
               renderMeldingen();
-            }).catch(err => {
-              console.error('Error checking alert validity:', err);
+            }).catch(() => {
               // If check fails, play sound anyway to be safe
               speelAanmeldGeluid();
               renderMeldingen();
             });
 
           }, alertInterval);
-        } else {
-          console.log('🔄 ALERT timer already exists, not setting new one');
         }
 
       } else {
 
         // Stop direct als geen alerts
         if (window._alertPingTimer) {
-          console.log('🛑 Clearing ALERT timer - no alerts');
           clearTimeout(window._alertPingTimer);
           window._alertPingTimer = null;
         }
@@ -1260,6 +1222,9 @@ function openIndelenModal(index) {
 
     document.getElementById('indelen-ibt-warn').style.display = heeftIbt ? 'none' : 'block';
     if (specEl) specEl.textContent = uniekSpecs.length ? 'Specialisaties: ' + uniekSpecs.join(', ') : '';
+    
+    // Force update display
+    specEl.style.display = uniekSpecs.length ? 'block' : 'none';
   });
 }
 
