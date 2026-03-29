@@ -1033,7 +1033,6 @@ function openVoertuigModal(id) {
 
   // Load specialisaties
   const specEl = document.getElementById('edit-specs');
-  console.log('DEBUG: edit-specs element found:', !!specEl);
   if (specEl) specEl.textContent = '';
 
   // Haal rollen + specialisaties tegelijk op
@@ -1045,8 +1044,6 @@ function openVoertuigModal(id) {
     }),
     fetch(`${API_URL}/api/specialisaties`).then(r => r.json()).catch(() => []),
   ]).then(([rollen, specialisaties]) => {
-    console.log('DEBUG: rollen loaded:', rollen);
-    console.log('DEBUG: specialisaties loaded:', specialisaties);
     const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
     const heeftIbt = rolNamen.some(r => r.includes('IBT') || r.includes('ibt'));
 
@@ -1058,23 +1055,16 @@ function openVoertuigModal(id) {
       })
       .map(s => s.voertuig);
 
-    console.log('DEBUG: opties after filtering:', opties);
     const specs = opties.filter(o => o !== 'Noodhulp');
     const uniekSpecs = [...new Set(specs.map(s => s.replace(/ \d+$/, '')))];
-    console.log('DEBUG: uniekSpecs:', uniekSpecs);
 
     document.getElementById('edit-ibt-warn').style.display = heeftIbt ? 'none' : 'block';
     if (specEl) {
       setTimeout(() => {
-        const specText = uniekSpecs.length ? 'Specialisaties: ' + uniekSpecs.join(', ') : '';
-        console.log('DEBUG: setting spec text:', specText);
-        specEl.textContent = specText;
+        specEl.textContent = uniekSpecs.length ? 'Specialisaties: ' + uniekSpecs.join(', ') : '';
         specEl.style.display = uniekSpecs.length ? 'block' : 'none';
-        console.log('DEBUG: spec element after update - text:', specEl.textContent, 'display:', specEl.style.display);
       }, 100);
     }
-  }).catch(err => {
-    console.error('DEBUG: Error loading specialisaties:', err);
   });
 
   // Toon koppelen of ontkoppelen knop
