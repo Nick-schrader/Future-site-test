@@ -437,19 +437,34 @@ function renderMeldingen() {
     fetch(`${API_URL}/api/wachtrij`).then(r => r.json()),
     fetch(`${API_URL}/api/status-alerts`).then(r => r.json()),
   ]).then(([wachtrij, alerts]) => {
-      // Only play sound if there are MORE items than before (new addition)
-      // Don't play on initial page load
+
+      // Update direct (FIX voor ghost pings)
+      window._currentAlerts = alerts;
+
+      // Alleen geluid bij nieuwe alerts
       if (window._vorigeAlerts !== null && alerts.length > window._vorigeAlerts) {
         speelAanmeldGeluid();
       }
+
       vorigeWachtrijCount = wachtrij.length;
 
-      // Herhaal ping na interval als er nog aanmeldingen zijn
+      // ---- Wachtrij Ping ----
       if (wachtrij.length > 0) {
         if (!window._pingHerhaalTimer) {
           clearTimeout(window._pingHerhaalTimer);
+
           const interval = (window._pingInterval || 30) * 1000;
-          window._pingHerhaalTimer = setTimeout(() => speelAanmeldGeluid(), interval);
+
+          window._pingHerhaalTimer = setTimeout(() => {
+
+            window._pingHerhaalTimer = null;
+
+            if (!window._wachtrij || window._wachtrij.length === 0) return;
+
+            speelAanmeldGeluid();
+            renderMeldingen();
+
+          }, interval);
         }
       } else {
         if (window._pingHerhaalTimer) {
@@ -458,59 +473,65 @@ function renderMeldingen() {
         }
       }
 
-      // Speel geluid bij nieuwe status 6/7 alerts
-      // Don't play on initial page load
-      if (window._vorigeAlerts !== null && alerts.length > window._vorigeAlerts) {
-        speelAanmeldGeluid();
-      }
-      
-      // Update current alerts BEFORE timer logic
-      window._vorigeAlerts = alerts.length;
-      window._currentAlerts = alerts;
-
-      // Herhaal ping voor status alerts
+      // ---- Status Alert Ping ----
       if (alerts.length > 0) {
+
         if (!window._alertPingTimer) {
-          const alertInterval = (window._pingInterval || 30) * 1000; // Use same interval as aanmelden
-          console.log('Setting status alert ping timer for', alertInterval/1000, 'seconds');
+
+          const alertInterval = (window._pingInterval || 30) * 1000;
+
           window._alertPingTimer = setTimeout(() => {
-            console.log('Status alert ping triggered!');
-            // Clear timer first to prevent race condition
+
             window._alertPingTimer = null;
+
+            // EXTRA CHECK (belangrijk)
+            if (!window._currentAlerts || window._currentAlerts.length === 0) return;
+
             speelAanmeldGeluid();
-            if (window._currentAlerts && window._currentAlerts.length > 0) {
-              renderMeldingen(); // This will set the next timer
-            }
+            renderMeldingen();
+
           }, alertInterval);
         }
+
       } else {
-        // No alerts - clear timer immediately and stop any pending callbacks
+
+        // Stop direct als geen alerts
         if (window._alertPingTimer) {
           clearTimeout(window._alertPingTimer);
           window._alertPingTimer = null;
-          console.log('Cleared alert ping timer - no alerts');
         }
+
       }
 
+      window._vorigeAlerts = alerts.length;
       window._wachtrij = wachtrij;
 
+      // ---- UI Render ----
       if (wachtrij.length === 0) {
         list.innerHTML = '<div style="color:#888;font-size:0.85rem;padding:8px">Geen aanmeldingen</div>';
         return;
       }
 
       list.innerHTML = wachtrij.map((w, i) => {
+
         let rollen = [];
         try { rollen = JSON.parse(w.rollen || '[]'); } catch {}
+
         const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
-        const heeftIbt = rolNamen.some(r => r.includes('IBT') || r.includes('ibt'));
+
+        const heeftIbt = rolNamen.some(r => 
+          r.includes('IBT') || r.includes('ibt')
+        );
+
         const specs = [];
+
         if (rolNamen.some(r => r.toLowerCase().includes('siv'))) specs.push('SIV');
         if (rolNamen.some(r => r.toLowerCase().includes('gpt'))) specs.push('GPT');
         if (rolNamen.some(r => r.toLowerCase().includes('motor'))) specs.push('Motor');
         if (rolNamen.some(r => r.toLowerCase().includes('boot'))) specs.push('Boot');
         if (rolNamen.some(r => r.toLowerCase().includes('zulu'))) specs.push('Zulu');
         if (rolNamen.some(r => r.toLowerCase().includes('offroad'))) specs.push('Offroad');
+
         return `
         <div class="melding-item melding-aanmeld">
           <div>
@@ -522,9 +543,12 @@ function renderMeldingen() {
           <button class="btn-purple small" onclick="openIndelenModal(${i})">Indelen</button>
         </div>`;
       }).join('');
-    }).catch(() => {
-      if (list) list.innerHTML = '<div style="color:#888;font-size:0.85rem">Kan aanmeldingen niet laden</div>';
-    });
+
+  }).catch(() => {
+    if (list) {
+      list.innerHTML = '<div style="color:#888;font-size:0.85rem">Kan aanmeldingen niet laden</div>';
+    }
+  });
 }
 
 function dismissAlert(id) {
