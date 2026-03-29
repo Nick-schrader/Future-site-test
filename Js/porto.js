@@ -950,8 +950,18 @@ function saveVoertuigEdit() {
     body: JSON.stringify({ indienstStart: unit.indienstStart, dcnaam: unit.dcnaam || '', roepnummer: '' }),
   }).then(() => {
     closeVoertuigModal();
-    laadEenheden();
-    showToast(unit.medewerkers + ' is uitdienst gemeld');
+    
+    // Check if current user was signed out
+    const u = getUser();
+    if (unit.userId === u.id) {
+      // Current user was signed out, redirect to login
+      saveUser(null);
+      location.reload();
+    } else {
+      // Someone else was signed out, just refresh eenheden
+      laadEenheden();
+      showToast(unit.medewerkers + ' is uitdienst gemeld');
+    }
   });
 }
 
