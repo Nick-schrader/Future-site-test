@@ -288,9 +288,14 @@ app.post('/api/indelen', async (req, res) => {
 // ---- API: Check indeling (voor gebruiker) ----
 app.get('/api/indeling/:userId', (req, res) => {
   const indeling = getIndeling.get(req.params.userId);
-  const gebruiker = db.prepare('SELECT indienst_start, status, voertuig, voertuig_naam FROM gebruikers WHERE id = ?').get(req.params.userId);
-  if (!indeling) return res.json({ ingedeeld: false, indienstStart: gebruiker?.indienst_start || null, status: gebruiker?.status || null, voertuig: gebruiker?.voertuig || null, voertuigNaam: gebruiker?.voertuig_naam || null });
-  res.json({ ingedeeld: true, roepnummer: indeling.roepnummer, voertuig: indeling.voertuig || gebruiker?.voertuig, voertuigNaam: gebruiker?.voertuig_naam || null, indienstStart: gebruiker?.indienst_start || null, status: gebruiker?.status || null });
+  const gebruiker = db.prepare(`
+    SELECT g.indienst_start, g.status, g.voertuig, g.voertuig_naam, k.shortname as koppel_naam, k.display_name as koppel_display
+    FROM gebruikers g
+    LEFT JOIN gebruikers k ON g.koppel_id = k.id
+    WHERE g.id = ?
+  `).get(req.params.userId);
+  if (!indeling) return res.json({ ingedeeld: false, indienstStart: gebruiker?.indienst_start || null, status: gebruiker?.status || null, voertuig: gebruiker?.voertuig || null, voertuigNaam: gebruiker?.voertuig_naam || null, koppelNaam: null });
+  res.json({ ingedeeld: true, roepnummer: indeling.roepnummer, voertuig: indeling.voertuig || gebruiker?.voertuig, voertuigNaam: gebruiker?.voertuig_naam || null, koppelNaam: gebruiker?.koppel_naam || null, indienstStart: gebruiker?.indienst_start || null, status: gebruiker?.status || null });
 });
 
 // ---- API: Database viewer ----

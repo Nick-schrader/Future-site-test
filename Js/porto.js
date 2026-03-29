@@ -1,6 +1,11 @@
 // ---- PORTO PAGE ----
 window.onload = async () => {
   await syncUserFromDB();
+  
+  // Initialize audio volume from user settings
+  const user = getUser();
+  window.audioVolume = (user.audioVolume || 30) / 100;
+  
   fetch(`${API_URL}/api/instellingen-systeem`).then(r=>r.json()).then(d=>{ if(d.ping_interval) window._pingInterval = parseInt(d.ping_interval); }).catch(()=>{});
   const u = getUser();
   const isOvdOpco = ['ovd', 'opco', 'oc', 'ops'].includes(u.role);
@@ -373,7 +378,8 @@ function speelAanmeldGeluid() {
   gain.connect(ctx.destination);
   osc.frequency.value = 880;
   osc.type = 'sine';
-  gain.gain.setValueAtTime(0.3, ctx.currentTime);
+  const volume = window.audioVolume || 0.3;
+  gain.gain.setValueAtTime(volume, ctx.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
   osc.start(ctx.currentTime);
   osc.stop(ctx.currentTime + 0.5);
@@ -383,7 +389,8 @@ function speelVoertuigGeluid() {
   const ctx = new (window.AudioContext || window.webkitAudioContext)();
   const gain = ctx.createGain();
   gain.connect(ctx.destination);
-  gain.gain.setValueAtTime(0.3, ctx.currentTime);
+  const volume = window.audioVolume || 0.3;
+  gain.gain.setValueAtTime(volume, ctx.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
   [660, 880].forEach((freq, i) => {
     const osc = ctx.createOscillator();
@@ -496,16 +503,20 @@ function updateOCInfo() {
   const u = getUser();
   const roepnummer = document.getElementById('oc-roepnummer');
   const voertuig = document.getElementById('oc-voertuig');
+  const koppel = document.getElementById('oc-koppel');
   if (roepnummer) roepnummer.textContent = u.dienstnummer || '-';
   if (voertuig) voertuig.textContent = u.voertuig || 'Niet geselecteerd';
+  if (koppel) koppel.textContent = u.koppelNaam || '-';
 
-  // Laad voertuig_naam vanuit DB en vul input
+  // Laad voertuig_naam en koppel informatie vanuit DB en vul input
   if (u.id) {
     fetch(`${API_URL}/api/indeling/${u.id}`)
       .then(r => r.json())
       .then(data => {
         const vn = document.getElementById('oc-voertuig-naam');
+        const koppel = document.getElementById('oc-koppel');
         if (vn) vn.textContent = data.voertuigNaam || '-';
+        if (koppel) koppel.textContent = data.koppelNaam || '-';
         // Vul eigen voertuig input
         const input = document.getElementById('eigen-voertuig-input');
         if (input && data.voertuigNaam) {
@@ -947,18 +958,22 @@ function ovdUpdateInfo() {
   const rol = document.getElementById('ovd-oc-rol');
   const roepnummer = document.getElementById('ovd-oc-roepnummer');
   const voertuig = document.getElementById('ovd-oc-voertuig');
+  const koppel = document.getElementById('ovd-oc-koppel');
   if (naam) naam.textContent = u.shortname || u.displayName || '-';
   if (rol) rol.textContent = u.role ? u.role.toUpperCase() : '-';
   if (roepnummer) roepnummer.textContent = u.dienstnummer || '-';
   if (voertuig) voertuig.textContent = u.voertuig || 'Niet geselecteerd';
+  if (koppel) koppel.textContent = u.koppelNaam || '-';
 
-  // Laad voertuig_naam vanuit DB
+  // Laad voertuig_naam en koppel informatie vanuit DB
   if (u.id) {
     fetch(`${API_URL}/api/indeling/${u.id}`)
       .then(r => r.json())
       .then(data => {
         const vn = document.getElementById('ovd-oc-voertuig-naam');
+        const koppel = document.getElementById('ovd-oc-koppel');
         if (vn) vn.textContent = data.voertuigNaam || '-';
+        if (koppel) koppel.textContent = data.koppelNaam || '-';
         if (data.voertuigNaam) highlightVoertuig(data.voertuigNaam);
       }).catch(() => {});
   }

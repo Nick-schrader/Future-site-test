@@ -19,6 +19,22 @@ window.onload = async () => {
   document.getElementById('set-shortname').value = u.shortname || '';
   document.getElementById('set-dcnaam').value = u.dcnaam || '';
   document.getElementById('set-rangicoon').value = u.rangicoon || '';
+  
+  // Audio volume slider
+  const volumeSlider = document.getElementById('audio-volume');
+  const volumeValue = document.getElementById('audio-volume-value');
+  const savedVolume = u.audioVolume || 30;
+  volumeSlider.value = savedVolume;
+  volumeValue.textContent = savedVolume + '%';
+  
+  // Update audio volume when slider changes
+  volumeSlider.addEventListener('input', (e) => {
+    const volume = e.target.value;
+    volumeValue.textContent = volume + '%';
+    // Apply volume to all audio contexts
+    updateAudioVolume(volume);
+  });
+  
   renderTrainingen();
   renderDiscordRollen(u.rollen || []);
   renderTijden();
@@ -36,6 +52,7 @@ function saveAccount() {
   u.shortname  = document.getElementById('set-shortname').value;
   u.dcnaam     = document.getElementById('set-dcnaam').value;
   u.rangicoon  = document.getElementById('set-rangicoon').value;
+  u.audioVolume = document.getElementById('audio-volume').value;
   saveUser(u);
 
   // Sla ook op in database
@@ -48,6 +65,16 @@ function saveAccount() {
   }
 
   showToast('Account geüpdatet');
+}
+
+function updateAudioVolume(volume) {
+  // Store volume globally for audio functions
+  window.audioVolume = volume / 100;
+  
+  // Update user object
+  const u = getUser();
+  u.audioVolume = volume;
+  saveUser(u);
 }
 
 function renderTrainingen() {
