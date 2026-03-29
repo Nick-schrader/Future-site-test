@@ -1221,10 +1221,12 @@ function openIndelenModal(index) {
     const uniekSpecs = [...new Set(specs.map(s => s.replace(/ \d+$/, '')))];
 
     document.getElementById('indelen-ibt-warn').style.display = heeftIbt ? 'none' : 'block';
-    if (specEl) specEl.textContent = uniekSpecs.length ? 'Specialisaties: ' + uniekSpecs.join(', ') : '';
-    
-    // Force update display
-    specEl.style.display = uniekSpecs.length ? 'block' : 'none';
+    if (specEl) {
+      setTimeout(() => {
+        specEl.textContent = uniekSpecs.length ? 'Specialisaties: ' + uniekSpecs.join(', ') : '';
+        specEl.style.display = uniekSpecs.length ? 'block' : 'none';
+      }, 100);
+    }
   });
 }
 
