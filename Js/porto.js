@@ -439,6 +439,7 @@ function renderMeldingen() {
   ]).then(([wachtrij, alerts]) => {
       console.log('=== PING DEBUG START ===');
       console.log('Current alerts:', alerts);
+      console.log('Alert details:', alerts.map(a => ({ id: a.id, userId: a.userId, status: a.status, name: a.name })));
       console.log('Current wachtrij:', wachtrij);
       console.log('Previous alerts count:', window._vorigeAlerts);
       console.log('Current alerts timer exists:', !!window._alertPingTimer);
@@ -590,6 +591,42 @@ function clearMeldingen() {
   appData.meldingen = [];
   renderMeldingen();
   showToast('Alle meldingen verwijderd');
+}
+
+// Debug function to clear all alerts
+function clearAllAlerts() {
+  fetch(`${API_URL}/api/status-alerts`, { method: 'GET' })
+    .then(r => r.json())
+    .then(alerts => {
+      console.log('Clearing all alerts:', alerts);
+      // Clear each alert individually
+      alerts.forEach(alert => {
+        fetch(`${API_URL}/api/status-alerts/${alert.id}`, { method: 'DELETE' })
+          .catch(err => console.error('Failed to clear alert', alert.id, err));
+      });
+      showToast('Cleared all alerts - check console');
+    })
+    .catch(err => console.error('Failed to fetch alerts', err));
+}
+
+// Debug function to show alert details
+function showAlertDetails() {
+  fetch(`${API_URL}/api/status-alerts`, { method: 'GET' })
+    .then(r => r.json())
+    .then(alerts => {
+      console.log('=== ALERT DETAILS ===');
+      console.log('Total alerts:', alerts.length);
+      alerts.forEach((alert, i) => {
+        console.log(`Alert ${i+1}:`, {
+          id: alert.id,
+          userId: alert.userId,
+          status: alert.status,
+          name: alert.name,
+          timestamp: alert.timestamp
+        });
+      });
+    })
+    .catch(err => console.error('Failed to fetch alerts', err));
 }
 
 function slaEigenVoertuigOp() {
