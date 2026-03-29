@@ -427,10 +427,32 @@ function renderMeldingen() {
       // Speel geluid bij nieuwe status 6/7 alerts
       if (alerts.length > (window._vorigeAlerts || 0)) {
         speelAanmeldGeluid();
-        // Verwijder alerts direct weer
-        alerts.forEach(a => fetch(`${API_URL}/api/status-alerts/${a.id}`, { method: 'DELETE' }));
       }
-      window._vorigeAlerts = 0;
+      window._vorigeAlerts = alerts.length;
+
+      // Herhaal ping voor status alerts
+      if (alerts.length > 0) {
+        if (!window._alertPingTimer) {
+          const alertInterval = (window._pingInterval || 30) * 1000; // Use same interval as aanmelden
+          console.log('Setting status alert ping timer for', alertInterval/1000, 'seconds');
+          window._alertPingTimer = setTimeout(() => {
+            console.log('Status alert ping triggered!');
+            speelAanmeldGeluid();
+            window._alertPingTimer = null;
+            if (window._currentAlerts && window._currentAlerts.length > 0) {
+              renderMeldingen(); // This will set the next timer
+            }
+          }, alertInterval);
+        }
+      } else {
+        if (window._alertPingTimer) {
+          console.log('Clearing status alert ping timer');
+        }
+        clearTimeout(window._alertPingTimer);
+        window._alertPingTimer = null;
+      }
+      
+      window._currentAlerts = alerts;
 
       window._wachtrij = wachtrij;
 
@@ -925,7 +947,7 @@ function saveVoertuigEdit() {
   fetch(`${API_URL}/api/reset/${unit.userId}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ indienstStart: null }),
+    body: JSON.stringify({ indienstStart: unit.indienstStart, dcnaam: unit.dcnaam || '', roepnummer: '' }),
   }).then(() => {
     closeVoertuigModal();
     laadEenheden();
