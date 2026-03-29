@@ -12,8 +12,13 @@ window.onload = async () => {
   // Clear any existing timers when page loads
   clearTimeout(window._alertPingTimer);
   clearTimeout(window._pingHerhaalTimer);
+  clearTimeout(window._alertPingTimer); // Clear all possible timers
   window._alertPingTimer = null;
   window._pingHerhaalTimer = null;
+  
+  // Reset alert state to prevent phantom pings
+  window._vorigeAlerts = null;
+  window._currentAlerts = null;
   
   // Add page visibility change listener to handle tab switching
   document.addEventListener('visibilitychange', () => {
@@ -432,9 +437,6 @@ function renderMeldingen() {
     fetch(`${API_URL}/api/wachtrij`).then(r => r.json()),
     fetch(`${API_URL}/api/status-alerts`).then(r => r.json()),
   ]).then(([wachtrij, alerts]) => {
-      console.log('Debug - Current alerts in database:', alerts);
-      console.log('Debug - Previous alerts count:', window._vorigeAlerts);
-      
       // Only play sound if there are MORE items than before (new addition)
       // Don't play on initial page load
       if (window._vorigeAlerts !== null && alerts.length > window._vorigeAlerts) {
