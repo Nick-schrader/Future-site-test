@@ -1031,6 +1031,52 @@ function openVoertuigModal(id) {
   const heeftIbt = rolNamen.some(r => r.includes('IBT') || r.includes('ibt'));
   document.getElementById('edit-ibt-warn').style.display = heeftIbt ? 'none' : 'block';
 
+  // Load specialisaties
+  const specEl = document.getElementById('edit-specs');
+  console.log('DEBUG: edit-specs element found:', !!specEl);
+  if (specEl) specEl.textContent = '';
+
+  // Haal rollen + specialisaties tegelijk op
+  Promise.all([
+    fetch(`${API_URL}/api/rollen/${unit.userId}`).then(r => r.json()).catch(() => {
+      let rollen = [];
+      try { rollen = JSON.parse(unit.rollen || '[]'); } catch {}
+      return rollen;
+    }),
+    fetch(`${API_URL}/api/specialisaties`).then(r => r.json()).catch(() => []),
+  ]).then(([rollen, specialisaties]) => {
+    console.log('DEBUG: rollen loaded:', rollen);
+    console.log('DEBUG: specialisaties loaded:', specialisaties);
+    const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
+    const heeftIbt = rolNamen.some(r => r.includes('IBT') || r.includes('ibt'));
+
+    // Bouw opties op basis van vereiste_rol in specialisaties
+    const opties = specialisaties
+      .filter(s => {
+        if (!s.vereiste_rol) return true; // geen vereiste = altijd beschikbaar (Noodhulp)
+        return rolNamen.some(r => r.toLowerCase().includes(s.vereiste_rol.toLowerCase()));
+      })
+      .map(s => s.voertuig);
+
+    console.log('DEBUG: opties after filtering:', opties);
+    const specs = opties.filter(o => o !== 'Noodhulp');
+    const uniekSpecs = [...new Set(specs.map(s => s.replace(/ \d+$/, '')))];
+    console.log('DEBUG: uniekSpecs:', uniekSpecs);
+
+    document.getElementById('edit-ibt-warn').style.display = heeftIbt ? 'none' : 'block';
+    if (specEl) {
+      setTimeout(() => {
+        const specText = uniekSpecs.length ? 'Specialisaties: ' + uniekSpecs.join(', ') : '';
+        console.log('DEBUG: setting spec text:', specText);
+        specEl.textContent = specText;
+        specEl.style.display = uniekSpecs.length ? 'block' : 'none';
+        console.log('DEBUG: spec element after update - text:', specEl.textContent, 'display:', specEl.style.display);
+      }, 100);
+    }
+  }).catch(err => {
+    console.error('DEBUG: Error loading specialisaties:', err);
+  });
+
   // Toon koppelen of ontkoppelen knop
   const isGekoppeld = !!unit.koppelId;
   document.getElementById('koppel-btn').classList.toggle('hidden', isGekoppeld);
