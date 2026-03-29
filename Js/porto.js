@@ -790,7 +790,28 @@ function selectVoertuig(v) {
   if (u.id) fetch(`${API_URL}/api/voertuig-naam`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId: u.id, voertuigNaam: v }),
-  }).then(() => showToast('Voertuig: ' + v));
+  }).then(() => {
+    // Toon specialisaties voor geselecteerde voertuig
+    fetch(`${API_URL}/api/specialisaties`).then(r => r.json()).then(specialisaties => {
+      const specs = specialisaties.filter(s => s.voertuig === v);
+      const uniekSpecs = [...new Set(specs.map(s => s.specialisatie))];
+      
+      // Update specialisaties display
+      const specDisplay = document.getElementById('oc-voertuig-specs');
+      const ovdSpecDisplay = document.getElementById('ovd-oc-voertuig-specs');
+      
+      if (specDisplay) {
+        specDisplay.textContent = uniekSpecs.length ? 'Specialisaties: ' + uniekSpecs.join(', ') : '';
+        specDisplay.style.display = uniekSpecs.length ? 'block' : 'none';
+      }
+      if (ovdSpecDisplay) {
+        ovdSpecDisplay.textContent = uniekSpecs.length ? 'Specialisaties: ' + uniekSpecs.join(', ') : '';
+        ovdSpecDisplay.style.display = uniekSpecs.length ? 'block' : 'none';
+      }
+    });
+    
+    showToast('Voertuig: ' + v);
+  });
 }
 
 function highlightVoertuig(v) {
