@@ -954,8 +954,14 @@ function saveVoertuigEdit() {
     // Check if current user was signed out
     const u = getUser();
     if (unit.userId === u.id) {
-      // Current user was signed out, redirect to login
-      saveUser(null);
+      // Current user was signed out, set to signed out state
+      u.indienstStart = null;
+      u.ingedeeld = false;
+      u.status = null;
+      u.voertuig = null;
+      u.dienstnummer = '';
+      u.role = 'user';
+      saveUser(u);
       location.reload();
     } else {
       // Someone else was signed out, just refresh eenheden
