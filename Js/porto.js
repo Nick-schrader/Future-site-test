@@ -458,7 +458,10 @@ function renderMeldingen() {
       if (window._vorigeAlerts !== null && alerts.length > window._vorigeAlerts) {
         speelAanmeldGeluid();
       }
+      
+      // Update current alerts BEFORE timer logic
       window._vorigeAlerts = alerts.length;
+      window._currentAlerts = alerts;
 
       // Herhaal ping voor status alerts
       if (alerts.length > 0) {
@@ -483,8 +486,6 @@ function renderMeldingen() {
           console.log('Cleared alert ping timer - no alerts');
         }
       }
-      
-      window._currentAlerts = alerts;
 
       window._wachtrij = wachtrij;
 
