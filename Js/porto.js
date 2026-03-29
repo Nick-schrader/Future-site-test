@@ -512,11 +512,12 @@ function renderMeldingen() {
 
             // NEW: Check if alerts are still valid by checking current user status
             Promise.all([
-              fetch(`${API_URL}/api/eenheden`).then(r => r.json())
-            ]).then(([eenheden]) => {
+              fetch(`${API_URL}/api/gebruikers`).then(r => r.json())
+            ]).then(([gebruikers]) => {
               const validAlerts = window._currentAlerts.filter(alert => {
-                const user = eenheden.find(e => e.userId === alert.userId);
-                // Only keep alert if user exists and still has the alert status
+                const user = gebruikers.find(e => e.id === alert.userId);
+                // Only keep alert if user exists and still has alert status
+                console.log('Checking alert:', alert.id, 'user status:', user ? user.status : 'not found', 'alert status:', alert.status);
                 return user && user.status === alert.status;
               });
 
@@ -771,7 +772,8 @@ function bevestigUitdienst() {
 
       showToast('Je bent uit dienst gegaan');
 
-      setTimeout(() => window.location.reload(), 1500);
+      // Directe refresh na uitdienst melden
+      window.location.reload();
     });
 }
 
