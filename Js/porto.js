@@ -439,11 +439,16 @@ function renderMeldingen() {
 
       // Herhaal ping na interval als er nog aanmeldingen zijn
       if (wachtrij.length > 0) {
-        clearTimeout(window._pingHerhaalTimer);
-        const interval = (window._pingInterval || 30) * 1000;
-        window._pingHerhaalTimer = setTimeout(() => speelAanmeldGeluid(), interval);
+        if (!window._pingHerhaalTimer) {
+          clearTimeout(window._pingHerhaalTimer);
+          const interval = (window._pingInterval || 30) * 1000;
+          window._pingHerhaalTimer = setTimeout(() => speelAanmeldGeluid(), interval);
+        }
       } else {
-        clearTimeout(window._pingHerhaalTimer);
+        if (window._pingHerhaalTimer) {
+          clearTimeout(window._pingHerhaalTimer);
+          window._pingHerhaalTimer = null;
+        }
       }
 
       // Speel geluid bij nieuwe status 6/7 alerts
@@ -467,9 +472,6 @@ function renderMeldingen() {
           }, alertInterval);
         }
       } else {
-        if (window._alertPingTimer) {
-          console.log('Clearing status alert ping timer');
-        }
         clearTimeout(window._alertPingTimer);
         window._alertPingTimer = null;
       }
