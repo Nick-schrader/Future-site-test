@@ -494,10 +494,8 @@ function slaEigenVoertuigOp() {
 
 function updateOCInfo() {
   const u = getUser();
-  const naam = document.getElementById('oc-naam');
   const roepnummer = document.getElementById('oc-roepnummer');
   const voertuig = document.getElementById('oc-voertuig');
-  if (naam) naam.textContent = u.shortname || u.displayName || '-';
   if (roepnummer) roepnummer.textContent = u.dienstnummer || '-';
   if (voertuig) voertuig.textContent = u.voertuig || 'Niet geselecteerd';
 
@@ -765,9 +763,6 @@ async function aanmeldenDirect() {
 }
 
 function inloggenDirect(type) {
-  const roep = document.getElementById('inloggen-roepnummer').value.trim();
-  if (!roep) { showToast('Vul een roepnummer in'); return; }
-
   const u = getUser();
   const rollen = (u.rollen || []).map(r => r.naam || r);
 
@@ -781,9 +776,16 @@ function inloggenDirect(type) {
     showToast('Je hebt de OPS rol niet'); return;
   }
 
+  // Always use specific call numbers regardless of input field
+  let roep = '';
   if (type === 'OVD') roep = '17-00';
   if (type === 'OPCO') roep = '17-01';
-  document.getElementById('inloggen-roepnummer').value = roep;
+  if (type === 'OPS') roep = document.getElementById('inloggen-roepnummer').value.trim() || '';
+  
+  // Update input field to show the assigned call number
+  if (type === 'OVD' || type === 'OPCO') {
+    document.getElementById('inloggen-roepnummer').value = roep;
+  }
 
   u.role = type.toLowerCase();
   u.dienstnummer = roep;

@@ -180,9 +180,10 @@ function hideToast() {
     });
   }
 
-  // Profielnaam in dropdown
+  // Profielnaam in dropdown - make clickable
   document.querySelectorAll('.profile-menu-name').forEach(el => {
-    el.textContent = '- ' + (u.displayName || u.username || 'Gebruiker');
+    const name = u.displayName || u.username || 'Gebruiker';
+    el.innerHTML = '<a href="account.html" style="color:inherit;text-decoration:none;">- ' + name + '</a>';
   });
 
   // Toon OPS link als de user de OPS Discord rol heeft
