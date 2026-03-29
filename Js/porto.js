@@ -8,6 +8,28 @@ window.onload = async () => {
   
   fetch(`${API_URL}/api/instellingen-systeem`).then(r=>r.json()).then(d=>{ if(d.ping_interval) window._pingInterval = parseInt(d.ping_interval); }).catch(()=>{});
   const u = getUser();
+  
+  // Clear any existing timers when page loads
+  clearTimeout(window._alertPingTimer);
+  clearTimeout(window._pingHerhaalTimer);
+  window._alertPingTimer = null;
+  window._pingHerhaalTimer = null;
+  
+  // Add page visibility change listener to handle tab switching
+  document.addEventListener('visibilitychange', () => {
+    const currentUser = getUser();
+    if (document.hidden && currentUser && currentUser.id) {
+      // Page is hidden but user is still logged in, don't clear timers
+      // This allows pings to continue while gaming
+      return;
+    }
+    
+    if (!document.hidden && currentUser && currentUser.id) {
+      // Page is visible again, restart pings if needed
+      // Pings will be restarted by renderMeldingen() call
+      renderMeldingen();
+    }
+  });
   const isOvdOpco = ['ovd', 'opco', 'oc', 'ops'].includes(u.role);
 
   if (isOvdOpco) {
@@ -962,6 +984,13 @@ function saveVoertuigEdit() {
       u.dienstnummer = '';
       u.role = 'user';
       saveUser(u);
+      
+      // Clear any active ping timers for this user
+      clearTimeout(window._alertPingTimer);
+      window._alertPingTimer = null;
+      clearTimeout(window._pingHerhaalTimer);
+      window._pingHerhaalTimer = null;
+      
       location.reload();
     } else {
       // Someone else was signed out, just refresh eenheden
