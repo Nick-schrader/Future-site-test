@@ -77,6 +77,24 @@ function updateAudioVolume(volume) {
   saveUser(u);
 }
 
+function testAudioVolume() {
+  // Use the same sound function as pings
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.frequency.value = 880;
+  osc.type = 'sine';
+  const volume = window.audioVolume || 0.3;
+  gain.gain.setValueAtTime(volume, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + 0.5);
+  
+  showToast('Test geluid afgespeeld');
+}
+
 function renderTrainingen() {
   const grid = document.getElementById('trainingen-grid');
   if (!grid) return;

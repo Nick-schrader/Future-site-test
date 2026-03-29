@@ -1279,6 +1279,9 @@ function saveIndeling() {
     document.getElementById('indelen-modal').classList.add('hidden');
     renderMeldingen();
     showToast(roepnummer + ' ingedeeld met ' + voertuig);
+    
+    // Directe refresh na succesvolle indeling
+    setTimeout(() => window.location.reload(), 1000);
   });
 }
 

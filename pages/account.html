@@ -60,7 +60,7 @@
             <div class="form-group"><label>Korte naam</label><input type="text" id="set-shortname" class="input-field" /></div>
             <div class="form-group"><label>DC naam (na dienst)</label><input type="text" id="set-dcnaam" class="input-field" placeholder="Naam die na dienst wordt hersteld" /></div>
             <div class="form-group"><label>Rang icoon</label><input type="text" id="set-rangicoon" class="input-field" placeholder="Bvb. ❯" /></div>
-            <div class="form-group"><label>Audio Volume</label><input type="range" id="audio-volume" class="input-field" min="0" max="100" value="30" style="width:100%" /><small style="color:#888;display:block;margin-top:4px">Huidig: <span id="audio-volume-value">30%</span></small></div>
+            <div class="form-group"><label>Audio Volume</label><div style="display:flex;gap:10px;align-items:center"><input type="range" id="audio-volume" class="input-field" min="0" max="100" value="30" style="flex:1" /><button class="btn-purple small" onclick="testAudioVolume()">Test</button></div><small style="color:#888;display:block;margin-top:4px">Huidig: <span id="audio-volume-value">30%</span></small></div>
             <button class="btn-purple" onclick="saveAccount()">OPSLAAN</button>
           </div>
 
