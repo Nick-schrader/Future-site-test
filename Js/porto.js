@@ -467,8 +467,9 @@ function renderMeldingen() {
           console.log('Setting status alert ping timer for', alertInterval/1000, 'seconds');
           window._alertPingTimer = setTimeout(() => {
             console.log('Status alert ping triggered!');
-            speelAanmeldGeluid();
+            // Clear timer first to prevent race condition
             window._alertPingTimer = null;
+            speelAanmeldGeluid();
             if (window._currentAlerts && window._currentAlerts.length > 0) {
               renderMeldingen(); // This will set the next timer
             }
