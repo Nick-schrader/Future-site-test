@@ -476,8 +476,39 @@ function renderMeldingen() {
               return;
             }
 
-            speelAanmeldGeluid();
-            renderMeldingen();
+            // NEW: Check if aanmelding users still exist in wachtrij
+            Promise.all([
+              fetch(`${API_URL}/api/wachtrij`).then(r => r.json())
+            ]).then(([currentWachtrij]) => {
+              console.log('🔍 Checking aanmelding validity - current wachtrij:', currentWachtrij);
+              
+              // Check if previous wachtrij items still exist
+              const validWachtrij = window._wachtrij.filter(prevItem => {
+                const stillExists = currentWachtrij.some(currItem => 
+                  currItem.naam === prevItem.naam || currItem.userId === prevItem.userId
+                );
+                if (!stillExists) {
+                  console.log('🚫 Aanmelding user no longer in wachtrij:', prevItem.naam);
+                }
+                return stillExists;
+              });
+
+              console.log('🔍 Valid aanmeldingen after check:', validWachtrij.length, 'of', window._wachtrij.length);
+
+              if (validWachtrij.length === 0) {
+                console.log('🚫 WACHTRIJ timer cancelled - no valid aanmeldingen');
+                return;
+              }
+
+              console.log('🔔 Playing sound for', validWachtrij.length, 'valid aanmeldingen');
+              speelAanmeldGeluid();
+              renderMeldingen();
+            }).catch(err => {
+              console.error('Error checking aanmelding validity:', err);
+              // If check fails, play sound anyway to be safe
+              speelAanmeldGeluid();
+              renderMeldingen();
+            });
 
           }, interval);
         } else {
