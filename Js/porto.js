@@ -510,8 +510,32 @@ function renderMeldingen() {
               return;
             }
 
-            speelAanmeldGeluid();
-            renderMeldingen();
+            // NEW: Check if alerts are still valid by checking current user status
+            Promise.all([
+              fetch(`${API_URL}/api/eenheden`).then(r => r.json())
+            ]).then(([eenheden]) => {
+              const validAlerts = window._currentAlerts.filter(alert => {
+                const user = eenheden.find(e => e.userId === alert.userId);
+                // Only keep alert if user exists and still has the alert status
+                return user && user.status === alert.status;
+              });
+
+              console.log('🔍 Valid alerts after status check:', validAlerts.length, 'of', window._currentAlerts.length);
+
+              if (validAlerts.length === 0) {
+                console.log('🚫 ALERT timer cancelled - no valid alerts (status changed)');
+                return;
+              }
+
+              console.log('🔔 Playing sound for', validAlerts.length, 'valid alerts');
+              speelAanmeldGeluid();
+              renderMeldingen();
+            }).catch(err => {
+              console.error('Error checking alert validity:', err);
+              // If check fails, play sound anyway to be safe
+              speelAanmeldGeluid();
+              renderMeldingen();
+            });
 
           }, alertInterval);
         } else {
