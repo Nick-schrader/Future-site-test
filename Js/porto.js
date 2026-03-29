@@ -432,7 +432,9 @@ function renderMeldingen() {
     fetch(`${API_URL}/api/wachtrij`).then(r => r.json()),
     fetch(`${API_URL}/api/status-alerts`).then(r => r.json()),
   ]).then(([wachtrij, alerts]) => {
-      if (wachtrij.length > vorigeWachtrijCount && vorigeWachtrijCount >= 0) {
+      // Only play sound if there are MORE items than before (new addition)
+      // Don't play on initial page load
+      if (vorigeWachtrijCount !== null && wachtrij.length > vorigeWachtrijCount) {
         speelAanmeldGeluid();
       }
       vorigeWachtrijCount = wachtrij.length;
@@ -452,7 +454,8 @@ function renderMeldingen() {
       }
 
       // Speel geluid bij nieuwe status 6/7 alerts
-      if (alerts.length > (window._vorigeAlerts || 0)) {
+      // Don't play on initial page load
+      if (window._vorigeAlerts !== null && alerts.length > window._vorigeAlerts) {
         speelAanmeldGeluid();
       }
       window._vorigeAlerts = alerts.length;
