@@ -127,7 +127,7 @@ async function getMemberData(discordUser, member) {
   const rolNamen = rollen.map(r => r.naam);
   let role = 'user';
   if (rolNamen.includes('OC')) role = 'oc';
-  else if (rolNamen.some(r => r.includes('OVD-K') || r.includes('OvD-K'))) role = 'ovd';
+  else if (rolNamen.some(r => r.includes('OVD-K') || r.includes('OvD-K') || r.toLowerCase() === 'ovd')) role = 'ovd';
   else if (rolNamen.some(r => r.includes('OPCO-K'))) role = 'opco';
   else if (rolNamen.some(r => r.includes('OPS'))) role = 'ops';
 
