@@ -8,7 +8,41 @@ const {
   addAanmelding, getWachtrij, removeAanmelding,
   addIndeling, getIndeling,
 } = require('./database');
-const { discordQueue, databaseQueue, indelingQueue, addDiscordOperation, addDatabaseOperation, addIndelingOperation } = require('./queue');
+
+// Try to import queue system, fallback to direct execution if it fails
+let discordQueue, databaseQueue, indelingQueue, addDiscordOperation, addDatabaseOperation, addIndelingOperation, getQueueStatuses;
+try {
+  const queue = require('./queue');
+  discordQueue = queue.discordQueue;
+  databaseQueue = queue.databaseQueue;
+  indelingQueue = queue.indelingQueue;
+  addDiscordOperation = queue.addDiscordOperation;
+  addDatabaseOperation = queue.addDatabaseOperation;
+  addIndelingOperation = queue.addIndelingOperation;
+  getQueueStatuses = queue.getQueueStatuses;
+  console.log('[QUEUE] Queue system loaded successfully');
+} catch (err) {
+  console.error('[QUEUE] Failed to load queue system, falling back to direct execution:', err.message);
+  
+  // Fallback functions that execute directly
+  addDiscordOperation = async (type, data, executeFn) => {
+    try {
+      const result = await executeFn(data);
+      return { result };
+    } catch (error) {
+      throw error;
+    }
+  };
+  
+  addDatabaseOperation = addDiscordOperation;
+  addIndelingOperation = addDiscordOperation;
+  
+  getQueueStatuses = () => ({
+    discord: { queueLength: 0, processing: false, nextOperation: null },
+    database: { queueLength: 0, processing: false, nextOperation: null },
+    indeling: { queueLength: 0, processing: false, nextOperation: null }
+  });
+}
 
 const app = express();
 app.use(cors());
@@ -938,22 +972,44 @@ app.get('/api/leden', async (_req, res) => {
 
 // ---- API: Queue status monitoring ----
 app.get('/api/queue-status', (_req, res) => {
-  const statuses = getQueueStatuses();
-  res.json(statuses);
+  try {
+    const statuses = getQueueStatuses();
+    res.json(statuses);
+  } catch (err) {
+    console.error('[QUEUE] Error getting queue status:', err);
+    res.json({
+      discord: { queueLength: 0, processing: false, nextOperation: null, error: 'Queue system unavailable' },
+      database: { queueLength: 0, processing: false, nextOperation: null, error: 'Queue system unavailable' },
+      indeling: { queueLength: 0, processing: false, nextOperation: null, error: 'Queue system unavailable' }
+    });
+  }
 });
 
 // ---- API: Clear all queues (emergency only) ----
 app.post('/api/queue-clear', (_req, res) => {
-  const clearedDiscord = discordQueue.clear();
-  const clearedDatabase = databaseQueue.clear();
-  const clearedIndeling = indelingQueue.clear();
-  
-  console.log(`[QUEUE] Emergency clear: ${clearedDiscord} discord, ${clearedDatabase} database, ${clearedIndeling} indeling operations cleared`);
-  
-  res.json({ 
-    success: true, 
-    cleared: { discord: clearedDiscord, database: clearedDatabase, indeling: clearedIndeling }
-  });
+  try {
+    let clearedDiscord = 0, clearedDatabase = 0, clearedIndeling = 0;
+    
+    if (discordQueue && typeof discordQueue.clear === 'function') {
+      clearedDiscord = discordQueue.clear();
+    }
+    if (databaseQueue && typeof databaseQueue.clear === 'function') {
+      clearedDatabase = databaseQueue.clear();
+    }
+    if (indelingQueue && typeof indelingQueue.clear === 'function') {
+      clearedIndeling = indelingQueue.clear();
+    }
+    
+    console.log(`[QUEUE] Emergency clear: ${clearedDiscord} discord, ${clearedDatabase} database, ${clearedIndeling} indeling operations cleared`);
+    
+    res.json({ 
+      success: true, 
+      cleared: { discord: clearedDiscord, database: clearedDatabase, indeling: clearedIndeling }
+    });
+  } catch (err) {
+    console.error('[QUEUE] Error clearing queues:', err);
+    res.status(500).json({ error: 'Failed to clear queues' });
+  }
 });
 
 const PORT = process.env.PORT || 3001;
