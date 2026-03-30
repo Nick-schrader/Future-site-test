@@ -124,15 +124,16 @@ body {
 /* LOGIN SCREEN (oud, voor compatibiliteit) */
 .login-screen { min-height: 100vh; display: flex; flex-direction: column; }
 .modal-overlay {
-  position: fixed; inset: 0; z-index: 500;
+  position: fixed; inset: 0; z-index: 9999;
   display: flex; align-items: center; justify-content: center;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.7);
 }
-.modal-overlay.hidden { display: none; }
+.modal-overlay.hidden { display: none !important; }
 .modal-card {
   background: #252837; border-radius: 10px; padding: 28px;
   min-width: 340px; border: 1px solid #2a2d3e;
   display: flex; flex-direction: column; gap: 14px;
+  z-index: 10000;
 }
 .modal-card h2 { text-align: center; color: #cdd6f4; }
 
