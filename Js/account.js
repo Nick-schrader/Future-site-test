@@ -145,7 +145,7 @@ function renderTijden() {
               <td>${t.week}</td>
               <td>${t.uren}</td>
               <td style="text-align:right">
-                <button class="btn-ghost small" onclick="verwijderTijd('${cat}', '${t.week}')">🗑️</button>
+                <!-- Delete button removed -->
               </td>
             </tr>
           `).join('');

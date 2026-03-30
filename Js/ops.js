@@ -99,6 +99,11 @@ function laadTijden() {
     });
 }
 
+function renderTijden() {
+  console.log('[OPS DEBUG] renderTijden() called');
+  filterTijden();
+}
+
 function filterTijden() {
   const week = document.getElementById('week-filter').value;
   const cat = document.getElementById('cat-filter').value;
@@ -135,9 +140,7 @@ function filterTijden() {
       <td>${d.week === 'Totaal' ? 'Totaal' : 'Week ' + d.week}</td>
       <td style="font-family:monospace">${d.uren}</td>
       <td style="text-align:right;position:relative">
-        <!-- Temporarily disabled action buttons for debugging
         ${d.week !== 'Totaal' ? `<button class="btn-ghost" style="padding:2px 10px;font-size:1.1rem" onclick="toggleActieMenu(event,'${d.user_id}','${d.categorie}',${d.week})">&#8943;</button>` : `<button class="btn-ghost" style="padding:2px 10px;font-size:1.1rem" onclick="toggleActieMenuUser(event,'${d.user_id}')">&#8943;</button>`}
-        -->
       </td>
     </tr>
   `).join('');
