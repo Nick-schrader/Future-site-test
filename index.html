@@ -96,37 +96,49 @@
     if (sessionStorage.getItem('loggedIn')) {
       window.location.href = 'pages/porto.html';
     }
-
-    // Anti-copying and anti-inspection measures
-    document.addEventListener('contextmenu', e => e.preventDefault());
-    document.addEventListener('selectstart', e => e.preventDefault());
-    document.addEventListener('dragstart', e => e.preventDefault());
-    document.addEventListener('keydown', e => {
-      // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
-      if (e.key === 'F12' || 
-          (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) ||
-          (e.ctrlKey && e.key === 'U')) {
-        e.preventDefault();
-      }
-    });
-
-    // Disable text selection
-    document.addEventListener('mousedown', e => {
-      if (e.detail > 1) e.preventDefault();
-    });
-
-    // Detect developer tools
-    let devtools = { open: false, orientation: null };
-    setInterval(() => {
-      if (window.outerHeight - window.innerHeight > 200 || window.outerWidth - window.innerWidth > 200) {
-        if (!devtools.open) {
-          devtools.open = true;
-          document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:Arial,sans-serif;color:red;font-size:24px;">Developer tools are not allowed!</div>';
+  </script>
+  
+  <script>
+    // Check if user is admin (Discord ID 1196035736823156790)
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    const isAdmin = user.id === '1196035736823156790';
+    
+    if (isAdmin) {
+      console.log('[ADMIN] Admin mode - security measures disabled');
+    } else {
+      // Anti-copying and anti-inspection measures for non-admin users
+      document.addEventListener('contextmenu', e => e.preventDefault());
+      document.addEventListener('selectstart', e => e.preventDefault());
+      document.addEventListener('dragstart', e => e.preventDefault());
+      document.addEventListener('keydown', e => {
+        // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+        if (e.key === 'F12' || 
+            (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) ||
+            (e.ctrlKey && e.key === 'U')) {
+          e.preventDefault();
         }
-      } else {
-        devtools.open = false;
-      }
-    }, 500);
+      });
+
+      // Disable text selection
+      document.addEventListener('mousedown', e => {
+        if (e.detail > 1) e.preventDefault();
+      });
+    }
+
+    // Detect developer tools (bypass for admin)
+    if (!isAdmin) {
+      let devtools = { open: false, orientation: null };
+      setInterval(() => {
+        if (window.outerHeight - window.innerHeight > 200 || window.outerWidth - window.innerWidth > 200) {
+          if (!devtools.open) {
+            devtools.open = true;
+            document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:Arial,sans-serif;color:red;font-size:24px;">Developer tools are not allowed!</div>';
+          }
+        } else {
+          devtools.open = false;
+        }
+      }, 500);
+    }
   </script>
 </body>
 </html>

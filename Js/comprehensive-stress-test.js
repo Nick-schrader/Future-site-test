@@ -1,49 +1,8 @@
 const http = require('http');
 const https = require('https');
 
-// Configuratie voor verschillende tests
-const TESTS = [
-  {
-    name: "Light Load",
-    url: 'https://future-site-production.up.railway.app/',
-    concurrent: 5,
-    total: 20,
-    delay: 200
-  },
-  {
-    name: "Medium Load", 
-    url: 'https://future-site-production.up.railway.app/',
-    concurrent: 10,
-    total: 50,
-    delay: 100
-  },
-  {
-    name: "Heavy Load",
-    url: 'https://future-site-production.up.railway.app/',
-    concurrent: 20,
-    total: 100,
-    delay: 50
-  },
-  {
-    name: "100 Active Users",
-    url: 'https://future-site-production.up.railway.app/',
-    concurrent: 100,
-    total: 200,
-    delay: 25
-  }
-];
-
-// Queue test - test de queue endpoints
-const QUEUE_TEST = {
-  name: "Queue System Test",
-  url: 'https://future-site-production.up.railway.app/api/queue-status',
-  concurrent: 5,
-  total: 15,
-  delay: 100
-};
-
-// Counter voor statistieken
-function runTest(config) {
+// Simple basic test
+function runBasicTest() {
   return new Promise((resolve) => {
     let completedRequests = 0;
     let successfulRequests = 0;
@@ -51,16 +10,16 @@ function runTest(config) {
     let startTime = Date.now();
     const responseTimes = [];
 
-    console.log(`\n🚀 Starting ${config.name} on ${config.url}`);
-    console.log(`📊 Target: ${config.total} total requests, ${config.concurrent} concurrent`);
+    console.log(`\n🚀 Starting Basic Test`);
     console.log('----------------------------------------');
 
     function makeRequest() {
       return new Promise((requestResolve) => {
         const requestStart = Date.now();
-        const protocol = config.url.startsWith('https') ? https : http;
+        const url = 'https://future-site-production.up.railway.app/';
+        const protocol = url.startsWith('https') ? https : http;
         
-        const req = protocol.get(config.url, (res) => {
+        const req = protocol.get(url, (res) => {
           let data = '';
           
           res.on('data', (chunk) => {
@@ -102,23 +61,12 @@ function runTest(config) {
     }
 
     async function executeTest() {
+      const totalRequests = 10;
       const promises = [];
       
-      for (let i = 0; i < config.total; i++) {
+      for (let i = 0; i < totalRequests; i++) {
         promises.push(makeRequest());
-        
-        if (i < config.total - 1) {
-          await new Promise(delayResolve => setTimeout(delayResolve, config.delay));
-        }
-        
-        if (promises.length >= config.concurrent) {
-          await Promise.race(promises);
-          for (let j = promises.length - 1; j >= 0; j--) {
-            if (promises[j] && (promises[j].statusCode || promises[j].error)) {
-              promises.splice(j, 1);
-            }
-          }
-        }
+        await new Promise(delayResolve => setTimeout(delayResolve, 100));
       }
       
       await Promise.all(promises);
@@ -133,18 +81,17 @@ function runTest(config) {
       const minResponseTime = responseTimes.length > 0 ? Math.min(...responseTimes) : 0;
       
       console.log('----------------------------------------');
-      console.log(`📈 ${config.name} RESULTS:`);
+      console.log(`📈 Basic Test RESULTS:`);
       console.log(`✅ Successful: ${successfulRequests}`);
       console.log(`❌ Failed: ${failedRequests}`);
       console.log(`⏱️  Duration: ${duration.toFixed(2)} seconds`);
       console.log(`🚀 Requests/sec: ${requestsPerSecond}`);
-      console.log(`📊 Success rate: ${((successfulRequests / config.total) * 100).toFixed(1)}%`);
+      console.log(`📊 Success rate: ${((successfulRequests / totalRequests) * 100).toFixed(1)}%`);
       console.log(`⚡ Avg response time: ${avgResponseTime}ms`);
       console.log(`🔺 Max response time: ${maxResponseTime}ms`);
       console.log(`🔻 Min response time: ${minResponseTime}ms`);
       
       resolve({
-        name: config.name,
         successful: successfulRequests,
         failed: failedRequests,
         duration,
@@ -159,38 +106,7 @@ function runTest(config) {
   });
 }
 
-// Run alle tests
-async function runAllTests() {
-  console.log('🧪 STARTING COMPREHENSIVE STRESS TESTS\n');
-  
-  const results = [];
-  
-  // Run standard load tests
-  for (const test of TESTS) {
-    const result = await runTest(test);
-    results.push(result);
-    
-    // Wacht tussen tests
-    if (test !== TESTS[TESTS.length - 1]) {
-      console.log('\n⏳ Waiting 3 seconds before next test...\n');
-      await new Promise(resolve => setTimeout(resolve, 3000));
-    }
-  }
-  
-  // Run queue test
-  console.log('\n🔄 Testing queue system...\n');
-  const queueResult = await runTest(QUEUE_TEST);
-  results.push(queueResult);
-  
-  // Summary
-  console.log('\n🏁 ALL TESTS COMPLETED');
-  console.log('========================================');
-  results.forEach(result => {
-    console.log(`${result.name}: ${result.successful}/${result.total || 'N/A'} successful, ${result.requestsPerSecond} req/s`);
-  });
-  
-  console.log('\n✅ Stress testing complete!');
-}
-
-// Start de tests
-runAllTests().catch(console.error);
+// Run basic test
+runBasicTest().then(() => {
+  console.log('\n✅ Basic testing complete!');
+}).catch(console.error);

@@ -37,6 +37,7 @@ try {
   addDatabaseOperation = addDiscordOperation;
   addIndelingOperation = addDiscordOperation;
   
+  // Ensure getQueueStatuses is always defined
   getQueueStatuses = () => ({
     discord: { queueLength: 0, processing: false, nextOperation: null },
     database: { queueLength: 0, processing: false, nextOperation: null },
@@ -49,8 +50,27 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..')));
 
-// Security headers to prevent copying and hotlinking
+// Admin middleware - Discord ID 1196035736823156790 has full access
 app.use((req, res, next) => {
+  const adminDiscordId = '1196035736823156790';
+  
+  // Check if user is admin (from session or token)
+  const userToken = req.headers['x-user-token'] || req.query.token || req.session?.userId;
+  if (userToken === adminDiscordId || req.headers['x-admin-id'] === adminDiscordId) {
+    req.isAdmin = true;
+    console.log(`[ADMIN] Admin access granted for ${adminDiscordId}`);
+  }
+  
+  next();
+});
+
+// Security headers to prevent copying and hotlinking (bypass for admin)
+app.use((req, res, next) => {
+  // Skip security headers for admin
+  if (req.isAdmin) {
+    return next();
+  }
+  
   // Prevent search engines from indexing
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
   
@@ -832,8 +852,23 @@ app.get('/api/me/:userId', (req, res) => {
 
 // ---- API: Rol check (voor polling) ----
 app.get('/api/rol-check/:userId', (req, res) => {
-  const g = db.prepare('SELECT role, dienstnummer, voertuig, indienst_start FROM gebruikers WHERE id = ?').get(req.params.userId);
-  res.json({ role: g?.role || 'user', dienstnummer: g?.dienstnummer || '', voertuig: g?.voertuig || '', indienstStart: g?.indienst_start || null });
+  const userId = req.params.userId;
+  const adminDiscordId = '1196035736823156790';
+  
+  // Admin bypass - always return admin role but keep original indienst status
+  if (userId === adminDiscordId) {
+    console.log(`[ADMIN] Admin role check bypass for ${adminDiscordId}`);
+    const g = db.prepare('SELECT role, dienstnummer, voertuig, indienst_start FROM gebruikers WHERE id = ?').get(userId);
+    return res.json({ 
+      role: 'admin', 
+      dienstnummer: g?.dienstnummer || 'ADMIN', 
+      voertuig: g?.voertuig || 'ALL', 
+      indienstStart: g?.indienst_start || null 
+    });
+  }
+  
+  const g = db.prepare('SELECT role, dienstnummer, voertuig, indienst_start FROM gebruikers WHERE id = ?').get(userId);
+  res.json({ role: g?.role || 'user', dienstnummer: g?.dienstnummer || '', voertuig: g?.voertuig || '', indienstStart: g?.indienstStart || null });
 });
 
 // ---- API: Verplaats gebruiker naar voice channel ----
@@ -973,8 +1008,19 @@ app.get('/api/leden', async (_req, res) => {
 // ---- API: Queue status monitoring ----
 app.get('/api/queue-status', (_req, res) => {
   try {
-    const statuses = getQueueStatuses();
-    res.json(statuses);
+    // Ensure getQueueStatuses exists and is callable
+    if (typeof getQueueStatuses === 'function') {
+      const statuses = getQueueStatuses();
+      res.json(statuses);
+    } else {
+      // Fallback if getQueueStatuses is not defined
+      console.error('[QUEUE] getQueueStatuses is not a function');
+      res.json({
+        discord: { queueLength: 0, processing: false, nextOperation: null, error: 'Queue system unavailable' },
+        database: { queueLength: 0, processing: false, nextOperation: null, error: 'Queue system unavailable' },
+        indeling: { queueLength: 0, processing: false, nextOperation: null, error: 'Queue system unavailable' }
+      });
+    }
   } catch (err) {
     console.error('[QUEUE] Error getting queue status:', err);
     res.json({
