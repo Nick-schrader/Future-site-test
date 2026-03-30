@@ -5,7 +5,6 @@ let _alleTijden = [];
 window.onload = () => {
   if (!sessionStorage.getItem('loggedIn')) { window.location.href = '../index.html'; return; }
   laadTijden();
-  laadMeldingen();
 };
 
 function laadMeldingen() {
