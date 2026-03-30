@@ -29,29 +29,73 @@ function laadMeldingen() {
 }
 
 function laadTijden() {
+  console.log('[OPS DEBUG] Starting laadTijden()');
+  console.log('[OPS DEBUG] API_URL:', API_URL);
+  console.log('[OPS DEBUG] Full URL:', `${API_URL}/api/tijden-overzicht`);
+  
+  // Check if elements exist
+  const weekFilter = document.getElementById('week-filter');
+  const opsTbody = document.getElementById('ops-tbody');
+  const top10Tbody = document.getElementById('top10-tbody');
+  
+  console.log('[OPS DEBUG] Elements found:', {
+    weekFilter: !!weekFilter,
+    opsTbody: !!opsTbody,
+    top10Tbody: !!top10Tbody
+  });
+  
   fetch(`${API_URL}/api/tijden-overzicht`)
-    .then(r => r.json())
+    .then(response => {
+      console.log('[OPS DEBUG] Fetch response:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return response.json();
+    })
     .then(data => {
+      console.log('[OPS DEBUG] Data received:', {
+        type: typeof data,
+        isArray: Array.isArray(data),
+        length: data?.length,
+        sample: data?.slice(0, 2)
+      });
+      
       _alleTijden = data;
 
       // Vul week filter (unieke weken, geen duplicates)
-      const weekFilter = document.getElementById('week-filter');
-      const weken = [...new Set(data.map(d => d.week))].sort((a, b) => b - a);
-      weekFilter.innerHTML = '<option value="">Alle weken</option>';
-      weken.forEach(w => {
-        const opt = document.createElement('option');
-        opt.value = w; opt.textContent = 'Week ' + w;
-        weekFilter.appendChild(opt);
-      });
-
-      // Vul persoon filter is verwijderd - nu zoekveld
-      // De zoekfunctie werkt met het input veld
+      if (weekFilter) {
+        const weken = [...new Set(data.map(d => d.week))].sort((a, b) => b - a);
+        console.log('[OPS DEBUG] Weken found:', weken);
+        
+        weekFilter.innerHTML = '<option value="">Alle weken</option>';
+        weken.forEach(w => {
+          const opt = document.createElement('option');
+          opt.value = w; opt.textContent = 'Week ' + w;
+          weekFilter.appendChild(opt);
+        });
+        console.log('[OPS DEBUG] Week filter populated');
+      }
 
       renderTijden();
       renderTop10();
+      console.log('[OPS DEBUG] Data rendering completed');
     })
-    .catch(() => {
-      document.getElementById('ops-tbody').innerHTML = '<tr><td colspan="5" style="color:#555;text-align:center">Kan data niet laden</td></tr>';
+    .catch(error => {
+      console.error('[OPS DEBUG] Error in laadTijden:', error);
+      console.error('[OPS DEBUG] Error stack:', error.stack);
+      
+      if (opsTbody) {
+        opsTbody.innerHTML = '<tr><td colspan="5" style="color:#f87171;text-align:center">Kan data niet laden: ' + error.message + '</td></tr>';
+      }
+      if (top10Tbody) {
+        top10Tbody.innerHTML = '<tr><td colspan="3" style="color:#f87171;text-align:center">Kan data niet laden: ' + error.message + '</td></tr>';
+      }
     });
 }
 
@@ -91,7 +135,9 @@ function filterTijden() {
       <td>${d.week === 'Totaal' ? 'Totaal' : 'Week ' + d.week}</td>
       <td style="font-family:monospace">${d.uren}</td>
       <td style="text-align:right;position:relative">
+        <!-- Temporarily disabled action buttons for debugging
         ${d.week !== 'Totaal' ? `<button class="btn-ghost" style="padding:2px 10px;font-size:1.1rem" onclick="toggleActieMenu(event,'${d.user_id}','${d.categorie}',${d.week})">&#8943;</button>` : `<button class="btn-ghost" style="padding:2px 10px;font-size:1.1rem" onclick="toggleActieMenuUser(event,'${d.user_id}')">&#8943;</button>`}
+        -->
       </td>
     </tr>
   `).join('');
