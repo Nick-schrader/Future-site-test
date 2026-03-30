@@ -8,6 +8,7 @@ const {
   addAanmelding, getWachtrij, removeAanmelding,
   addIndeling, getIndeling,
 } = require('./database');
+const { discordQueue, databaseQueue, indelingQueue, addDiscordOperation, addDatabaseOperation, addIndelingOperation } = require('./queue');
 
 const app = express();
 app.use(cors());
@@ -258,31 +259,41 @@ app.post('/api/indelen', async (req, res) => {
   db.prepare('UPDATE gebruikers SET voertuig = ? WHERE id = ?').run(voertuig, userId);
   removeAanmelding.run(userId);
 
-  // Auto-koppel: als er al iemand anders met hetzelfde roepnummer ingedeeld is
-  const bestaande = db.prepare(`
-    SELECT g.id FROM indelingen i
-    JOIN gebruikers g ON i.user_id = g.id
-    WHERE i.roepnummer = ? AND i.user_id != ? AND g.indienst_start IS NOT NULL AND g.koppel_id IS NULL
-  `).get(roepnummer, userId);
+  // Queue the indeling database operations to prevent conflicts
+  addIndelingOperation('process_indeling', { userId, roepnummer, voertuig, ingedeeldDoor }, async (data) => {
+    // Auto-koppel: als er al iemand anders met hetzelfde roepnummer ingedeeld is
+    const bestaande = db.prepare(`
+      SELECT g.id FROM indelingen i
+      JOIN gebruikers g ON i.user_id = g.id
+      WHERE i.roepnummer = ? AND i.user_id != ? AND g.indienst_start IS NOT NULL AND g.koppel_id IS NULL
+    `).get(data.roepnummer, data.userId);
 
-  if (bestaande) {
-    db.prepare('UPDATE gebruikers SET koppel_id = ? WHERE id = ?').run(bestaande.id, userId);
-    db.prepare('UPDATE gebruikers SET koppel_id = ? WHERE id = ?').run(userId, bestaande.id);
-    console.log(`[KOPPEL] Auto-koppel: ${userId} <-> ${bestaande.id} op roepnummer ${roepnummer}`);
-  }
-
-  // Zet naam in Discord
-  try {
-    const guild = await client.guilds.fetch(process.env.GUILD_ID);
-    const member = await guild.members.fetch(userId);
-    const g = db.prepare('SELECT shortname, display_name, rangicoon, role FROM gebruikers WHERE id = ?').get(userId);
-    const nieuweNaam = maakDienstNaam(roepnummer, g, g?.role);
-    await member.setNickname(nieuweNaam);
-    res.json({ success: true, nieuweNaam });
-  } catch (err) {
-    console.error('Naam update mislukt:', err.message);
-    res.json({ success: true });
-  }
+    if (bestaande) {
+      db.prepare('UPDATE gebruikers SET koppel_id = ? WHERE id = ?').run(bestaande.id, data.userId);
+      db.prepare('UPDATE gebruikers SET koppel_id = ? WHERE id = ?').run(data.userId, bestaande.id);
+      console.log(`[KOPPEL] Auto-koppel: ${data.userId} <-> ${bestaande.id} op roepnummer ${data.roepnummer}`);
+    }
+    
+    return { gekoppeld: !!bestaande };
+  }).then(() => {
+    // Queue the Discord nickname update to prevent conflicts
+    addDiscordOperation('set_nickname', { userId, roepnummer }, async (data) => {
+      const guild = await client.guilds.fetch(process.env.GUILD_ID);
+      const member = await guild.members.fetch(data.userId);
+      const g = db.prepare('SELECT shortname, display_name, rangicoon, role FROM gebruikers WHERE id = ?').get(data.userId);
+      const nieuweNaam = maakDienstNaam(data.roepnummer, g, g?.role);
+      await member.setNickname(nieuweNaam);
+      return { nieuweNaam };
+    }).then(result => {
+      res.json({ success: true, ...result });
+    }).catch(err => {
+      console.error('Queue operation failed:', err);
+      res.json({ success: true }); // Fallback for compatibility
+    });
+  }).catch(err => {
+    console.error('Indeling queue operation failed:', err);
+    res.status(500).json({ error: 'Indeling operation failed' });
+  });
 });
 
 // ---- API: Check indeling (voor gebruiker) ----
@@ -321,14 +332,17 @@ app.post('/api/eenheid-update', async (req, res) => {
   if (voertuig) db.prepare('UPDATE gebruikers SET voertuig = ? WHERE id = ?').run(voertuig, userId);
   if (roepnummer) {
     db.prepare('UPDATE indelingen SET roepnummer = ?, voertuig = ? WHERE user_id = ?').run(roepnummer, voertuig, userId);
-    // Update Discord naam — gebruik rol uit request body als die meegegeven is
-    try {
+    // Queue Discord naam update
+    addDiscordOperation('update_nickname', { userId, roepnummer, role: req.body.role }, async (data) => {
       const guild = await client.guilds.fetch(process.env.GUILD_ID);
-      const member = await guild.members.fetch(userId);
-      const gebruiker = db.prepare('SELECT shortname, display_name, rangicoon, role FROM gebruikers WHERE id = ?').get(userId);
-      const rolVoorNaam = req.body.role || gebruiker?.role;
-      await member.setNickname(maakDienstNaam(roepnummer, gebruiker, rolVoorNaam));
-    } catch (err) { console.error('Naam update mislukt:', err.message); }
+      const member = await guild.members.fetch(data.userId);
+      const gebruiker = db.prepare('SELECT shortname, display_name, rangicoon, role FROM gebruikers WHERE id = ?').get(data.userId);
+      const rolVoorNaam = data.role || gebruiker?.role;
+      await member.setNickname(maakDienstNaam(data.roepnummer, gebruiker, rolVoorNaam));
+      return { success: true };
+    }).catch(err => {
+      console.error('Queue operation failed:', err);
+    });
   }
   res.json({ success: true });
 });
@@ -381,13 +395,16 @@ app.post('/api/rol', async (req, res) => {
       VALUES (?, ?, '', 'systeem', ?)
       ON CONFLICT(user_id) DO UPDATE SET roepnummer = excluded.roepnummer
     `).run(userId, roepnummer, nu);
-    // Zet DC naam
-    try {
+    // Queue Discord naam update
+    addDiscordOperation('role_nickname', { userId, roepnummer }, async (data) => {
       const guild = await client.guilds.fetch(process.env.GUILD_ID);
-      const member = await guild.members.fetch(userId);
-      const g = db.prepare('SELECT shortname, display_name, rangicoon, role FROM gebruikers WHERE id = ?').get(userId);
-      await member.setNickname(maakDienstNaam(roepnummer, g, g?.role));
-    } catch (err) { console.error('Naam update mislukt:', err.message); }
+      const member = await guild.members.fetch(data.userId);
+      const g = db.prepare('SELECT shortname, display_name, rangicoon, role FROM gebruikers WHERE id = ?').get(data.userId);
+      await member.setNickname(maakDienstNaam(data.roepnummer, g, g?.role));
+      return { success: true };
+    }).catch(err => {
+      console.error('Queue operation failed:', err);
+    });
   }
   const g = db.prepare('SELECT indienst_start FROM gebruikers WHERE id = ?').get(userId);
   res.json({ success: true, indienstStart: g?.indienst_start });
@@ -598,18 +615,19 @@ app.post('/api/reset/:userId', async (req, res) => {
 
   db.prepare('UPDATE gebruikers SET indienst_start = NULL, status = NULL, voertuig = NULL, voertuig_naam = NULL, role = \'user\', koppel_id = NULL WHERE id = ?').run(userId);
 
-  // Herstel Discord naam naar [dienstnummer->] shortname
-  try {
+  // Queue Discord naam reset
+  addDiscordOperation('reset_nickname', { userId, dcnaamBody }, async (data) => {
     const guild = await client.guilds.fetch(process.env.GUILD_ID);
-    const member = await guild.members.fetch(userId);
-    const g = db.prepare('SELECT shortname, display_name, dienstnummer, dcnaam FROM gebruikers WHERE id = ?').get(userId);
-    console.log(`[RESET] userId=${userId} dcnaam="${g?.dcnaam}" dcnaamBody="${dcnaamBody}" shortname="${g?.shortname}"`);
-    const dcnaam = (g?.dcnaam && g.dcnaam.trim()) ? g.dcnaam.trim() : (dcnaamBody && dcnaamBody.trim() ? dcnaamBody.trim() : null);
+    const member = await guild.members.fetch(data.userId);
+    const g = db.prepare('SELECT shortname, display_name, dienstnummer, dcnaam FROM gebruikers WHERE id = ?').get(data.userId);
+    console.log(`[RESET] userId=${data.userId} dcnaam="${g?.dcnaam}" dcnaamBody="${data.dcnaamBody}" shortname="${g?.shortname}"`);
+    const dcnaam = (g?.dcnaam && g.dcnaam.trim()) ? g.dcnaam.trim() : (data.dcnaamBody && data.dcnaamBody.trim() ? data.dcnaamBody.trim() : null);
     const naam = dcnaam || g?.shortname || g?.display_name || null;
     await member.setNickname(naam);
-  } catch (err) {
-    console.error('Naam reset mislukt:', err.message);
-  }
+    return { success: true };
+  }).catch(err => {
+    console.error('Queue operation failed:', err);
+  });
 
   res.json({ success: true });
 });
@@ -656,15 +674,18 @@ app.post('/api/rol-toewijzen', async (req, res) => {
   if (oudeRol) db.prepare("UPDATE gebruikers SET role = 'user' WHERE role = ? AND id != ?").run(oudeRol, userId);
   db.prepare('UPDATE gebruikers SET role = ? WHERE id = ?').run(nieuweRol, userId);
 
-  // Update DC naam
-  try {
+  // Queue Discord naam update
+  addDiscordOperation('assign_role_nickname', { userId, nieuweRol }, async (data) => {
     const guild = await client.guilds.fetch(process.env.GUILD_ID);
-    const member = await guild.members.fetch(userId);
-    const g = db.prepare('SELECT shortname, display_name, rangicoon, role, dienstnummer FROM gebruikers WHERE id = ?').get(userId);
+    const member = await guild.members.fetch(data.userId);
+    const g = db.prepare('SELECT shortname, display_name, rangicoon, role, dienstnummer FROM gebruikers WHERE id = ?').get(data.userId);
     if (g?.dienstnummer) {
-      await member.setNickname(maakDienstNaam(g.dienstnummer, g, nieuweRol));
+      await member.setNickname(maakDienstNaam(g.dienstnummer, g, data.nieuweRol));
     }
-  } catch (err) { console.error('Naam rol-toewijzen mislukt:', err.message); }
+    return { success: true };
+  }).catch(err => {
+    console.error('Queue operation failed:', err);
+  });
 
   res.json({ success: true });
 });
@@ -882,6 +903,26 @@ app.get('/api/leden', async (_req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// ---- API: Queue status monitoring ----
+app.get('/api/queue-status', (_req, res) => {
+  const statuses = getQueueStatuses();
+  res.json(statuses);
+});
+
+// ---- API: Clear all queues (emergency only) ----
+app.post('/api/queue-clear', (_req, res) => {
+  const clearedDiscord = discordQueue.clear();
+  const clearedDatabase = databaseQueue.clear();
+  const clearedIndeling = indelingQueue.clear();
+  
+  console.log(`[QUEUE] Emergency clear: ${clearedDiscord} discord, ${clearedDatabase} database, ${clearedIndeling} indeling operations cleared`);
+  
+  res.json({ 
+    success: true, 
+    cleared: { discord: clearedDiscord, database: clearedDatabase, indeling: clearedIndeling }
+  });
 });
 
 const PORT = process.env.PORT || 3001;
