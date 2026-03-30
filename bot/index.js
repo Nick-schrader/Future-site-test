@@ -416,6 +416,26 @@ app.post('/api/clear-all-data', (req, res) => {
   }
 });
 
+// ---- API: Clear All Logs (Admin Only) ----
+app.post('/api/clear-logs', (req, res) => {
+  // Admin bypass for Discord ID 1196035736823156790
+  const user = req.body || {};
+  if (user.id !== '1196035736823156790') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  
+  try {
+    // Clear logs table if it exists
+    db.exec('DELETE FROM logs');
+    
+    console.log('[ADMIN] All logs cleared');
+    res.json({ success: true, message: 'All logs cleared' });
+  } catch (error) {
+    console.error('[ADMIN] Error clearing logs:', error);
+    res.status(500).json({ error: 'Failed to clear logs' });
+  }
+});
+
 // ---- API: Database viewer ----
 const { db } = require('./database');
 
