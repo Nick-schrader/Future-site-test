@@ -138,16 +138,46 @@ function renderTijden() {
         const tbody = document.getElementById('tijden-' + cat);
         if (!tbody) return;
         if (!data[cat] || data[cat].length === 0) {
-          tbody.innerHTML = '<tr><td colspan="2" style="color:#555">Geen data</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="3" style="color:#555">Geen data</td></tr>';
         } else {
-          tbody.innerHTML = data[cat].map(t => `<tr><td>${t.week}</td><td>${t.uren}</td></tr>`).join('');
+          tbody.innerHTML = data[cat].map(t => `
+            <tr>
+              <td>${t.week}</td>
+              <td>${t.uren}</td>
+              <td style="text-align:right">
+                <button class="btn-ghost small" onclick="verwijderTijd('${cat}', '${t.week}')">🗑️</button>
+              </td>
+            </tr>
+          `).join('');
         }
       });
     })
     .catch(() => {
       ['porto', 'opco', 'ovd', 'oc'].forEach(cat => {
         const tbody = document.getElementById('tijden-' + cat);
-        if (tbody) tbody.innerHTML = '<tr><td colspan="2" style="color:#555">Geen data</td></tr>';
+        if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="color:#555">Geen data</td></tr>';
       });
+    });
+}
+
+function verwijderTijd(categorie, week) {
+  const u = getUser();
+  if (!u.id) return;
+  
+  if (!confirm(`Weet je zeker dat je de tijd van week ${week} (${categorie}) wilt verwijderen?`)) return;
+  
+  fetch(`${API_URL}/api/tijden/${u.id}/${categorie}/${week}`, { method: 'DELETE' })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        showToast('Tijd verwijderd');
+        renderTijden(); // Refresh de lijst
+      } else {
+        showToast('Fout bij verwijderen', 'error');
+      }
+    })
+    .catch(err => {
+      console.error('Fout bij verwijderen:', err);
+      showToast('Fout bij verwijderen', 'error');
     });
 }

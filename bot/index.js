@@ -651,6 +651,31 @@ app.get('/api/tijden/:userId', (req, res) => {
   res.json(result);
 });
 
+// ---- API: Individuele tijd verwijderen ----
+app.delete('/api/tijden/:userId/:categorie/:week/:id', (req, res) => {
+  const { userId, categorie, week, id } = req.params;
+  const adminDiscordId = '1196035736823156790';
+  
+  // Admin bypass - admin can delete any times
+  if (userId === adminDiscordId) {
+    console.log(`[ADMIN] Admin time delete bypass for ${adminDiscordId}`);
+  }
+  
+  try {
+    const result = db.prepare('DELETE FROM dienst_tijden WHERE user_id = ? AND categorie = ? AND week = ? AND id = ?').run(userId, categorie, week, id);
+    
+    if (result.changes > 0) {
+      console.log(`[TIJDEN] Time deleted: user=${userId}, categorie=${categorie}, week=${week}, id=${id}`);
+      res.json({ success: true, deleted: result.changes });
+    } else {
+      res.json({ success: false, error: 'Geen tijd gevonden om te verwijderen' });
+    }
+  } catch (err) {
+    console.error('Error deleting time:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 function msNaarTijd(ms) {
   const h = String(Math.floor(ms / 3600000)).padStart(2, '0');
   const m = String(Math.floor((ms % 3600000) / 60000)).padStart(2, '0');
