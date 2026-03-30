@@ -58,9 +58,7 @@
                 <option value="ovd">OVD</option>
                 <option value="oc">OC</option>
               </select>
-              <select id="persoon-filter" class="input-field" style="width:160px" onchange="filterTijden()">
-                <option value="">Alle personen</option>
-              </select>
+              <input type="text" id="persoon-filter" class="input-field" style="width:160px" placeholder="Zoek persoon..." oninput="filterTijden()" />
             </div>
           </div>
           <div class="table-wrap">

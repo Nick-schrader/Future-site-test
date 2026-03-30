@@ -35,41 +35,36 @@ function laadTijden() {
     .then(data => {
       _alleTijden = data;
 
-      // Vul week filter
-      const weken = [...new Set(data.map(d => d.week))].sort((a, b) => b - a);
+      // Vul week filter (unieke weken, geen duplicates)
       const weekFilter = document.getElementById('week-filter');
+      const weken = [...new Set(data.map(d => d.week))].sort((a, b) => b - a);
+      weekFilter.innerHTML = '<option value="">Alle weken</option>';
       weken.forEach(w => {
         const opt = document.createElement('option');
         opt.value = w; opt.textContent = 'Week ' + w;
         weekFilter.appendChild(opt);
       });
 
-      // Vul persoon filter
-      const namen = [...new Set(data.map(d => d.naam))].sort();
-      const persoonFilter = document.getElementById('persoon-filter');
-      namen.forEach(n => {
-        const opt = document.createElement('option');
-        opt.value = n; opt.textContent = n;
-        persoonFilter.appendChild(opt);
-      });
+      // Vul persoon filter is verwijderd - nu zoekveld
+      // De zoekfunctie werkt met het input veld
 
-      filterTijden();
+      renderTijden();
       renderTop10();
     })
     .catch(() => {
-      document.getElementById('ops-tbody').innerHTML = '<tr><td colspan="4" style="color:#555;text-align:center">Kan data niet laden</td></tr>';
+      document.getElementById('ops-tbody').innerHTML = '<tr><td colspan="5" style="color:#555;text-align:center">Kan data niet laden</td></tr>';
     });
 }
 
 function filterTijden() {
   const week = document.getElementById('week-filter').value;
   const cat = document.getElementById('cat-filter').value;
-  const persoon = document.getElementById('persoon-filter').value;
+  const zoek = document.getElementById('persoon-filter').value.toLowerCase();
 
   let gefilterd = _alleTijden;
   if (week) gefilterd = gefilterd.filter(d => d.week == week);
   if (cat) gefilterd = gefilterd.filter(d => d.categorie === cat);
-  if (persoon) gefilterd = gefilterd.filter(d => d.naam === persoon);
+  if (zoek) gefilterd = gefilterd.filter(d => d.naam.toLowerCase().includes(zoek));
 
   // Als geen week filter: toon totaal per persoon per categorie
   if (!week) {
@@ -86,7 +81,7 @@ function filterTijden() {
 
   const tbody = document.getElementById('ops-tbody');
   if (gefilterd.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="4" style="color:#555;text-align:center">Geen data</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="color:#555;text-align:center">Geen data</td></tr>';
     return;
   }
 
