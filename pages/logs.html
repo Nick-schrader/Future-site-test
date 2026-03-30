@@ -57,11 +57,6 @@
               <option value="uren_verwijderd">Uren verwijderd</option>
               <option value="uren_aangepast">Uren aangepast</option>
               <option value="uren_gereset">Uren gereset</option>
-              <option value="reset">Reset gebruiker</option>
-              <option value="rol_toewijzen">Rol toegekend</option>
-              <option value="indeling">Indeling gewijzigd</option>
-              <option value="status">Status gewijzigd</option>
-              <option value="voertuig">Voertuig gewijzigd</option>
             </select>
             <input type="text" id="log-zoek-filter" class="input-field" style="width:200px" placeholder="Zoek op naam of details..." oninput="filterLogs()" />
             <input type="date" id="log-date-filter" class="input-field" style="width:150px" onchange="filterLogs()" />
@@ -69,7 +64,7 @@
           </div>
           <div class="table-wrap">
             <table class="db-table">
-              <thead><tr><th>Tijd</th><th>Actie</th><th>Door</th><th>Details</th><th>Actie</th></tr></thead>
+              <thead><tr><th>Tijd</th><th>Actie</th><th>Door</th><th>Details</th></tr></thead>
               <tbody id="logs-tbody"><tr><td colspan="5" style="color:#555;text-align:center">Laden...</td></tr></tbody>
             </table>
           </div>

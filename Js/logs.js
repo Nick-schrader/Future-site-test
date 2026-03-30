@@ -68,9 +68,6 @@ function filterLogs() {
       <td><span class="badge badge-purple">${ACTIE_LABELS[l.actie] || l.actie}</span></td>
       <td>${l.door || '-'}</td>
       <td style="color:#cdd6f4">${l.details || '-'}</td>
-      <td style="text-align:right">
-        <button class="btn-ghost small" onclick="verwijderLog(${l.id || l.tijd})" title="Verwijder log">🗑️</button>
-      </td>
     </tr>
   `).join('');
 }
