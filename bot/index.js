@@ -15,6 +15,37 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..')));
 
+// Security headers to prevent copying and hotlinking
+app.use((req, res, next) => {
+  // Prevent search engines from indexing
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  
+  // Prevent content type sniffing
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  
+  // Prevent clickjacking
+  res.setHeader('X-Frame-Options', 'DENY');
+  
+  // Prevent cross-site scripting
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  
+  // Content Security Policy
+  res.setHeader('Content-Security-Policy', 
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline'; " +
+    "style-src 'self' 'unsafe-inline'; " +
+    "img-src 'self' data: https:; " +
+    "connect-src 'self'; " +
+    "frame-ancestors 'none'; " +
+    "font-src 'self';"
+  );
+  
+  // Prevent referrer leakage
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  
+  next();
+});
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
