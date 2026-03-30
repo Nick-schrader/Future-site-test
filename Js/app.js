@@ -72,11 +72,11 @@ async function syncUserFromDB() {
 }
 
 // ---- AUTH CHECK ----
-// Alleen porto pagina vereist login, account mag altijd
+// Vereist login voor alle pagina's behalve account.html (voor registratie)
 (function() {
   const inPages = window.location.pathname.includes('/pages/');
-  const isPorto = window.location.pathname.includes('porto.html');
-  if (inPages && isPorto && !sessionStorage.getItem('loggedIn')) {
+  const isAccount = window.location.pathname.includes('account.html');
+  if (inPages && !isAccount && !sessionStorage.getItem('loggedIn')) {
     window.location.href = '../index.html';
   }
 })();
