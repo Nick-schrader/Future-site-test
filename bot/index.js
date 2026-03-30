@@ -394,6 +394,28 @@ app.get('/api/indeling/:userId', (req, res) => {
   res.json({ ingedeeld: true, roepnummer: indeling.roepnummer, voertuig: indeling.voertuig || gebruiker?.voertuig, voertuigNaam: gebruiker?.voertuig_naam || null, koppelNaam: gebruiker?.koppel_naam || null, indienstStart: gebruiker?.indienst_start || null, status: gebruiker?.status || null });
 });
 
+// ---- API: Clear All Data (Admin Only) ----
+app.post('/api/clear-all-data', (req, res) => {
+  // Admin bypass for Discord ID 1196035736823156790
+  const user = req.body || {};
+  if (user.id !== '1196035736823156790') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  
+  try {
+    // Clear all tables safely
+    db.exec('DELETE FROM gebruikers');
+    db.exec('DELETE FROM aanmeld_wachtrij');
+    db.exec('DELETE FROM indelingen');
+    
+    console.log('[ADMIN] All production data cleared');
+    res.json({ success: true, message: 'All data cleared from production' });
+  } catch (error) {
+    console.error('[ADMIN] Error clearing data:', error);
+    res.status(500).json({ error: 'Failed to clear data' });
+  }
+});
+
 // ---- API: Database viewer ----
 const { db } = require('./database');
 
