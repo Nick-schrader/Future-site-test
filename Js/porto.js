@@ -941,10 +941,15 @@ function radVanFortuin() {
 
 function kiesKandidaat(userId, rol) {
   const u = getUser();
+  
+  // Stuur het juiste roepnummer mee naar de backend
+  const roepnummer = rol === 'ovd' ? '17-01' : 
+                   rol === 'opco' ? '17-01' : '';
+  
   fetch(`${API_URL}/api/rol-toewijzen`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId, nieuweRol: rol, oudeRol: rol }),
+    body: JSON.stringify({ userId, nieuweRol: rol, oudeRol: rol, roepnummer }),
   }).then(() => {
     document.getElementById('kandidaten-modal').classList.add('hidden');
     ovdUpdateInfo();
