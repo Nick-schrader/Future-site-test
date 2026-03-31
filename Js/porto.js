@@ -1081,10 +1081,33 @@ function startIndienstTimer(elId) {
 function openVoertuigModal(id) {
   const unit = appData.eenheden.find(e => e.id === id);
   if (!unit) return;
+  closeVoertuigModal();
+  document.getElementById('voertuig-modal').classList.remove('hidden');
+
+  // Vul voertuig dropdown met beschikbare types
+  const voertuigSelect = document.getElementById('edit-voertuig');
+  voertuigSelect.innerHTML = '<option value="">Kies voertuig...</option>'; // Reset en voeg placeholder toe
+
+  // Haal specialisaties op om voertuig types te vullen
+  fetch(`${API_URL}/api/specialisaties`)
+    .then(r => r.json())
+    .then(specialisaties => {
+      const voertuigTypes = [...new Set(specialisaties.map(s => s.voertuig))];
+      voertuigTypes.forEach(type => {
+        const option = document.createElement('option');
+        option.value = type;
+        option.textContent = type;
+        if (unit.type === type) {
+          option.selected = true;
+        }
+        voertuigSelect.appendChild(option);
+      });
+    })
+    .catch(error => console.error('Fout bij het ophalen van voertuig types:', error));
+
   document.getElementById('edit-unit-id').value = id;
   document.getElementById('edit-unit-naam').textContent = unit.medewerkers;
   document.getElementById('edit-roepnummer').value = unit.id !== unit.medewerkers ? unit.id : '';
-  document.getElementById('edit-voertuig').value = unit.type !== '-' ? unit.type : 'Noodhulp';
 
   // IBT check
   let rollen = [];
