@@ -784,18 +784,24 @@ function setStatus(s) {
     console.log('🔄 All alerts with user IDs:', alerts.map(a => ({id: a.id, userId: a.userId, status: a.status})));
     
     // Remove alerts for this user that are no longer valid
-    const userAlerts = alerts.filter(alert => alert.userId === u.id);
+    const userAlerts = alerts.filter(alert => {
+      const alertUserId = alert.userId || alert.user_id; // Check both properties
+      return alertUserId === u.id;
+    });
     console.log('🔄 User alerts to remove:', userAlerts.length);
     
     userAlerts.forEach(alert => {
-      console.log('🔄 Removing alert:', alert.id, 'status:', alert.status);
+      console.log('🔄 Removing alert:', alert.id, 'status:', alert.status, 'userId:', alert.userId, 'user_id:', alert.user_id);
       fetch(`${API_URL}/api/status-alerts/${alert.id}`, { method: 'DELETE' })
         .catch(err => console.error('Failed to remove alert', alert.id, err));
     });
     
     // Update local _currentAlerts to remove deleted ones
     const beforeCount = window._currentAlerts?.length || 0;
-    window._currentAlerts = window._currentAlerts?.filter(alert => alert.userId !== u.id) || [];
+    window._currentAlerts = window._currentAlerts?.filter(alert => {
+      const alertUserId = alert.userId || alert.user_id;
+      return alertUserId !== u.id;
+    }) || [];
     const afterCount = window._currentAlerts?.length || 0;
     
     console.log('🔄 LOCAL CLEANUP - Before:', beforeCount, 'After:', afterCount);
