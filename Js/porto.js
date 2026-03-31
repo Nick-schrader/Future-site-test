@@ -875,7 +875,7 @@ function bevestigUitdienst() {
     fetch(`${API_URL}/api/reset/${u.id}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ indienstStart: u.indienstStart, dcnaam: u.dcnaam || '', roepnummer: '' }),
+      body: JSON.stringify({ indienstStart: null, dcnaam: u.dcnaam || '', roepnummer: '' }),
     })
       .then(() => {
         // Reset lokale state
