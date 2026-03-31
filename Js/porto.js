@@ -855,9 +855,26 @@ let _koppelData = null;
 
 function koppelEenheden(userId1, userId2, roep1, roep2) {
   _koppelData = { userId1, userId2, roepnummers: [roep1, roep2] };
-  document.getElementById('koppel-roep-btn1').textContent = roep1 || 'Geen roepnummer';
-  document.getElementById('koppel-roep-btn2').textContent = roep2 || 'Geen roepnummer';
-  document.getElementById('koppel-roepnummer-sectie').style.display = 'block';
+  
+  // Toon duidelijke keuze interface
+  const modal = document.getElementById('koppel-modal');
+  const keuzeSectie = modal.querySelector('.modal-body') || modal.querySelector('div');
+  
+  keuzeSectie.innerHTML = `
+    <h3 style="margin-bottom:16px">Kies een persoon om te koppelen</h3>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <button class="btn-purple" style="padding:12px;font-size:1rem" onclick="bevestigKoppel(0)">
+        <div style="font-weight:bold">${roep1 || 'Persoon 1'}</div>
+        <div style="font-size:0.8rem;opacity:0.8">Roepnummer: ${roep1 || 'Geen'}</div>
+      </button>
+      <button class="btn-purple" style="padding:12px;font-size:1rem" onclick="bevestigKoppel(1)">
+        <div style="font-weight:bold">${roep2 || 'Persoon 2'}</div>
+        <div style="font-size:0.8rem;opacity:0.8">Roepnummer: ${roep2 || 'Geen'}</div>
+      </button>
+    </div>
+  `;
+  
+  document.getElementById('koppel-modal').classList.remove('hidden');
 }
 
 function bevestigKoppel(keuze) {
