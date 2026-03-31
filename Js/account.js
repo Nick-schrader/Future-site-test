@@ -16,8 +16,6 @@ window.onload = async () => {
 
   // Vul instellingen
   document.getElementById('set-fullname').value = u.fullname || '';
-  document.getElementById('set-shortname').value = u.shortname || '';
-  document.getElementById('set-dcnaam').value = u.dcnaam || '';
   document.getElementById('set-rangicoon').value = u.rangicoon || '';
   
   // Audio volume slider
@@ -49,8 +47,6 @@ window.onload = async () => {
 function saveAccount() {
   const u = getUser();
   u.fullname   = document.getElementById('set-fullname').value;
-  u.shortname  = document.getElementById('set-shortname').value;
-  u.dcnaam     = document.getElementById('set-dcnaam').value;
   u.rangicoon  = document.getElementById('set-rangicoon').value;
   u.audioVolume = document.getElementById('audio-volume').value;
   saveUser(u);
