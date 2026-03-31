@@ -63,15 +63,40 @@ function filterLogs() {
     return;
   }
   
-  tbody.innerHTML = gefilterd.map(l => `
+  tbody.innerHTML = gefilterd.map(l => {
+    // Parse details veld voor wie en wat
+    let wie = '-';
+    let wat = '-';
+    
+    if (l.details) {
+      // Als details " | " bevat, splits het
+      if (l.details.includes(' | ')) {
+        const parts = l.details.split(' | ');
+        wie = parts[0] || '-';
+        wat = parts[1] || '-';
+      } else {
+        // Anders proberen te parsen voor uren aanpassingen
+        const match = l.details.match(/^([^+]+)\s*([+-]\d+\.?\d*)\s*uur?$/i);
+        if (match) {
+          wie = match[1].trim();
+          wat = match[2] + ' uur';
+        } else {
+          // Als niets anders werkt, zet alles in wat
+          wat = l.details;
+        }
+      }
+    }
+    
+    return `
     <tr>
       <td style="white-space:nowrap;color:#888;font-size:0.8rem">${new Date(l.tijd).toLocaleString('nl-NL')}</td>
       <td><span class="badge badge-purple">${ACTIE_LABELS[l.actie] || l.actie}</span></td>
       <td>${l.door || '-'}</td>
-      <td>${l.wie || '-'}</td>
-      <td style="color:#cdd6f4">${l.wat || '-'}</td>
+      <td>${wie}</td>
+      <td style="color:#cdd6f4">${wat}</td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function clearFilters() {
