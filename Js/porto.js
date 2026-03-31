@@ -97,6 +97,13 @@ window.onload = async () => {
           // NIET automatisch indienstStart zetten - alleen als database dit heeft
           if (data.status) u.status = data.status;
           if (data.voertuig) u.voertuig = data.voertuig;
+          
+          // Als niet ingedeeld, reset rol naar user
+          if (!data.ingedeeld && ['ovd','opco','oc','ops'].includes(u.role)) {
+            console.log('🔄 NIET INGEDEELD - Rol reset van', u.role, 'naar user');
+            u.role = 'user';
+          }
+          
           saveUser(u);
           
           // Alleen ovd-porto-main tonen als echt ingedeeld
@@ -107,6 +114,8 @@ window.onload = async () => {
             ovdUpdateInfo();
           } else {
             console.log('🔍 USER NIET INGEDEELD - Porto menu niet tonen');
+            // Refresh om correcte scherm te tonen
+            setTimeout(() => window.location.reload(), 1000);
           }
           if (u.status) {
             highlightStatus(u.status);
