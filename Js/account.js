@@ -7,7 +7,7 @@ window.onload = async () => {
   // Vul info card
   document.getElementById('info-username').textContent = u.username || '-';
   document.getElementById('info-id').textContent = u.id || '-';
-  document.getElementById('info-dienst').textContent = u.dienst || '-';
+  document.getElementById('info-dienst').textContent = 'Defensie';
 
   // Avatar
   if (u.avatar) {
