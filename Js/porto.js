@@ -1300,12 +1300,12 @@ function saveIndeling() {
     body: JSON.stringify({ userId, roepnummer, voertuig, ingedeeldDoor: u.displayName || u.username }),
   }).then(r => r.json()).then(data => {
     if (data.error) { showToast('⚠ ' + data.error); return; }
+    showToast(roepnummer + ' ingedeeld met ' + voertuig);
     document.getElementById('indelen-modal').classList.add('hidden');
     renderMeldingen();
-    showToast(roepnummer + ' ingedeeld met ' + voertuig);
     
     // Directe refresh na succesvolle indeling
-    setTimeout(() => window.location.reload(), 1000);
+    setTimeout(() => window.location.reload(), 500);
   });
 }
 
