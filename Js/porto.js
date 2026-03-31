@@ -935,16 +935,29 @@ function overnemen(type) {
 }
 
 async function aanmeldenDirect() {
-  const dienstRollen = await fetch(`${API_URL}/api/dienst-rollen`).then(r=>r.json()).catch(()=>({ovd:'-',opco:'-'}));
+  const dienstRollen = await fetch(`${API_URL}/api/dienst-rollen`)
+    .then(r => r.json())
+    .catch(() => ({ ovd:'-', opco:'-' }));
+  
   if (dienstRollen.ovd === '-' && dienstRollen.opco === '-') {
     showToast('Aanmelden niet mogelijk: geen OVD/OPCO actief');
     return;
   }
+
   const u = getUser();
   u.indienstStart = Date.now();
   saveUser(u);
 
-  fetch(`${API_URL}/api/aanmelden`, {
+  // ✅ Eerst je roepnummer verwijderen uit de wachtrij
+  try {
+    await fetch(`${API_URL}/api/wachtrij/${u.id}`, { method: 'DELETE' });
+    console.log('Roepnummer verwijderd uit wachtrij');
+  } catch (err) {
+    console.warn('Kon roepnummer niet verwijderen uit wachtrij', err);
+  }
+
+  // Vervolgens aanmelden
+  await fetch(`${API_URL}/api/aanmelden`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -955,6 +968,7 @@ async function aanmeldenDirect() {
     }),
   });
 
+  // UI aanpassen
   document.querySelector('.porto-aanmeld-section').classList.add('hidden');
   document.getElementById('porto-wacht').classList.remove('hidden');
   startIndienstTimer('oc-tijd');
