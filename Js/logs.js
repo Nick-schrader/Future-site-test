@@ -67,7 +67,8 @@ function filterLogs() {
       <td style="white-space:nowrap;color:#888;font-size:0.8rem">${new Date(l.tijd).toLocaleString('nl-NL')}</td>
       <td><span class="badge badge-purple">${ACTIE_LABELS[l.actie] || l.actie}</span></td>
       <td>${l.door || '-'}</td>
-      <td style="color:#cdd6f4">${l.details || '-'}</td>
+      <td>${l.wie || '-'}</td>
+      <td style="color:#cdd6f4">${l.wat || '-'}</td>
     </tr>
   `).join('');
 }
