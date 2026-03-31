@@ -755,6 +755,9 @@ function updateOCInfo() {
 }
 
 function setStatus(s) {
+  console.log('🔄 STATUS CHANGE - User setting status to:', s);
+  console.log('🔄 Before change - Current alerts:', window._currentAlerts?.length || 0);
+  
   if (s === 10) {
     document.getElementById('uitdienst-modal').classList.remove('hidden');
     return;
@@ -772,15 +775,29 @@ function setStatus(s) {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId: u.id, status: s }),
   }).then(() => {
+    console.log('🔄 Status saved to DB - Now cleaning up alerts...');
     // CRITICAL FIX: Remove any existing status alerts for this user when status changes
     return fetch(`${API_URL}/api/status-alerts`).then(r => r.json());
   }).then(alerts => {
+    console.log('🔄 Found alerts in DB:', alerts.length);
     // Remove alerts for this user that are no longer valid
     const userAlerts = alerts.filter(alert => alert.userId === u.id);
+    console.log('🔄 User alerts to remove:', userAlerts.length);
+    
     userAlerts.forEach(alert => {
+      console.log('🔄 Removing alert:', alert.id, 'status:', alert.status);
       fetch(`${API_URL}/api/status-alerts/${alert.id}`, { method: 'DELETE' })
         .catch(err => console.error('Failed to remove alert', alert.id, err));
     });
+    
+    // Update local _currentAlerts to remove deleted ones
+    const beforeCount = window._currentAlerts?.length || 0;
+    window._currentAlerts = window._currentAlerts?.filter(alert => alert.userId !== u.id) || [];
+    const afterCount = window._currentAlerts?.length || 0;
+    
+    console.log('🔄 LOCAL CLEANUP - Before:', beforeCount, 'After:', afterCount);
+    console.log('🔄 Timer should stop if no alerts remain:', afterCount === 0);
+    
     // Refresh meldingen to update the UI
     renderMeldingen();
   }).catch(err => console.error('Status update failed', err));
