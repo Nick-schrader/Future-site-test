@@ -87,8 +87,8 @@ window.onload = async () => {
 
     // Verberg inloggen knoppen op basis van DC rollen
     const rollen = (u.rollen || []).map(r => r.naam || r);
-    const heeftOpco = rollen.some(r => r.includes('OPCO-K'));
-    const heeftOvd  = rollen.some(r => r.includes('OVD-K') || r.includes('OvD-K'));
+    const heeftOpco = rollen.some(r => r.includes('OPCO'));
+    const heeftOvd  = rollen.some(r => r.includes('OVD') || r.includes('OvD'));
     const heeftOc   = rollen.includes('OC');
     const heeftOps  = rollen.some(r => r.includes('OPS'));
     if (!heeftOpco) { const b = document.getElementById('btn-opco'); if (b) b.remove(); }
@@ -963,11 +963,11 @@ function inloggenDirect(type) {
   const u = getUser();
   const rollen = (u.rollen || []).map(r => r.naam || r);
 
-  if (type === 'OVD' && !rollen.some(r => r.includes('OVD-K') || r.includes('OvD-K'))) {
-    showToast('Je hebt de OVD-K rol niet'); return;
+  if (type === 'OVD' && !rollen.some(r => r.includes('OVD') || r.includes('OvD'))) {
+    showToast('Je hebt de OVD rol niet'); return;
   }
-  if (type === 'OPCO' && !rollen.some(r => r.includes('OPCO-K'))) {
-    showToast('Je hebt de OPCO-K rol niet'); return;
+  if (type === 'OPCO' && !rollen.some(r => r.includes('OPCO'))) {
+    showToast('Je hebt de OPCO rol niet'); return;
   }
   if (type === 'OPS' && !rollen.some(r => r.includes('OPS'))) {
     showToast('Je hebt de OPS rol niet'); return;
