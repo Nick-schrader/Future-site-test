@@ -407,7 +407,15 @@ function renderGPS() {
 
 let vorigeWachtrijCount = 0;
 
-function speelAanmeldGeluid() {
+function speelAanmeldGeluid(debugInfo = '') {
+  console.log('🔊 PING SPELEN - Debug info:', debugInfo);
+  console.log('🔊 Current alerts:', window._currentAlerts);
+  console.log('🔊 Wachtrij:', window._wachtrij);
+  console.log('🔊 Timers active:', {
+    alertPingTimer: !!window._alertPingTimer,
+    pingHerhaalTimer: !!window._pingHerhaalTimer
+  });
+  
   const ctx = new (window.AudioContext || window.webkitAudioContext)();
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
@@ -452,7 +460,7 @@ function renderMeldingen() {
 
       // Alleen geluid bij nieuwe alerts
       if (window._vorigeAlerts !== null && alerts.length > window._vorigeAlerts) {
-        speelAanmeldGeluid();
+        speelAanmeldGeluid('Nieuwe alert detected - vorige: ' + window._vorigeAlerts + ' -> huidige: ' + alerts.length);
       }
 
       vorigeWachtrijCount = wachtrij.length;
@@ -493,11 +501,11 @@ function renderMeldingen() {
                 return;
               }
 
-              speelAanmeldGeluid();
+              speelAanmeldGeluid('Wachtrij ping timer - valid wachtrij items: ' + validWachtrij.length + '/' + currentWachtrij.length);
               renderMeldingen();
             }).catch(() => {
               // If check fails, play sound anyway to be safe
-              speelAanmeldGeluid();
+              speelAanmeldGeluid('Wachtrij ping timer - API check failed');
               renderMeldingen();
             });
 
@@ -546,11 +554,11 @@ function renderMeldingen() {
                 return;
               }
 
-              speelAanmeldGeluid();
+              speelAanmeldGeluid('Status alert ping timer - valid alerts: ' + validAlerts.length + '/' + window._currentAlerts.length);
               renderMeldingen();
             }).catch(() => {
               // If check fails, play sound anyway to be safe
-              speelAanmeldGeluid();
+              speelAanmeldGeluid('Status alert ping timer - API check failed');
               renderMeldingen();
             });
 
@@ -665,6 +673,27 @@ function showAlertDetails() {
       });
     })
     .catch(err => console.error('Failed to fetch alerts', err));
+}
+
+// Debug function to check current ping state
+function checkPingState() {
+  console.log('=== PING STATE DEBUG ===');
+  console.log('Current alerts:', window._currentAlerts);
+  console.log('Wachtrij:', window._wachtrij);
+  console.log('Vorige alerts count:', window._vorigeAlerts);
+  console.log('Timers active:', {
+    alertPingTimer: !!window._alertPingTimer,
+    pingHerhaalTimer: !!window._pingHerhaalTimer
+  });
+  
+  // Check current API state
+  Promise.all([
+    fetch(`${API_URL}/api/status-alerts`).then(r => r.json()),
+    fetch(`${API_URL}/api/wachtrij`).then(r => r.json())
+  ]).then(([alerts, wachtrij]) => {
+    console.log('API Alerts:', alerts.length, alerts);
+    console.log('API Wachtrij:', wachtrij.length, wachtrij);
+  }).catch(err => console.error('API check failed', err));
 }
 
 function slaEigenVoertuigOp() {
