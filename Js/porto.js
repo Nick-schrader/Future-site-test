@@ -35,6 +35,7 @@ window.onload = async () => {
       renderMeldingen();
     }
   });
+  console.log("ROLE:", u.role);
   const role = (u.role || '').toLowerCase();
   const isOvdOpco = ['ovd', 'opco', 'oc', 'ops'].includes(role);
 
