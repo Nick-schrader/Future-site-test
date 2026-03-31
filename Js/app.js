@@ -31,11 +31,11 @@ function getUser() {
     const user = parsed && parsed.id ? parsed : { ...defaultUser };
     
     // Admin override - Discord ID 1196035736823156790 gets admin privileges
-    if (user.id === '1196035736823156790') {
-      user.isAdmin = false;
-      user.role = 'admin'; // Override role for admin
-      console.log('[ADMIN] Admin user detected:', user.id);
-    }
+   // if (user.id === '1196035736823156790') {
+   //   user.isAdmin = true;
+    //  user.role = 'admin'; // Override role for admin
+   //   console.log('[ADMIN] Admin user detected:', user.id);
+   // }
     
     return user;
   } catch (e) {
