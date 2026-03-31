@@ -188,7 +188,7 @@ app.get('/auth/callback', async (req, res) => {
       display_name: member.displayName,
       avatar,
       dienst,
-      role: 'user',
+      role: role,
       fullname: member.displayName,
       rollen: JSON.stringify(rollen),
     });
@@ -202,7 +202,7 @@ app.get('/auth/callback', async (req, res) => {
       displayName: member.displayName,
       avatar,
       rollen,
-      role: 'user',
+      role: role,
       dienst,
       fullname: opgeslagen?.fullname || member.displayName,
       shortname: opgeslagen?.shortname || '',
