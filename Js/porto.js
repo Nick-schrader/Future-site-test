@@ -1611,11 +1611,15 @@ function checkIndeling() {
   }
 
   // Check of rol veranderd is (werd je OVD/OPCO gekozen?)
-  if (!['ovd','opco','oc','ops'].includes(u.role)) {
+  // Alleen checken als user nog niet OVD/OPCO/OC/OPS is
+  const currentUserRole = u.role || '';
+  if (!['ovd','opco','oc','ops'].includes(currentUserRole)) {
     fetch(`${API_URL}/api/rol-check/${u.id}`)
       .then(r => r.json())
       .then(data => {
-        if (['ovd','opco','oc','ops'].includes(data.role)) {
+        // Alleen rol toewijzen als gebruiker NIET uitdienst is
+        const isUitdienst = !u.indienstStart || u.status === 10;
+        if (!isUitdienst && ['ovd','opco','oc','ops'].includes(data.role)) {
           u.role = data.role;
           if (data.dienstnummer) u.dienstnummer = data.dienstnummer;
           if (data.voertuig) u.voertuig = data.voertuig;
