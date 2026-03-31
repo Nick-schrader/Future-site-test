@@ -31,6 +31,14 @@ window.onload = async () => {
   fetch(`${API_URL}/api/instellingen-systeem`).then(r=>r.json()).then(d=>{ if(d.ping_interval) window._pingInterval = parseInt(d.ping_interval); }).catch(()=>{});
   const u = getUser();
   
+  // DEBUG: Show user state after sync
+  console.log('🔍 POST-SYNC USER STATE:');
+  console.log('User:', u);
+  console.log('indienstStart:', u.indienstStart);
+  console.log('ingedeeld:', u.ingedeeld);
+  console.log('role:', u.role);
+  console.log('status:', u.status);
+  
   // Clear any existing timers when page loads
   clearPingTimers();
   
@@ -62,7 +70,16 @@ window.onload = async () => {
   const isAdmin = role === 'admin';
   const isOvdOpco = ['ovd', 'opco', 'oc', 'ops', 'admin'].includes(role);
 
+  // DEBUG: Show screen selection logic
+  console.log('🔍 SCREEN SELECTION:');
+  console.log('Role:', role);
+  console.log('isOvdOpco:', isOvdOpco);
+  console.log('isAdmin:', isAdmin);
+  console.log('indienstStart:', u.indienstStart);
+  console.log('ingedeeld:', u.ingedeled);
+
   if (isOvdOpco) {
+    console.log('🔍 SHOWING OVD VIEW');
     document.getElementById('ovd-view').classList.remove('hidden');
     laadEenheden();
     renderMeldingen();
@@ -75,6 +92,7 @@ window.onload = async () => {
       fetch(`${API_URL}/api/indeling/${u.id}`)
         .then(r => r.json())
         .then(data => {
+          console.log('🔍 INDELING DATA:', data);
           if (data.indienstStart && !u.indienstStart) u.indienstStart = data.indienstStart;
           if (!u.indienstStart) u.indienstStart = Date.now();
           if (data.status) u.status = data.status;
