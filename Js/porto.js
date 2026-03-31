@@ -498,8 +498,10 @@ function renderMeldingen() {
         }
       }
 
-      // ---- Status Alert Ping ----
-      if (alerts.length > 0) {
+      // ---- Status Alert Ping (alleen voor status 6,7) ----
+      const status6_7Alerts = alerts.filter(alert => [6, 7].includes(alert.status));
+      
+      if (status6_7Alerts.length > 0) {
 
         if (!window._alertPingTimer) {
 
@@ -934,6 +936,8 @@ function overnemen(type) {
   setTimeout(() => window.location.reload(), 800);
 }
 
+let wachtrijInterval = null;
+
 async function aanmeldenDirect() {
   const dienstRollen = await fetch(`${API_URL}/api/dienst-rollen`)
     .then(r => r.json())
@@ -948,15 +952,14 @@ async function aanmeldenDirect() {
   u.indienstStart = Date.now();
   saveUser(u);
 
-  // ✅ Eerst je roepnummer verwijderen uit de wachtrij
+  // Eerst je roepnummer uit de wachtrij verwijderen
   try {
     await fetch(`${API_URL}/api/wachtrij/${u.id}`, { method: 'DELETE' });
-    console.log('Roepnummer verwijderd uit wachtrij');
   } catch (err) {
     console.warn('Kon roepnummer niet verwijderen uit wachtrij', err);
   }
 
-  // Vervolgens aanmelden
+  // Aanmelden
   await fetch(`${API_URL}/api/aanmelden`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -973,6 +976,32 @@ async function aanmeldenDirect() {
   document.getElementById('porto-wacht').classList.remove('hidden');
   startIndienstTimer('oc-tijd');
   showToast('Aangemeld - wacht op indeling door OVD/OPCO');
+
+  // ✅ Start automatische check elke 10 seconden
+  startWachtrijPolling(u.id);
+}
+
+// Polling functie
+function startWachtrijPolling(userId) {
+  if (wachtrijInterval) clearInterval(wachtrijInterval); // oude interval stoppen als die bestaat
+
+  wachtrijInterval = setInterval(async () => {
+    try {
+      const resp = await fetch(`${API_URL}/api/indeling/${userId}`);
+      const data = await resp.json();
+
+      if (data.ingedeeld) {
+        clearInterval(wachtrijInterval);
+        wachtrijInterval = null;
+        // UI bijwerken naar ingedeeld scherm
+        document.getElementById('porto-wacht').classList.add('hidden');
+        document.getElementById('porto-ingedeeld').classList.remove('hidden');
+        showToast('Je bent ingedeeld door OVD/OPCO!');
+      }
+    } catch (err) {
+      console.error('Fout bij ophalen indeling', err);
+    }
+  }, 10000); // 10 seconden
 }
 
 function inloggenDirect(type) {
