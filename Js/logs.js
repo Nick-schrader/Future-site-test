@@ -27,6 +27,7 @@ function laadLogs() {
     .then(r => r.json())
     .then(data => {
       _alleLogs = data;
+      console.log('Logs data:', data); // Debug: bekijk data structuur
       filterLogs();
     })
     .catch(() => {
