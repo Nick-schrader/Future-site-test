@@ -943,7 +943,7 @@ function kiesKandidaat(userId, rol) {
   const u = getUser();
   
   // Stuur het juiste roepnummer mee naar de backend
-  const roepnummer = rol === 'ovd' ? '17-01' : 
+  const roepnummer = rol === 'ovd' ? '17-00' : 
                    rol === 'opco' ? '17-01' : '';
   
   fetch(`${API_URL}/api/rol-toewijzen`, {
@@ -962,11 +962,15 @@ function overnemen(type) {
   u.role = type;
   saveUser(u);
 
+  // Stuur het juiste roepnummer mee naar de backend
+  const roepnummer = type === 'ovd' ? '17-00' : 
+                   type === 'opco' ? '17-01' : u.dienstnummer;
+
   // Sync naar DB
   fetch(`${API_URL}/api/rol`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId: u.id, role: type, indienstStart: u.indienstStart || Date.now(), roepnummer: u.dienstnummer, rangicoon: u.rangicoon || '' }),
+    body: JSON.stringify({ userId: u.id, role: type, indienstStart: u.indienstStart || Date.now(), roepnummer, rangicoon: u.rangicoon || '' }),
   });
 
   showToast(type.toUpperCase() + ' overgenomen');
