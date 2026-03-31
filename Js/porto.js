@@ -864,27 +864,53 @@ function bevestigUitdienst() {
   document.getElementById('uitdienst-modal').classList.add('hidden');
   const u = getUser();
 
-  // Reset in database
-  fetch(`${API_URL}/api/reset/${u.id}`, {
+  // Eerst rol resetten in database
+  console.log('🔄 UITDIENST - Rol resetten van', u.role, 'naar user');
+  fetch(`${API_URL}/api/rol-laten-vallen`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ indienstStart: u.indienstStart, dcnaam: u.dcnaam || '', roepnummer: '' }),
-  })
-    .then(() => {
-      // Reset lokale state
-      u.indienstStart = null;
-      u.ingedeeld = false;
-      u.status = null;
-      u.voertuig = null;
-      u.dienstnummer = '';
-      u.role = 'user';
-      saveUser(u);
+    body: JSON.stringify({ userId: u.id }),
+  }).then(() => {
+    // Reset in database
+    fetch(`${API_URL}/api/reset/${u.id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ indienstStart: u.indienstStart, dcnaam: u.dcnaam || '', roepnummer: '' }),
+    })
+      .then(() => {
+        // Reset lokale state
+        console.log('🔄 UITDIENST - Lokale state resetten');
+        u.indienstStart = null;
+        u.ingedeeld = false;
+        u.status = null;
+        u.voertuig = null;
+        u.dienstnummer = '';
+        u.role = 'user'; // Forceer rol naar user
+        saveUser(u);
 
-      showToast('Je bent uit dienst gegaan');
+        // Cleanup: Remove user from wachtrij when going uitdienst
+        console.log('🧹 UITDIENST - User verwijderen uit wachtrij:', u.naam);
+        fetch(`${API_URL}/api/wachtrij`)
+          .then(r => r.json())
+          .then(wachtrij => {
+            const userInWachtrij = wachtrij.find(w => w.userId === u.id || w.naam === u.naam);
+            if (userInWachtrij) {
+              console.log('🧹 USER GEVONDEN IN WACHTRIJ - Verwijderen:', userInWachtrij.naam, 'ID:', userInWachtrij.id);
+              fetch(`${API_URL}/api/wachtrij/${userInWachtrij.id}`, { method: 'DELETE' })
+                .then(() => {
+                  console.log('🧹 SUCCES - User verwijderd uit wachtrij bij uitdienst');
+                })
+                .catch(err => console.error('Failed to remove user from wachtrij', err));
+            }
+          })
+          .catch(err => console.error('Failed to check wachtrij', err));
 
-      // Directe refresh na uitdienst melden
-      window.location.reload();
-    });
+        showToast('Je bent uit dienst gegaan');
+
+        // Directe refresh na uitdienst melden
+        window.location.reload();
+      });
+  }).catch(err => console.error('Failed to reset role before uitdienst', err));
 }
 
 function highlightStatus(s) {
