@@ -423,6 +423,16 @@ function renderGPS() {
 let vorigeWachtrijCount = 0;
 
 function speelAanmeldGeluid(debugInfo = '') {
+  // Only play ping for OVD/OPCO/OPS users
+  const u = getUser();
+  const canHearPings = u && ['ovd','opco','oc','ops'].includes(u.role);
+  
+  if (!canHearPings) {
+    console.log('🔇 PING GEBLOKEERD - User role:', u?.role, 'can hear pings:', canHearPings);
+    console.log('🔇 Debug info:', debugInfo);
+    return;
+  }
+  
   console.log('🔊 PING SPELEN - Debug info:', debugInfo);
   console.log('🔊 Current alerts:', window._currentAlerts);
   console.log('🔊 Wachtrij:', window._wachtrij);
@@ -486,6 +496,11 @@ function renderMeldingen() {
 
       // ---- Wachtrij Ping ----
       if (wachtrij.length > 0) {
+        // Play immediate ping for new wachtrij items
+        if (window._vorigeWachtrijCount === 0 || wachtrij.length > window._vorigeWachtrijCount) {
+          speelAanmeldGeluid('Direct wachtrij ping - new items: ' + wachtrij.length);
+        }
+        
         if (!window._pingHerhaalTimer) {
           const interval = (window._pingInterval || 30) * 1000;
 
@@ -555,6 +570,7 @@ function renderMeldingen() {
 
       window._vorigeAlerts = window._currentAlerts.length;
       window._wachtrij = wachtrij;
+      window._vorigeWachtrijCount = wachtrij.length; // Store previous count
 
       // ---- UI Render ----
       if (wachtrij.length === 0) {
