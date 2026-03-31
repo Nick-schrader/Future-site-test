@@ -521,7 +521,11 @@ function renderMeldingen() {
       }
 
       // ---- Status Alert Ping (alleen voor status 6,7) ----
-      const status6_7Alerts = alerts.filter(alert => [6, 7].includes(alert.status));
+      const status6_7Alerts = alerts.filter(alert => {
+        // Handle both string and number status values
+        const status = alert.status;
+        return [6, 7].includes(parseInt(status)) || ['6', '7', 'status6', 'status7'].includes(status);
+      });
       
       if (status6_7Alerts.length > 0) {
 
