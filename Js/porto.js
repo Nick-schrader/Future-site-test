@@ -1576,13 +1576,6 @@ function checkIndeling() {
     console.log('🔄 RE-LOGIN - Reset status 10 naar null');
     u.status = null;
     saveUser(u);
-    return; // Stop hier om rol herstel te voorkomen
-  }
-
-  // Check of gebruiker uitdienst is (geen rol herstel)
-  if (!u.indienstStart || u.role === 'user') {
-    console.log('🔄 UITDIENST - Geen rol herstel, gebruiker is uitdienst');
-    return; // Stop hier om rol herstel te voorkomen
   }
 
   // Check of rol veranderd is (werd je OVD/OPCO gekozen?)
