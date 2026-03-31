@@ -113,7 +113,7 @@ window.onload = async () => {
             startIndienstTimer('ovd-oc-tijd');
             ovdUpdateInfo();
           } else {
-            console.log('🔍 USER NIET INGEDEELD - Porto menu niet tonen');
+            console.log('🔍 USER NIET INGEDEELD - Porto menu niet tonen, rol reset naar user');
             // Refresh om correcte scherm te tonen
             setTimeout(() => window.location.reload(), 1000);
           }
@@ -1688,5 +1688,3 @@ function checkIndeling() {
       }
     }).catch(() => {});
 }
-
-
