@@ -504,8 +504,10 @@ function renderMeldingen() {
               speelAanmeldGeluid('Wachtrij ping timer - valid wachtrij items: ' + validWachtrij.length + '/' + currentWachtrij.length);
               renderMeldingen();
             }).catch(() => {
-              // If check fails, play sound anyway to be safe
-              speelAanmeldGeluid('Wachtrij ping timer - API check failed');
+              // API check failed - stop timer to prevent ghost pings
+              console.warn('API check failed for wachtrij - stopping ping timer');
+              clearTimeout(window._pingHerhaalTimer);
+              window._pingHerhaalTimer = null;
               renderMeldingen();
             });
 
@@ -536,14 +538,14 @@ function renderMeldingen() {
               return;
             }
 
-            // NEW: Check if alerts are still valid by checking current user status
+            // NEW: Check if alerts are still valid by checking current alerts in database
             Promise.all([
-              fetch(`${API_URL}/api/gebruikers`).then(r => r.json())
-            ]).then(([gebruikers]) => {
+              fetch(`${API_URL}/api/status-alerts`).then(r => r.json())
+            ]).then(([currentAlerts]) => {
               const validAlerts = window._currentAlerts.filter(alert => {
-                const user = gebruikers.find(e => e.id === alert.userId);
-                // Only keep alert if user exists and still has alert status
-                return user && user.status === alert.status;
+                // Check if alert still exists in database
+                const stillExists = currentAlerts.some(currAlert => currAlert.id === alert.id);
+                return stillExists;
               });
 
               // CRITICAL FIX: Stop timer if no valid alerts remain
@@ -557,8 +559,10 @@ function renderMeldingen() {
               speelAanmeldGeluid('Status alert ping timer - valid alerts: ' + validAlerts.length + '/' + window._currentAlerts.length);
               renderMeldingen();
             }).catch(() => {
-              // If check fails, play sound anyway to be safe
-              speelAanmeldGeluid('Status alert ping timer - API check failed');
+              // API check failed - stop timer to prevent ghost pings
+              console.warn('API check failed for status-alerts - stopping alert ping timer');
+              clearTimeout(window._alertPingTimer);
+              window._alertPingTimer = null;
               renderMeldingen();
             });
 
