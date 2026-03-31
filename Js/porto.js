@@ -35,8 +35,8 @@ window.onload = async () => {
       renderMeldingen();
     }
   });
-  console.log("ROLE:", u.role);
   const role = (u.role || '').toLowerCase();
+  const isAdmin = role === 'admin';
   const isOvdOpco = ['ovd', 'opco', 'oc', 'ops'].includes(role);
 
   if (isOvdOpco) {
