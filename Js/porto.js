@@ -1,4 +1,18 @@
 // ---- PORTO PAGE ----
+
+// Helper function to clear all ping timers
+function clearPingTimers() {
+  if (window._alertPingTimer) {
+    clearInterval(window._alertPingTimer);
+    window._alertPingTimer = null;
+  }
+
+  if (window._pingHerhaalTimer) {
+    clearInterval(window._pingHerhaalTimer);
+    window._pingHerhaalTimer = null;
+  }
+}
+
 window.onload = async () => {
   await syncUserFromDB();
   
@@ -10,11 +24,7 @@ window.onload = async () => {
   const u = getUser();
   
   // Clear any existing timers when page loads
-  clearTimeout(window._alertPingTimer);
-  clearTimeout(window._pingHerhaalTimer);
-  clearTimeout(window._alertPingTimer); // Clear all possible timers
-  window._alertPingTimer = null;
-  window._pingHerhaalTimer = null;
+  clearPingTimers();
   
   // Reset alert state to prevent phantom pings
   window._vorigeAlerts = null;
@@ -38,10 +48,7 @@ window.onload = async () => {
 
   // Add page unload listener to clear all timers
   window.addEventListener('beforeunload', () => {
-    clearTimeout(window._alertPingTimer);
-    clearTimeout(window._pingHerhaalTimer);
-    window._alertPingTimer = null;
-    window._pingHerhaalTimer = null;
+    clearPingTimers();
   });
   const role = (u.role || '').toLowerCase();
   const isAdmin = role === 'admin';
@@ -468,56 +475,20 @@ function renderMeldingen() {
       // ---- Wachtrij Ping ----
       if (wachtrij.length > 0) {
         if (!window._pingHerhaalTimer) {
-          clearTimeout(window._pingHerhaalTimer);
-
           const interval = (window._pingInterval || 30) * 1000;
 
-          window._pingHerhaalTimer = setTimeout(() => {
-
-            window._pingHerhaalTimer = null;
-
+          window._pingHerhaalTimer = setInterval(() => {
             if (!window._wachtrij || window._wachtrij.length === 0) {
+              clearInterval(window._pingHerhaalTimer);
+              window._pingHerhaalTimer = null;
               return;
             }
 
-            // NEW: Check if aanmelding users still exist in wachtrij
-            Promise.all([
-              fetch(`${API_URL}/api/wachtrij`).then(r => r.json())
-            ]).then(([currentWachtrij]) => {
-              
-              // Check if previous wachtrij items still exist
-              const validWachtrij = window._wachtrij.filter(prevItem => {
-                const stillExists = currentWachtrij.some(currItem => 
-                  currItem.naam === prevItem.naam || currItem.userId === prevItem.userId
-                );
-                return stillExists;
-              });
-
-              // CRITICAL FIX: Stop timer if no valid items remain
-              if (validWachtrij.length === 0 || currentWachtrij.length === 0) {
-                // Clear the timer immediately
-                clearTimeout(window._pingHerhaalTimer);
-                window._pingHerhaalTimer = null;
-                return;
-              }
-
-              speelAanmeldGeluid('Wachtrij ping timer - valid wachtrij items: ' + validWachtrij.length + '/' + currentWachtrij.length);
-              renderMeldingen();
-            }).catch(() => {
-              // API check failed - stop timer to prevent ghost pings
-              console.warn('API check failed for wachtrij - stopping ping timer');
-              clearTimeout(window._pingHerhaalTimer);
-              window._pingHerhaalTimer = null;
-              renderMeldingen();
-            });
-
+            speelAanmeldGeluid('Wachtrij interval ping');
           }, interval);
         }
       } else {
-        if (window._pingHerhaalTimer) {
-          clearTimeout(window._pingHerhaalTimer);
-          window._pingHerhaalTimer = null;
-        }
+        clearPingTimers();
       }
 
       // ---- Status Alert Ping (alleen voor status 6,7) ----
@@ -528,21 +499,18 @@ function renderMeldingen() {
       });
       
       if (status6_7Alerts.length > 0) {
-
         if (!window._alertPingTimer) {
-
           const alertInterval = (window._pingInterval || 30) * 1000;
 
-          window._alertPingTimer = setTimeout(() => {
-
-            window._alertPingTimer = null;
-
-            // EXTRA CHECK (belangrijk)
+          window._alertPingTimer = setInterval(() => {
+            // Check if alerts are still valid
             if (!window._currentAlerts || window._currentAlerts.length === 0) {
+              clearInterval(window._alertPingTimer);
+              window._alertPingTimer = null;
               return;
             }
 
-            // NEW: Check if alerts are still valid by checking current alerts in database
+            // Check if alerts are still valid by checking current alerts in database
             Promise.all([
               fetch(`${API_URL}/api/status-alerts`).then(r => r.json())
             ]).then(([currentAlerts]) => {
@@ -552,35 +520,24 @@ function renderMeldingen() {
                 return stillExists;
               });
 
-              // CRITICAL FIX: Stop timer if no valid alerts remain
+              // Stop timer if no valid alerts remain
               if (validAlerts.length === 0) {
-                // Clear the timer immediately
-                clearTimeout(window._alertPingTimer);
+                clearInterval(window._alertPingTimer);
                 window._alertPingTimer = null;
                 return;
               }
 
-              speelAanmeldGeluid('Status alert ping timer - valid alerts: ' + validAlerts.length + '/' + window._currentAlerts.length);
-              renderMeldingen();
+              speelAanmeldGeluid('Status alert interval ping - valid alerts: ' + validAlerts.length + '/' + window._currentAlerts.length);
             }).catch(() => {
               // API check failed - stop timer to prevent ghost pings
               console.warn('API check failed for status-alerts - stopping alert ping timer');
-              clearTimeout(window._alertPingTimer);
+              clearInterval(window._alertPingTimer);
               window._alertPingTimer = null;
-              renderMeldingen();
             });
-
           }, alertInterval);
         }
-
       } else {
-
-        // Stop direct als geen alerts
-        if (window._alertPingTimer) {
-          clearTimeout(window._alertPingTimer);
-          window._alertPingTimer = null;
-        }
-
+        clearPingTimers();
       }
 
       window._vorigeAlerts = alerts.length;
@@ -1351,10 +1308,7 @@ function saveVoertuigEdit() {
       saveUser(u);
       
       // Clear any active ping timers for this user
-      clearTimeout(window._alertPingTimer);
-      window._alertPingTimer = null;
-      clearTimeout(window._pingHerhaalTimer);
-      window._pingHerhaalTimer = null;
+      clearPingTimers();
       
       location.reload();
     } else {
