@@ -807,8 +807,10 @@ function setStatus(s) {
     console.log('🔄 LOCAL CLEANUP - Before:', beforeCount, 'After:', afterCount);
     console.log('🔄 Timer should stop if no alerts remain:', afterCount === 0);
     
-    // Refresh meldingen to update the UI
-    renderMeldingen();
+    // Wait a moment for database to update, then refresh meldingen
+    setTimeout(() => {
+      renderMeldingen();
+    }, 500);
   }).catch(err => console.error('Status update failed', err));
   
   showToast('Status ' + s + ' ingesteld');
