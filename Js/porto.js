@@ -905,16 +905,31 @@ function openKandidatenModal(rol) {
     .then(kandidaten => {
       _kandidatenLijst = kandidaten;
       const lijst = document.getElementById('kandidaten-lijst');
-      if (kandidaten.length === 0) {
-        lijst.innerHTML = '<div style="color:#888;text-align:center;padding:12px">Geen actieve kandidaten</div>';
-        return;
+      
+      // Filter kandidaten op basis van rol - alleen gebruikers met de juiste rol
+      const gefilterdeKandidaten = kandidaten.filter(k => {
+        // Check of kandidaat de juiste rol heeft
+        const heeftJuisteRol = k.rollen && k.rollen.some(r => 
+          (typeof r === 'string' && r.toLowerCase() === rol.toLowerCase()) ||
+          (typeof r === 'object' && r.naam && r.naam.toLowerCase() === rol.toLowerCase())
+        );
+        return heeftJuisteRol;
+      });
+      
+      if (gefilterdeKandidaten.length === 0) {
+        lijst.innerHTML = '<div style="color:#888;text-align:center;padding:12px">Geen actieve kandidaten met rol: ' + rol + '</div>';
+      } else {
+        lijst.innerHTML = gefilterdeKandidaten.map(k => `
+          <div style="display:flex;justify-content:space-between;align-items:center;background:#1e2130;padding:10px 14px;border-radius:6px">
+            <span>${k.shortname || k.display_name}</span>
+            <button class="btn-purple small" onclick="kiesKandidaat('${k.id}','${rol}')">Kiezen</button>
+          </div>
+        `).join('');
       }
-      lijst.innerHTML = kandidaten.map(k => `
-        <div style="display:flex;justify-content:space-between;align-items:center;background:#1e2130;padding:10px 14px;border-radius:6px">
-          <span>${k.shortname || k.display_name}</span>
-          <button class="btn-purple small" onclick="kiesKandidaat('${k.id}','${rol}')">Kiezen</button>
-        </div>
-      `).join('');
+    })
+    .catch(error => {
+      console.error('Fout bij ophalen kandidaten:', error);
+      lijst.innerHTML = '<div style="color:#f87171;text-align:center;padding:12px">Kan kandidaten niet laden</div>';
     });
 }
 
