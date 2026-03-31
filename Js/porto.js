@@ -35,7 +35,8 @@ window.onload = async () => {
       renderMeldingen();
     }
   });
-  const isOvdOpco = ['ovd', 'opco', 'oc', 'ops'].includes(u.role);
+  const role = (u.role || '').toLowerCase();
+  const isOvdOpco = ['ovd', 'opco', 'oc', 'ops'].includes(role);
 
   if (isOvdOpco) {
     document.getElementById('ovd-view').classList.remove('hidden');
