@@ -1,16 +1,24 @@
 // ---- PORTO PAGE ----
 
-// Helper function to clear all ping timers
-function clearPingTimers() {
-  if (window._alertPingTimer) {
-    clearInterval(window._alertPingTimer);
-    window._alertPingTimer = null;
-  }
-
+// Helper functions to clear specific ping timers
+function clearWachtrijTimer() {
   if (window._pingHerhaalTimer) {
     clearInterval(window._pingHerhaalTimer);
     window._pingHerhaalTimer = null;
   }
+}
+
+function clearAlertTimer() {
+  if (window._alertPingTimer) {
+    clearInterval(window._alertPingTimer);
+    window._alertPingTimer = null;
+  }
+}
+
+// Helper function to clear all ping timers
+function clearPingTimers() {
+  clearWachtrijTimer();
+  clearAlertTimer();
 }
 
 window.onload = async () => {
@@ -492,7 +500,7 @@ function renderMeldingen() {
           }, interval);
         }
       } else {
-        clearPingTimers();
+        clearWachtrijTimer();
       }
 
       // ---- Status Alert Ping (alleen voor status 6,7) ----
@@ -502,50 +510,50 @@ function renderMeldingen() {
           const alertInterval = (window._pingInterval || 30) * 1000;
 
           window._alertPingTimer = setInterval(() => {
-            // Check if alerts are still valid (already filtered in _currentAlerts)
+            // Check if we have any alerts to process
             if (!window._currentAlerts || window._currentAlerts.length === 0) {
               clearInterval(window._alertPingTimer);
               window._alertPingTimer = null;
+              console.log('No alerts - timer stopped');
               return;
             }
 
-            // Check if alerts still exist in database
+            // Always play ping for current alerts (they're already filtered to 6/7)
+            speelAanmeldGeluid('Status alert interval ping - active alerts: ' + window._currentAlerts.length);
+            
+            // Optional: Check if alerts still exist in database and cleanup if needed
             Promise.all([
               fetch(`${API_URL}/api/status-alerts`).then(r => r.json())
             ]).then(([currentAlerts]) => {
               const validAlerts = window._currentAlerts.filter(alert => {
-                // Check if alert still exists in database and still has status 6/7
+                // Check if alert still exists in database
                 const stillExists = currentAlerts.some(currAlert => currAlert.id === alert.id);
-                const status = alert.status;
-                const statusNum = parseInt(status);
-                const isUrgent = !isNaN(statusNum) && [6, 7].includes(statusNum);
-                return stillExists && isUrgent;
+                return stillExists;
               });
 
-              // Update _currentAlerts to remove invalid ones
-              window._currentAlerts = validAlerts;
+              // Update _currentAlerts to remove deleted ones
+              if (validAlerts.length !== window._currentAlerts.length) {
+                window._currentAlerts = validAlerts;
+                console.log('Cleaned up deleted alerts - remaining:', validAlerts.length);
+              }
 
-              // Stop timer if no valid alerts remain
+              // Stop timer if no alerts remain
               if (validAlerts.length === 0) {
                 clearInterval(window._alertPingTimer);
                 window._alertPingTimer = null;
-                return;
+                console.log('All alerts cleared - timer stopped');
               }
-
-              speelAanmeldGeluid('Status alert interval ping - valid alerts: ' + validAlerts.length);
             }).catch(() => {
-              // API check failed - stop timer to prevent ghost pings
-              console.warn('API check failed for status-alerts - stopping alert ping timer');
-              clearInterval(window._alertPingTimer);
-              window._alertPingTimer = null;
+              // API check failed - continue with current alerts
+              console.warn('API check failed - continuing with current alerts');
             });
           }, alertInterval);
         }
       } else {
-        clearPingTimers();
+        clearAlertTimer();
       }
 
-      window._vorigeAlerts = alerts.length;
+      window._vorigeAlerts = window._currentAlerts.length;
       window._wachtrij = wachtrij;
 
       // ---- UI Render ----
@@ -591,11 +599,6 @@ function renderMeldingen() {
       list.innerHTML = '<div style="color:#888;font-size:0.85rem">Kan aanmeldingen niet laden</div>';
     }
   });
-}
-
-function dismissAlert(id) {
-  fetch(`${API_URL}/api/status-alerts/${id}`, { method: 'DELETE' })
-    .then(() => renderMeldingen());
 }
 
 function dismissAlert(id) {
@@ -664,6 +667,31 @@ function checkPingState() {
     console.log('API Alerts:', alerts.length, alerts);
     console.log('API Wachtrij:', wachtrij.length, wachtrij);
   }).catch(err => console.error('API check failed', err));
+}
+
+// Function to force cleanup of invalid alerts
+function cleanupAlerts() {
+  fetch(`${API_URL}/api/status-alerts`)
+    .then(r => r.json())
+    .then(alerts => {
+      const validAlerts = alerts.filter(alert => {
+        const status = alert.status;
+        const statusNum = parseInt(status);
+        return !isNaN(statusNum) && [6, 7].includes(statusNum);
+      });
+      
+      console.log('Before cleanup:', window._currentAlerts?.length || 0, 'alerts');
+      window._currentAlerts = validAlerts;
+      console.log('After cleanup:', window._currentAlerts.length, 'alerts');
+      
+      // Stop timer if no valid alerts remain
+      if (window._currentAlerts.length === 0 && window._alertPingTimer) {
+        clearInterval(window._alertPingTimer);
+        window._alertPingTimer = null;
+        console.log('Timer stopped - no valid alerts');
+      }
+    })
+    .catch(err => console.error('Cleanup failed', err));
 }
 
 function slaEigenVoertuigOp() {
