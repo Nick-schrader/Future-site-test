@@ -780,6 +780,9 @@ function setStatus(s) {
     return fetch(`${API_URL}/api/status-alerts`).then(r => r.json());
   }).then(alerts => {
     console.log('🔄 Found alerts in DB:', alerts.length);
+    console.log('🔄 Current user ID:', u.id);
+    console.log('🔄 All alerts with user IDs:', alerts.map(a => ({id: a.id, userId: a.userId, status: a.status})));
+    
     // Remove alerts for this user that are no longer valid
     const userAlerts = alerts.filter(alert => alert.userId === u.id);
     console.log('🔄 User alerts to remove:', userAlerts.length);
