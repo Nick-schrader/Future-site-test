@@ -1614,6 +1614,24 @@ function checkIndeling() {
         u.ingedeeld = true;
         saveUser(u);
 
+        // Cleanup: Remove user from wachtrij when they get a roepnummer
+        console.log('🧹 INGEDEELD - User met roepnummer verwijderen uit wachtrij:', u.naam, 'roepnummer:', data.roepnummer);
+        fetch(`${API_URL}/api/wachtrij`)
+          .then(r => r.json())
+          .then(wachtrij => {
+            const userInWachtrij = wachtrij.find(w => w.userId === u.id || w.naam === u.naam);
+            if (userInWachtrij) {
+              console.log('🧹 USER GEVONDEN IN WACHTRIJ - Verwijderen:', userInWachtrij.naam, 'ID:', userInWachtrij.id);
+              fetch(`${API_URL}/api/wachtrij/${userInWachtrij.id}`, { method: 'DELETE' })
+                .then(() => {
+                  console.log('🧹 SUCCES - User verwijderd uit wachtrij bij indeling');
+                  renderMeldingen();
+                })
+                .catch(err => console.error('Failed to remove user from wachtrij', err));
+            }
+          })
+          .catch(err => console.error('Failed to check wachtrij', err));
+
         const isOvdOpco = ['ovd', 'opco', 'oc', 'ops'].includes(u.role);
         const wachtId = isOvdOpco ? 'ovd-porto-wacht' : 'porto-wacht';
         const mainId = isOvdOpco ? 'ovd-porto-main' : 'porto-main';
