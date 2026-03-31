@@ -1571,6 +1571,13 @@ function checkIndeling() {
   const u = getUser();
   if (!u.id) return;
 
+  // Reset status 10 bij re-login (voorkom vastzitten in uitdienst modal)
+  if (u.status === 10) {
+    console.log('🔄 RE-LOGIN - Reset status 10 naar null');
+    u.status = null;
+    saveUser(u);
+  }
+
   // Check of rol veranderd is (werd je OVD/OPCO gekozen?)
   if (!['ovd','opco','oc','ops'].includes(u.role)) {
     fetch(`${API_URL}/api/rol-check/${u.id}`)
