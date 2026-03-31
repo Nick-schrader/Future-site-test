@@ -35,6 +35,14 @@ window.onload = async () => {
       renderMeldingen();
     }
   });
+
+  // Add page unload listener to clear all timers
+  window.addEventListener('beforeunload', () => {
+    clearTimeout(window._alertPingTimer);
+    clearTimeout(window._pingHerhaalTimer);
+    window._alertPingTimer = null;
+    window._pingHerhaalTimer = null;
+  });
   const role = (u.role || '').toLowerCase();
   const isAdmin = role === 'admin';
   const isOvdOpco = ['ovd', 'opco', 'oc', 'ops', 'admin'].includes(role);
@@ -477,7 +485,11 @@ function renderMeldingen() {
                 return stillExists;
               });
 
-              if (validWachtrij.length === 0) {
+              // CRITICAL FIX: Stop timer if no valid items remain
+              if (validWachtrij.length === 0 || currentWachtrij.length === 0) {
+                // Clear the timer immediately
+                clearTimeout(window._pingHerhaalTimer);
+                window._pingHerhaalTimer = null;
                 return;
               }
 
@@ -526,7 +538,11 @@ function renderMeldingen() {
                 return user && user.status === alert.status;
               });
 
+              // CRITICAL FIX: Stop timer if no valid alerts remain
               if (validAlerts.length === 0) {
+                // Clear the timer immediately
+                clearTimeout(window._alertPingTimer);
+                window._alertPingTimer = null;
                 return;
               }
 
