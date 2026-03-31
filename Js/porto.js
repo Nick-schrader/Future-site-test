@@ -94,15 +94,20 @@ window.onload = async () => {
         .then(data => {
           console.log('🔍 INDELING DATA:', data);
           if (data.indienstStart && !u.indienstStart) u.indienstStart = data.indienstStart;
-          if (!u.indienstStart) u.indienstStart = Date.now();
+          // NIET automatisch indienstStart zetten - alleen als database dit heeft
           if (data.status) u.status = data.status;
           if (data.voertuig) u.voertuig = data.voertuig;
           saveUser(u);
-          // Toon ovd-porto-main
-          const main = document.getElementById('ovd-porto-main');
-          if (main) { main.style.display = ''; }
-          startIndienstTimer('ovd-oc-tijd');
-          ovdUpdateInfo();
+          
+          // Alleen ovd-porto-main tonen als echt ingedeeld
+          if (data.ingedeeld) {
+            const main = document.getElementById('ovd-porto-main');
+            if (main) { main.style.display = ''; }
+            startIndienstTimer('ovd-oc-tijd');
+            ovdUpdateInfo();
+          } else {
+            console.log('🔍 USER NIET INGEDEELD - Porto menu niet tonen');
+          }
           if (u.status) {
             highlightStatus(u.status);
             ['status-error','ovd-status-error'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
