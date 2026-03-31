@@ -115,7 +115,7 @@ window.onload = async () => {
           } else {
             console.log('🔍 USER NIET INGEDEELD - Porto menu niet tonen, rol reset naar user');
             // Refresh om correcte scherm te tonen
-            setTimeout(() => window.location.reload(), 100);
+            setTimeout(() => window.location.reload(), 1);
           }
           if (u.status) {
             highlightStatus(u.status);
