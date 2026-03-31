@@ -462,12 +462,16 @@ function renderMeldingen() {
     fetch(`${API_URL}/api/wachtrij`).then(r => r.json()),
     fetch(`${API_URL}/api/status-alerts`).then(r => r.json()),
   ]).then(([wachtrij, alerts]) => {
-      // Update direct (FIX voor ghost pings)
-      window._currentAlerts = alerts;
+      // Update _currentAlerts to only include relevant alerts (status 6 or 7)
+      window._currentAlerts = alerts.filter(alert => {
+        const status = alert.status;
+        const statusNum = parseInt(status);
+        return !isNaN(statusNum) && [6, 7].includes(statusNum);
+      });
 
       // Alleen geluid bij nieuwe alerts
-      if (window._vorigeAlerts !== null && alerts.length > window._vorigeAlerts) {
-        speelAanmeldGeluid('Nieuwe alert detected - vorige: ' + window._vorigeAlerts + ' -> huidige: ' + alerts.length);
+      if (window._vorigeAlerts !== null && window._currentAlerts.length > window._vorigeAlerts) {
+        speelAanmeldGeluid('Nieuwe alert detected - vorige: ' + window._vorigeAlerts + ' -> huidige: ' + window._currentAlerts.length);
       }
 
       vorigeWachtrijCount = wachtrij.length;
@@ -492,33 +496,34 @@ function renderMeldingen() {
       }
 
       // ---- Status Alert Ping (alleen voor status 6,7) ----
-      const status6_7Alerts = alerts.filter(alert => {
-        // Handle both string and number status values
-        const status = alert.status;
-        return [6, 7].includes(parseInt(status)) || ['6', '7', 'status6', 'status7'].includes(status);
-      });
-      
-      if (status6_7Alerts.length > 0) {
+      // _currentAlerts is al gefilterd op status 6/7, dus we hoeven alleen te checken of er alerts zijn
+      if (window._currentAlerts.length > 0) {
         if (!window._alertPingTimer) {
           const alertInterval = (window._pingInterval || 30) * 1000;
 
           window._alertPingTimer = setInterval(() => {
-            // Check if alerts are still valid
+            // Check if alerts are still valid (already filtered in _currentAlerts)
             if (!window._currentAlerts || window._currentAlerts.length === 0) {
               clearInterval(window._alertPingTimer);
               window._alertPingTimer = null;
               return;
             }
 
-            // Check if alerts are still valid by checking current alerts in database
+            // Check if alerts still exist in database
             Promise.all([
               fetch(`${API_URL}/api/status-alerts`).then(r => r.json())
             ]).then(([currentAlerts]) => {
               const validAlerts = window._currentAlerts.filter(alert => {
-                // Check if alert still exists in database
+                // Check if alert still exists in database and still has status 6/7
                 const stillExists = currentAlerts.some(currAlert => currAlert.id === alert.id);
-                return stillExists;
+                const status = alert.status;
+                const statusNum = parseInt(status);
+                const isUrgent = !isNaN(statusNum) && [6, 7].includes(statusNum);
+                return stillExists && isUrgent;
               });
+
+              // Update _currentAlerts to remove invalid ones
+              window._currentAlerts = validAlerts;
 
               // Stop timer if no valid alerts remain
               if (validAlerts.length === 0) {
@@ -527,7 +532,7 @@ function renderMeldingen() {
                 return;
               }
 
-              speelAanmeldGeluid('Status alert interval ping - valid alerts: ' + validAlerts.length + '/' + window._currentAlerts.length);
+              speelAanmeldGeluid('Status alert interval ping - valid alerts: ' + validAlerts.length);
             }).catch(() => {
               // API check failed - stop timer to prevent ghost pings
               console.warn('API check failed for status-alerts - stopping alert ping timer');
