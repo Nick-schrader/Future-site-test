@@ -59,30 +59,40 @@ function filterLogs() {
 
   const tbody = document.getElementById('logs-tbody');
   if (gefilterd.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="color:#555;text-align:center">Geen logs</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="color:#555;text-align:center">Geen logs</td></tr>';
     return;
   }
   
   tbody.innerHTML = gefilterd.map(l => {
-    // Parse details veld voor wie en wat
+    // Parse details veld voor wie, reden en uren
     let wie = '-';
-    let wat = '-';
+    let reden = '-';
+    let uren = '-';
     
     if (l.details) {
       // Als details " | " bevat, splits het
       if (l.details.includes(' | ')) {
         const parts = l.details.split(' | ');
         wie = parts[0] || '-';
-        wat = parts[1] || '-';
+        
+        // Probeer uren te extraheren uit het tweede deel
+        const urenMatch = parts[1]?.match(/([+-]\d+\.?\d*)/);
+        if (urenMatch) {
+          uren = urenMatch[1] + ' uur';
+          // Verwijder de uren uit de reden
+          reden = parts[1].replace(/[+-]\d+\.?\d*\s*uur?/i, '').trim() || '-';
+        } else {
+          reden = parts[1] || '-';
+        }
       } else {
         // Anders proberen te parsen voor uren aanpassingen
         const match = l.details.match(/^([^+]+)\s*([+-]\d+\.?\d*)\s*uur?$/i);
         if (match) {
           wie = match[1].trim();
-          wat = match[2] + ' uur';
+          uren = match[2] + ' uur';
         } else {
-          // Als niets anders werkt, zet alles in wat
-          wat = l.details;
+          // Als niets anders werkt, zet alles in reden
+          reden = l.details;
         }
       }
     }
@@ -93,7 +103,8 @@ function filterLogs() {
       <td><span class="badge badge-purple">${ACTIE_LABELS[l.actie] || l.actie}</span></td>
       <td>${l.door || '-'}</td>
       <td>${wie}</td>
-      <td style="color:#cdd6f4">${wat}</td>
+      <td>${reden}</td>
+      <td style="color:#cdd6f4">${uren}</td>
     </tr>
   `;
   }).join('');

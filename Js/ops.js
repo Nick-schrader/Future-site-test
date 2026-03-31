@@ -217,6 +217,8 @@ function toggleActieMenu(event, userId, categorie, week) {
     <div class="actie-dropdown-item" onclick="resetTijd('${userId}')">↺ Resetten</div>
     <div class="actie-dropdown-item actie-delete" onclick="verwijderTijd('${userId}','${categorie}',${week})">🗑 Verwijderen</div>
   `;
+  
+  console.log('Menu HTML:', menu.innerHTML); // Debug: bekijk de HTML
 
   const btn = event.currentTarget;
   const rect = btn.getBoundingClientRect();
