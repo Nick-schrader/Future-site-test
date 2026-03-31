@@ -744,7 +744,20 @@ function setStatus(s) {
   if (u.id) fetch(`${API_URL}/api/status`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId: u.id, status: s }),
-  });
+  }).then(() => {
+    // CRITICAL FIX: Remove any existing status alerts for this user when status changes
+    return fetch(`${API_URL}/api/status-alerts`).then(r => r.json());
+  }).then(alerts => {
+    // Remove alerts for this user that are no longer valid
+    const userAlerts = alerts.filter(alert => alert.userId === u.id);
+    userAlerts.forEach(alert => {
+      fetch(`${API_URL}/api/status-alerts/${alert.id}`, { method: 'DELETE' })
+        .catch(err => console.error('Failed to remove alert', alert.id, err));
+    });
+    // Refresh meldingen to update the UI
+    renderMeldingen();
+  }).catch(err => console.error('Status update failed', err));
+  
   showToast('Status ' + s + ' ingesteld');
 }
 
@@ -1213,8 +1226,20 @@ function setStatusVoorEenheid(status) {
     unit.status = status;
     closeVoertuigModal();
     renderEenheden();
+    
+    // CRITICAL FIX: Remove any existing status alerts for this user when status changes
+    return fetch(`${API_URL}/api/status-alerts`).then(r => r.json());
+  }).then(alerts => {
+    // Remove alerts for this user that are no longer valid
+    const userAlerts = alerts.filter(alert => alert.userId === unit.userId);
+    userAlerts.forEach(alert => {
+      fetch(`${API_URL}/api/status-alerts/${alert.id}`, { method: 'DELETE' })
+        .catch(err => console.error('Failed to remove alert', alert.id, err));
+    });
+    // Refresh meldingen to update the UI
+    renderMeldingen();
     showToast(`${unit.medewerkers} → Status ${status}`);
-  });
+  }).catch(err => console.error('Status update failed', err));
 }
 
 function ontkoppelEenheid() {
