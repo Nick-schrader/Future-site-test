@@ -55,17 +55,26 @@ async function syncUserFromDB() {
     const res = await fetch(`${API_URL}/api/me/${u.id}`);
     if (!res.ok) return;
     const data = await res.json();
-    // DB is altijd leidend voor deze velden
+    
+    // Als gebruiker uitdienst is, herstel geen rol/dienstnummer
+    const isUitdienst = !u.indienstStart || u.status === 10;
+    
+    // DB is altijd leidend voor deze velden, behalve bij uitdienst
     const merged = {
       ...u,
       ...data,
-      role: data.role || u.role || 'user',
+      role: isUitdienst ? u.role : (data.role || u.role || 'user'),
       status: data.status ?? null,
       voertuig: data.voertuig ?? null,
       indienstStart: data.indienstStart ?? null,
-      dienstnummer: data.dienstnummer || u.dienstnummer || '',
+      dienstnummer: isUitdienst ? u.dienstnummer : (data.dienstnummer || u.dienstnummer || ''),
       rollen: (data.rollen && data.rollen.length > 0) ? data.rollen : (u.rollen || []),
     };
+    
+    if (isUitdienst) {
+      console.log('🔄 SYNC - Geen rol herstel, gebruiker is uitdienst');
+    }
+    
     saveUser(merged);
     return merged;
   } catch {}
