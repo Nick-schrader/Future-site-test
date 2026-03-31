@@ -207,25 +207,41 @@ function getWeekNummer(d) {
 
 function toggleActieMenu(event, userId, categorie, week) {
   event.stopPropagation();
-  // Verwijder bestaand menu
   document.querySelectorAll('.actie-dropdown').forEach(el => el.remove());
 
   const menu = document.createElement('div');
   menu.className = 'actie-dropdown';
-  menu.innerHTML = `
-    <div class="actie-dropdown-item" onclick="aanpassenTijd('${userId}','${categorie}',${week})">✏ Aanpassen</div>
-    <div class="actie-dropdown-item" onclick="resetTijd('${userId}')">↺ Resetten</div>
-    <div class="actie-dropdown-item actie-delete" onclick="verwijderTijd('${userId}','${categorie}',${week})">🗑 Verwijderen</div>
-  `;
-  
-  console.log('Menu HTML:', menu.innerHTML); // Debug: bekijk de HTML
+
+  // ✏ Aanpassen
+  const itemAanpassen = document.createElement('div');
+  itemAanpassen.className = 'actie-dropdown-item';
+  itemAanpassen.textContent = '✏ Aanpassen';
+  itemAanpassen.addEventListener('click', () => aanpassenTijd(userId, categorie, week));
+
+  // ↺ Resetten
+  const itemReset = document.createElement('div');
+  itemReset.className = 'actie-dropdown-item';
+  itemReset.textContent = '↺ Resetten';
+  itemReset.addEventListener('click', () => resetTijd(userId));
+
+  // 🗑 Verwijderen
+  const itemVerwijder = document.createElement('div');
+  itemVerwijder.className = 'actie-dropdown-item actie-delete';
+  itemVerwijder.textContent = '🗑 Verwijderen';
+  itemVerwijder.addEventListener('click', () => verwijderTijd(userId, categorie, week));
+
+  menu.appendChild(itemAanpassen);
+  menu.appendChild(itemReset);
+  menu.appendChild(itemVerwijder);
 
   const btn = event.currentTarget;
   const rect = btn.getBoundingClientRect();
   menu.style.cssText = `position:fixed;top:${rect.bottom + 4}px;right:${window.innerWidth - rect.right}px;z-index:999`;
   document.body.appendChild(menu);
 
-  setTimeout(() => document.addEventListener('click', () => menu.remove(), { once: true }), 0);
+  setTimeout(() => {
+    document.addEventListener('click', () => menu.remove(), { once: true });
+  }, 0);
 }
 
 function verwijderTijd(userId, categorie, week) {
