@@ -1550,7 +1550,8 @@ function openIndelenModal(index) {
       return rollen;
     }),
     fetch(`${API_URL}/api/specialisaties`).then(r => r.json()).catch(() => []),
-  ]).then(([rollen, specialisaties]) => {
+    fetch(`${API_URL}/api/eenheden`).then(r => r.json()).catch(() => []), // Haal eenheden op
+  ]).then(([rollen, specialisaties, eenheden]) => {
     const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
     const heeftIbt = rolNamen.some(r => r.includes('IBT') || r.includes('ibt'));
 
@@ -1564,8 +1565,17 @@ function openIndelenModal(index) {
 
     const uniekeOpties = [...new Set(opties.map(o => o.replace(/ \d+$/, '')))]; // Verwijder nummers
 
+    // Check min eenheden voor elke specialisatie
+    const totaalIndienst = eenheden ? eenheden.length : 0;
+    const optiesMetWaarschuwing = uniekeOpties.map(optie => {
+      const spec = specialisaties.find(s => s.voertuig === optie || s.voertuig.replace(/ \d+$/, '') === optie);
+      const minOk = spec && spec.min_eenheden > 0 ? totaalIndienst >= spec.min_eenheden : true;
+      const warning = !minOk ? ` (⚠ ${totaalIndienst}/${spec.min_eenheden})` : '';
+      return { waarde: optie, label: optie + warning, minOk };
+    });
+
     const select = document.getElementById('indelen-voertuig');
-    select.innerHTML = uniekeOpties.map(o => `<option value="${o}">${o}</option>`).join('');
+    select.innerHTML = optiesMetWaarschuwing.map(o => `<option value="${o.waarde}">${o.label}</option>`).join('');
 
     const specs = uniekeOpties.filter(o => o !== 'Noodhulp');
     const uniekSpecs = [...new Set(specs.map(s => s.replace(/ \d+$/, '')))];
