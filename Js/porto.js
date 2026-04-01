@@ -1582,19 +1582,31 @@ function saveIndeling() {
   const voertuig = document.getElementById('indelen-voertuig').value;
   if (!roepnummer) { showToast('Vul een roepnummer in'); return; }
 
+  // Sluit de modal direct
+  document.getElementById('indelen-modal').classList.add('hidden');
+
   const u = getUser();
   fetch(`${API_URL}/api/indelen`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId, roepnummer, voertuig, ingedeeldDoor: u.displayName || u.username }),
   }).then(r => r.json()).then(data => {
-    if (data.error) { showToast('⚠ ' + data.error); return; }
+    if (data.error) { 
+      showToast('⚠ ' + data.error); 
+      // Open modal weer bij error
+      document.getElementById('indelen-modal').classList.remove('hidden');
+      return; 
+    }
     showToast(roepnummer + ' ingedeeld met ' + voertuig);
-    document.getElementById('indelen-modal').classList.add('hidden');
     renderMeldingen();
     
     // Directe refresh na succesvolle indeling
     setTimeout(() => window.location.reload(), 500);
+  }).catch(error => {
+    console.error('Fout bij indelen:', error);
+    showToast('Fout bij indelen');
+    // Open modal weer bij error
+    document.getElementById('indelen-modal').classList.remove('hidden');
   });
 }
 
