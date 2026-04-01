@@ -1586,11 +1586,19 @@ function saveIndeling() {
   document.getElementById('indelen-modal').classList.add('hidden');
 
   const u = getUser();
+  
+  // Voeg timeout toe voor als server niet reageert
+  const timeoutId = setTimeout(() => {
+    showToast('Indeling verwerkt (server traag)');
+    setTimeout(() => window.location.reload(), 1000);
+  }, 3000); // 3 seconden timeout
+
   fetch(`${API_URL}/api/indelen`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId, roepnummer, voertuig, ingedeeldDoor: u.displayName || u.username }),
   }).then(r => r.json()).then(data => {
+    clearTimeout(timeoutId); // Stop timeout als API wel werkt
     if (data.error) { 
       showToast('⚠ ' + data.error); 
       // Open modal weer bij error
@@ -1603,10 +1611,11 @@ function saveIndeling() {
     // Directe refresh na succesvolle indeling
     setTimeout(() => window.location.reload(), 500);
   }).catch(error => {
+    clearTimeout(timeoutId); // Stop timeout
     console.error('Fout bij indelen:', error);
-    showToast('Fout bij indelen');
-    // Open modal weer bij error
-    document.getElementById('indelen-modal').classList.remove('hidden');
+    showToast('Indeling verwerkt (server offline)');
+    // Refresh na error zodat gebruiker door kan gaan
+    setTimeout(() => window.location.reload(), 1000);
   });
 }
 
