@@ -1562,10 +1562,12 @@ function openIndelenModal(index) {
       })
       .map(s => s.voertuig);
 
-    const select = document.getElementById('indelen-voertuig');
-    select.innerHTML = opties.map(o => `<option value="${o}">${o}</option>`).join('');
+    const uniekeOpties = [...new Set(opties.map(o => o.replace(/ \d+$/, '')))]; // Verwijder nummers
 
-    const specs = opties.filter(o => o !== 'Noodhulp');
+    const select = document.getElementById('indelen-voertuig');
+    select.innerHTML = uniekeOpties.map(o => `<option value="${o}">${o}</option>`).join('');
+
+    const specs = uniekeOpties.filter(o => o !== 'Noodhulp');
     const uniekSpecs = [...new Set(specs.map(s => s.replace(/ \d+$/, '')))];
 
     document.getElementById('indelen-ibt-warn').style.display = heeftIbt ? 'none' : 'block';
