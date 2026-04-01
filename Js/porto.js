@@ -1288,11 +1288,13 @@ function openVoertuigModal(id) {
     .then(r => r.json())
     .then(specialisaties => {
       const voertuigTypes = [...new Set(specialisaties.map(s => s.voertuig))];
-      voertuigTypes.forEach(type => {
+      const uniekeTypes = [...new Set(voertuigTypes.map(type => type.replace(/ \d+$/, '')))]; // Verwijder nummers
+      
+      uniekeTypes.forEach(type => {
         const option = document.createElement('option');
         option.value = type;
         option.textContent = type;
-        if (unit.type === type) {
+        if (unit.type && unit.type.replace(/ \d+$/, '') === type) {
           option.selected = true;
         }
         voertuigSelect.appendChild(option);
