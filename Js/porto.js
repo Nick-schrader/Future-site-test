@@ -382,7 +382,7 @@ function renderSpecOverzicht() {
 
           return `<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid #2a2a3a;gap:8px">
             <span style="color:#a78bfa;font-weight:bold;font-size:0.8rem;min-width:80px">${s.voertuig}</span>
-            <span style="color:#888;font-size:0.75rem;flex:1">${rolLabel}${tijdLabel2}${minLabel}</span>
+            <span style="color:#888;font-size:0.75rem;flex:1">${tijdLabel2}${minLabel}</span>
             <span style="color:${kleur};font-size:0.8rem">${status}</span>
           </div>`;
         }).join('');
