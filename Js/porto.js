@@ -1586,12 +1586,6 @@ function saveIndeling() {
   document.getElementById('indelen-modal').classList.add('hidden');
 
   const u = getUser();
-  
-  // Voeg timeout toe voor als server niet reageert
-  const timeoutId = setTimeout(() => {
-    showToast('Indeling verwerkt (server traag)');
-    setTimeout(() => window.location.reload(), 1000);
-  }, 3000); // 3 seconden timeout
 
   fetch(`${API_URL}/api/indelen`, {
     method: 'POST',
