@@ -377,8 +377,8 @@ function renderSpecOverzicht() {
           const kleur = ok ? '#4ade80' : '#f87171';
           const status = ok ? '✓' : '✗';
           const rolLabel = s.vereiste_rol ? `${s.vereiste_rol}` : '';
-          const tijdLabel2 = s.tijdslot_start ? ` · ${tijdLabel}` : '';
-          const minLabel = s.min_eenheden > 0 ? ` · Min ${s.min_eenheden} (${totaalIndienst})` : '';
+          const tijdLabel2 = s.tijdslot_start ? `  ${tijdLabel}` : '';
+          const minLabel = s.min_eenheden > 0 ? `  Min ${s.min_eenheden} (${totaalIndienst})` : '';
 
           return `<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid #2a2a3a;gap:8px">
             <span style="color:#a78bfa;font-weight:bold;font-size:0.8rem;min-width:80px">${s.voertuig}</span>
