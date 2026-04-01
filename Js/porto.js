@@ -1284,23 +1284,33 @@ function openVoertuigModal(id) {
   voertuigSelect.innerHTML = '<option value="">Kies voertuig...</option>'; // Reset en voeg placeholder toe
 
   // Haal specialisaties op om voertuig types te vullen
-  fetch(`${API_URL}/api/specialisaties`)
-    .then(r => r.json())
-    .then(specialisaties => {
-      const voertuigTypes = [...new Set(specialisaties.map(s => s.voertuig))];
-      const uniekeTypes = [...new Set(voertuigTypes.map(type => type.replace(/ \d+$/, '')))]; // Verwijder nummers
-      
-      uniekeTypes.forEach(type => {
-        const option = document.createElement('option');
-        option.value = type;
-        option.textContent = type;
-        if (unit.type && unit.type.replace(/ \d+$/, '') === type) {
-          option.selected = true;
-        }
-        voertuigSelect.appendChild(option);
-      });
-    })
-    .catch(error => console.error('Fout bij het ophalen van voertuig types:', error));
+  Promise.all([
+    fetch(`${API_URL}/api/specialisaties`).then(r => r.json()).catch(() => []),
+    fetch(`${API_URL}/api/eenheden`).then(r => r.json()).catch(() => []), // Haal eenheden op
+  ]).then(([specialisaties, eenheden]) => {
+    const voertuigTypes = [...new Set(specialisaties.map(s => s.voertuig))];
+    const uniekeTypes = [...new Set(voertuigTypes.map(type => type.replace(/ \d+$/, '')))]; // Verwijder nummers
+    
+    // Check min eenheden voor elke specialisatie
+    const totaalIndienst = eenheden ? eenheden.length : 0;
+    const typesMetWaarschuwing = uniekeTypes.map(type => {
+      const spec = specialisaties.find(s => s.voertuig === type || s.voertuig.replace(/ \d+$/, '') === type);
+      const minOk = spec && spec.min_eenheden > 0 ? totaalIndienst >= spec.min_eenheden : true;
+      const warning = !minOk ? ` (⚠ ${totaalIndienst}/${spec.min_eenheden})` : '';
+      return { waarde: type, label: type + warning, minOk };
+    });
+    
+    typesMetWaarschuwing.forEach(type => {
+      const option = document.createElement('option');
+      option.value = type.waarde;
+      option.textContent = type.label;
+      if (unit.type && unit.type.replace(/ \d+$/, '') === type.waarde) {
+        option.selected = true;
+      }
+      voertuigSelect.appendChild(option);
+    });
+  })
+  .catch(error => console.error('Fout bij het ophalen van voertuig types:', error));
 
   document.getElementById('edit-unit-id').value = id;
   document.getElementById('edit-unit-naam').textContent = unit.medewerkers;
