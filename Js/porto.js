@@ -1929,7 +1929,16 @@ function openKandidatenModal(rol) {
             
             // Filter gebruikers die de juiste rol hebben en NIET in dienst zijn
             kandidaten = eenheden.filter(eenheid => {
-              const heeftRol = eenheid.rollen && eenheid.rollen.some(r => 
+              // Parse rollen string naar array
+              let rollenArray = [];
+              try {
+                rollenArray = JSON.parse(eenheid.rollen || '[]');
+              } catch (e) {
+                console.log('🔍 Fout bij parsen rollen:', e);
+                rollenArray = [];
+              }
+              
+              const heeftRol = rollenArray.some(r => 
                 (typeof r === 'string' ? r : (r.naam || '')).toLowerCase() === rol.toLowerCase()
               );
               const isNietInDienst = !eenheid.indienstStart && !eenheid.ingedeeld;
