@@ -70,7 +70,7 @@ window.onload = async () => {
   });
   const role = (u.role || '').toLowerCase();
   const isAdmin = role === 'admin';
-  const isOvdOpco = ['ovd', 'opco', 'oc', 'ops', 'admin'].includes(role);
+  const isOvdOpco = ['ovd', 'opco', 'oc', 'ops'].includes(role);
 
   // DEBUG: Show screen selection logic
   console.log('🔍 SCREEN SELECTION:');
@@ -368,10 +368,16 @@ function eenheidRow(e) {
   }
 
   return `<tr ${click} style="${canEdit ? 'cursor:pointer' : ''}">
-    <td>${e.id}</td><td>${e.medewerkers}</td><td>${specialisatie}</td><td>${e.voertuig}</td>
-    <td>${e.type}${typeWarn}</td><td>${tijdIndienst}</td><td>${statusBadge(e.status)}</td>
-  </tr>`;
+    <td>${e.id}</td>
+    <td>${e.medewerkers}</td>
+    <td>${specialisatie}</td>
+    <td>${e.voertuig}</td>
+    <td>${e.type}${typeWarn}</td>
+    <td>${tijdIndienst}</td>
+    <td>${statusBadge(e.status)}</td>
+   </tr>`;
 }
+
 function renderLeaderboard() {
   const metTijd = appData.eenheden.filter(e => e.indienstStart);
   const gesorteerd = [...metTijd].sort((a, b) => a.indienstStart - b.indienstStart).slice(0, 10);
@@ -1679,6 +1685,7 @@ function ovdUpdateInfo() {
       if (opco && u.role === 'opco') opco.textContent = u.shortname || u.displayName || '-';
     });
 }
+
 function openIndelenModal(index) {
   const w = window._wachtrij && window._wachtrij[index];
   if (!w) return;
@@ -1888,11 +1895,20 @@ function checkIndeling() {
     }).catch(() => {});
 }
 
+// =====================================================================
+// VERBETERDE openKandidatenModal en renderKandidaten
+// =====================================================================
+
 function openKandidatenModal(rol) {
   _kandidatenRol = rol;
   const modalTitel = document.getElementById('kandidaten-titel');
   const modal = document.getElementById('kandidaten-modal');
   const lijst = document.getElementById('kandidaten-lijst');
+
+  if (!modalTitel || !modal || !lijst) {
+    console.error('❌ Kandidaten modal elementen niet gevonden in de DOM');
+    return;
+  }
 
   modalTitel.textContent = 'Nieuwe ' + rol.toUpperCase() + ' kiezen';
   modal.classList.remove('hidden');
@@ -1904,135 +1920,90 @@ function openKandidatenModal(rol) {
   fetch(`${API_URL}/api/kandidaten/${rol}`)
     .then(r => {
       console.log('🔍 API RESPONSE STATUS:', r.status, r.ok);
-      if (!r.ok) {
-        console.error('🔍 API RESPONSE NOT OK - Status:', r.status);
-        throw new Error(`HTTP ${r.status}`);
-      }
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
       return r.json();
     })
     .then(kandidaten => {
-
       console.log('====================================');
       console.log('🔍 DEBUG - API KANDIDATEN RESPONSE');
       console.log('====================================');
       console.log('🔍 API RAW RESPONSE:', kandidaten);
       console.log('🔍 API LENGTH:', kandidaten.length);
 
-      // Fallback als API leeg is
       if (kandidaten.length === 0) {
-
         console.warn('⚠️ API geeft GEEN gebruikers terug - fallback naar eenheden');
-
         fetch(`${API_URL}/api/eenheden`)
           .then(r => r.json())
           .then(eenheden => {
-
             console.log('🔍 ALLE EENHEDEN:', eenheden.length);
+            if (eenheden.length > 0) console.log('🔍 EERSTE EENHEID STRUCTUUR:', eenheden[0]);
 
-            kandidaten = eenheden.filter(eenheid => {
-
+            // Filter eenheden die de gevraagde rol hebben EN actief zijn (in dienst)
+            const bruikbareKandidaten = eenheden.filter(eenheid => {
+              // Bepaal of de eenheid de juiste rol heeft
               let rollenArray = [];
-
               try {
-                rollenArray = JSON.parse(eenheid.rollen || '[]');
+                if (typeof eenheid.rollen === 'string') {
+                  rollenArray = JSON.parse(eenheid.rollen || '[]');
+                } else if (Array.isArray(eenheid.rollen)) {
+                  rollenArray = eenheid.rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
+                } else {
+                  rollenArray = [];
+                }
               } catch (e) {
-                console.log('🔍 Fout bij parsen rollen:', e);
                 rollenArray = [];
               }
 
               const heeftRol = rollenArray.some(r =>
-                (typeof r === 'string' ? r : (r.naam || ''))
-                  .toLowerCase()
-                  .includes(rol.toLowerCase())
+                (r || '').toLowerCase().includes(rol.toLowerCase())
               );
 
-              const isWelInDienst =
-                (eenheid.indienstStart && eenheid.ingedeeld) ||
-                (eenheid.userId && eenheid.userId !== null);
+              // Bepaal of de eenheid actief is (in dienst)
+              // Gebruik velden: indienst_start, ingedeeld, status, userId
+              const isActief = !!(eenheid.indienst_start || eenheid.indienstStart) &&
+                               (eenheid.ingedeeld === true || eenheid.ingedeeld === 1);
+              const isAlternatiefActief = eenheid.userId && (!eenheid.status || eenheid.status !== 10);
 
-              console.log(
-                '🔍 EENHEID CHECK:',
-                eenheid.medewerkers,
-                'Rol:',
-                heeftRol,
-                'In dienst:',
-                isWelInDienst
-              );
+              const isWelInDienst = isActief || isAlternatiefActief;
 
+              console.log(`🔍 EENHEID CHECK: ${eenheid.shortname || eenheid.display_name} - Rol: ${heeftRol} - Actief: ${isWelInDienst}`);
               return heeftRol && isWelInDienst;
             });
 
-            console.log('🔍 GEFILTERDE KANDIDATEN:', kandidaten.length);
-
-            renderKandidaten(kandidaten, rol, lijst);
-
+            console.log('🔍 GEFILTERDE KANDIDATEN:', bruikbareKandidaten.length);
+            renderKandidaten(bruikbareKandidaten, rol, lijst);
           })
           .catch(err => {
-
             console.error('🔍 Fout bij ophalen eenheden:', err);
-
-            const currentUser = getUser();
-            kandidaten = [currentUser];
-
-            renderKandidaten(kandidaten, rol, lijst);
+            lijst.innerHTML = `<div style="color:#f87171;text-align:center;padding:12px">Kan kandidaten niet laden: ${err.message}</div>`;
           });
-
       } else {
         renderKandidaten(kandidaten, rol, lijst);
       }
-
     })
     .catch(error => {
       console.error('🔍 API ERROR:', error);
-
-      lijst.innerHTML = `
-        <div style="color:#f87171;text-align:center;padding:12px">
-          Kan kandidaten niet laden: ${error.message}
-        </div>`;
+      lijst.innerHTML = `<div style="color:#f87171;text-align:center;padding:12px">Kan kandidaten niet laden: ${error.message}</div>`;
     });
 }
 
-
-/**
- * Render kandidaten lijst
- */
 function renderKandidaten(kandidaten, rol, lijst) {
-
   _kandidatenLijst = kandidaten;
 
+  // Extra filter om er zeker van te zijn dat we alleen gebruikers met de juiste rol tonen
   const gefilterdeKandidaten = kandidaten.filter(k => {
-
-    console.log('====================================');
-    console.log('🔍 FILTER CHECK');
-    console.log('👤 Naam:', k.username || k.displayName || k.shortname);
-    console.log('🎭 Rollen:', k.rollen);
-    console.log('🆔 ID:', k.id);
-    console.log('🏷 Role property:', k.role);
-
-    let rolArray = [];
-
-    if (k.rollen) {
-      if (Array.isArray(k.rollen)) {
-        rolArray = k.rollen.map(r =>
-          typeof r === 'string' ? r : (r.naam || '')
-        );
-      } else {
-        rolArray = [k.rollen];
+    let rollenArray = [];
+    try {
+      if (typeof k.rollen === 'string') {
+        rollenArray = JSON.parse(k.rollen || '[]');
+      } else if (Array.isArray(k.rollen)) {
+        rollenArray = k.rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
       }
-    }
-
-    const heeftRol = rolArray.some(r =>
-      (r || '').toLowerCase().includes(rol.toLowerCase())
-    );
-
-    const heeftRolProperty =
-      k.role && k.role.toLowerCase() === rol.toLowerCase();
-
-    const result = heeftRol || heeftRolProperty;
-
-    console.log('✅ Heeft rol:', result);
-
-    return result;
+    } catch (e) {}
+    const heeftRol = rollenArray.some(r => (r || '').toLowerCase().includes(rol.toLowerCase()));
+    // Ook controleren op k.role property (sommige gebruikers hebben die)
+    const heeftRolProperty = k.role && k.role.toLowerCase() === rol.toLowerCase();
+    return heeftRol || heeftRolProperty;
   });
 
   console.log('====================================');
@@ -2040,45 +2011,23 @@ function renderKandidaten(kandidaten, rol, lijst) {
   console.log('Gefilterd:', gefilterdeKandidaten.length);
 
   if (gefilterdeKandidaten.length === 0) {
-
-    lijst.innerHTML = `
-      <div style="color:#888;text-align:center;padding:12px">
-        Geen kandidaten gevonden met rol: ${rol}
-      </div>`;
-
+    lijst.innerHTML = `<div style="color:#888;text-align:center;padding:12px">Geen actieve eenheden gevonden met de rol: ${rol}</div>`;
     return;
   }
 
-  lijst.innerHTML = gefilterdeKandidaten.map(k => `
-
-    <div style="
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      background:#1e2130;
-      padding:10px 14px;
-      border-radius:6px
-    ">
-
-      <span>${k.shortname || k.displayName || k.username}</span>
-
-      <button 
-        class="btn-purple small"
-        onclick="kiesKandidaat('${k.id}','${rol}')">
-        Kiezen
-      </button>
-
-    </div>
-
-  `).join('');
+  lijst.innerHTML = gefilterdeKandidaten.map(k => {
+    const naam = k.shortname || k.display_name || k.displayName || k.username || 'Onbekend';
+    const roepnummer = k.roepnummer || k.dienstnummer || '';
+    return `
+      <div style="display:flex;justify-content:space-between;align-items:center;background:#1e2130;padding:10px 14px;border-radius:6px">
+        <span>${naam} ${roepnummer ? '(' + roepnummer + ')' : ''}</span>
+        <button class="btn-purple small" onclick="kiesKandidaat('${k.id}','${rol}')">Kiezen</button>
+      </div>
+    `;
+  }).join('');
 }
 
-
-/**
- * Kies een willekeurige kandidaat
- */
 function radVanFortuin() {
-
   const kandidaten = _kandidatenLijst || [];
 
   if (kandidaten.length === 0) {
@@ -2086,19 +2035,9 @@ function radVanFortuin() {
     return;
   }
 
-  const willekeurigeIndex =
-    Math.floor(Math.random() * kandidaten.length);
+  const willekeurigeIndex = Math.floor(Math.random() * kandidaten.length);
+  const gekozenKandidaat = kandidaten[willekeurigeIndex];
 
-  const gekozenKandidaat =
-    kandidaten[willekeurigeIndex];
-
-  console.log(
-    '🎰 RAD VAN FORTUIN - Gekozen kandidaat:',
-    gekozenKandidaat
-  );
-
-  kiesKandidaat(
-    gekozenKandidaat.id,
-    _kandidatenRol
-  );
+  console.log('🎰 RAD VAN FORTUIN - Gekozen kandidaat:', gekozenKandidaat);
+  kiesKandidaat(gekozenKandidaat.id, _kandidatenRol);
 }
