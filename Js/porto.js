@@ -1937,7 +1937,7 @@ function openKandidatenModal(rol) {
         console.log('🔍 KANDIDAAT.indienstStart:', k.indienstStart);
         
         // Check of kandidaat de juiste rol heeft (case-insensitive)
-        const rolString = typeof r === 'string' ? r : (r.naam || '');
+        const rolString = typeof k.rollen === 'string' ? k.rollen : (k.rollen && k.rollen.map ? k.rollen.map(r => r.naam || r) : []);
         const match = rolString.toLowerCase().includes(rol.toLowerCase());
         console.log('🔍 ROL STRING MATCH:', rolString, 'vs', rol, '=>', match);
         
@@ -1947,7 +1947,7 @@ function openKandidatenModal(rol) {
         
         // Sluit kandidaten uit die:
         // 1. Al in dienst zijn
-        // 2. Al de rol hebben die we zoeken
+        // 2. Al de gezochte rol hebben (maar niet als we OVD/OPCO zoeken)
         // 3. Al OVD/OPCO zijn (die kunnen niet gekozen worden)
         const isAlInDienst = k.indienstStart && k.ingedeeld;
         const heeftAlRol = rolString.toLowerCase().includes(rol.toLowerCase());
