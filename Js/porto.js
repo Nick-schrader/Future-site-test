@@ -97,6 +97,7 @@ window.onload = async () => {
           // NIET automatisch indienstStart zetten - alleen als database dit heeft
           if (data.status) u.status = data.status;
           if (data.voertuig) u.voertuig = data.voertuig;
+          if (data.ingedeeld !== undefined) u.ingedeeld = data.ingedeeld;
           
           // Als niet ingedeeld, reset rol naar user
           if (!data.ingedeeld && ['ovd','opco','oc','ops'].includes(u.role)) {
