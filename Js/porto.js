@@ -1842,6 +1842,21 @@ function openKandidatenModal(rol) {
       console.log('🔍 API RESPONSE TYPE:', typeof kandidaten);
       console.log('🔍 API RESPONSE LENGTH:', kandidaten.length);
       
+      // TEMP FIX: Als API leeg is, voeg huidige user toe als kandidaat
+      if (kandidaten.length === 0) {
+        const currentUser = getUser();
+        if (currentUser.role === rol || (currentUser.rollen && currentUser.rollen.some(r => r.naam === rol.toUpperCase()))) {
+          console.log('🔍 TEMP FIX - Adding current user as candidate:', currentUser);
+          kandidaten = [{
+            id: currentUser.id,
+            shortname: currentUser.shortname || currentUser.displayName,
+            display_name: currentUser.displayName,
+            role: currentUser.role,
+            rollen: currentUser.rollen
+          }];
+        }
+      }
+      
       _kandidatenLijst = kandidaten;
       const lijst = document.getElementById('kandidaten-lijst');
       
