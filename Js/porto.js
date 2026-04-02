@@ -1924,8 +1924,6 @@ function openKandidatenModal(rol) {
             rollen: currentUser.rollen
           }];
         }
-      }
-      
       _kandidatenLijst = kandidaten;
       const lijst = document.getElementById('kandidaten-lijst');
       
@@ -1934,20 +1932,44 @@ function openKandidatenModal(rol) {
         console.log('🔍 FILTERING KANDIDAAT:', k);
         console.log('🔍 KANDIDAAT.rollen:', k.rollen);
         console.log('🔍 KANDIDAAT.role:', k.role);
+        console.log('🔍 KANDIDAAT.status:', k.status);
+        console.log('🔍 KANDIDAAT.indienstStart:', k.indienstStart);
         
         // Check of kandidaat de juiste rol heeft (case-insensitive)
-        const heeftJuisteRol = k.rollen && k.rollen.some(r => {
-          const rolString = typeof r === 'string' ? r : (r.naam || '');
-          const match = rolString.toLowerCase().includes(rol.toLowerCase());
-          console.log('🔍 ROL STRING MATCH:', rolString, 'vs', rol, '=>', match);
-          return match;
-        });
+        const rolString = typeof r === 'string' ? r : (r.naam || '');
+        const match = rolString.toLowerCase().includes(rol.toLowerCase());
+        console.log('🔍 ROL STRING MATCH:', rolString, 'vs', rol, '=>', match);
         
         // Fallback: check ook role property als rollen leeg is
         const heeftRolProperty = k.role && k.role.toLowerCase() === rol.toLowerCase();
         console.log('🔍 ROLE PROPERTY MATCH:', k.role, 'vs', rol, '=>', heeftRolProperty);
         
-        const result = heeftJuisteRol || heeftRolProperty;
+        // Sluit kandidaten uit die:
+        // 1. Al in dienst zijn
+        // 2. Al de rol hebben die we zoeken
+        // 3. Al OVD/OPCO zijn (die kunnen niet gekozen worden)
+        const isAlInDienst = k.indienstStart && k.ingedeeld;
+        const heeftAlRol = rolString.toLowerCase().includes(rol.toLowerCase());
+        const isHuidigeOvdOpco = ['ovd', 'opco'].includes(rol.toLowerCase());
+        
+        console.log('🔍 KANDIDAAT FILTER CHECKS:', {
+          isAlInDienst: isAlInDienst,
+          heeftAlRol: heeftAlRol,
+          isHuidigeOvdOpco: isHuidigeOvdOpco
+        });
+        
+        // Toon kandidaat NIET als:
+        // - Al in dienst is
+        // - Al de gezochte rol heeft (maar niet als we OVD/OPCO zoeken)
+        // - Al OVD/OPCO en we zoeken naar OVD/OPCO
+        const shouldExclude = isAlInDienst || (heeftAlRol && !isHuidigeOvdOpco);
+        
+        if (shouldExclude) {
+          console.log('🔍 KANDIDAAT EXCLUDED - Already in service or has conflicting role');
+          return false;
+        }
+        
+        const result = match || heeftRolProperty;
         console.log('🔍 FINAL FILTER RESULT:', result);
         return result;
       });
