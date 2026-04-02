@@ -1115,11 +1115,11 @@ function openKandidatenModal(rol) {
       
       // Filter kandidaten op basis van rol - alleen gebruikers met de juiste rol
       const gefilterdeKandidaten = kandidaten.filter(k => {
-        // Check of kandidaat de juiste rol heeft
-        const heeftJuisteRol = k.rollen && k.rollen.some(r => 
-          (typeof r === 'string' && r.toLowerCase() === rol.toLowerCase()) ||
-          (typeof r === 'object' && r.naam && r.naam.toLowerCase() === rol.toLowerCase())
-        );
+        // Check of kandidaat de juiste rol heeft (case-insensitive)
+        const heeftJuisteRol = k.rollen && k.rollen.some(r => {
+          const rolString = typeof r === 'string' ? r : (r.naam || '');
+          return rolString.toLowerCase().includes(rol.toLowerCase());
+        });
         return heeftJuisteRol;
       });
       
