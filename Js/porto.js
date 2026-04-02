@@ -1941,9 +1941,17 @@ function openKandidatenModal(rol) {
               const heeftRol = rollenArray.some(r => 
                 (typeof r === 'string' ? r : (r.naam || '')).toLowerCase() === rol.toLowerCase()
               );
-              const isWelInDienst = eenheid.indienstStart && eenheid.ingedeeld;
+              
+              // Check of eenheid in dienst is (via meerdere properties)
+              const isWelInDienst = (eenheid.indienstStart && eenheid.ingedeeld) || 
+                                     (eenheid.userId && eenheid.userId !== null);
               
               console.log(`🔍 EENHEID CHECK: ${eenheid.medewerkers} - Heeft rol: ${heeftRol}, Wel in dienst: ${isWelInDienst}`);
+              console.log('🔍 EENHEID PROPS:', {
+                indienstStart: eenheid.indienstStart,
+                ingedeeld: eenheid.ingedeeld,
+                userId: eenheid.userId
+              });
               
               return heeftRol && isWelInDienst;
             });
