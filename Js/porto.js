@@ -298,6 +298,26 @@ function eenheidRow(e) {
   const click = canEdit ? `onclick="openVoertuigModal('${e.id}')"` : '';
   const tijdIndienst = e.indienstStart ? formatDuur(Date.now() - e.indienstStart) : '-';
 
+  // Haal specialisaties op basis van rollen
+  let specialisatie = '';
+  if (e.rollen) {
+    let rollen = [];
+    try { rollen = JSON.parse(e.rollen || '[]'); } catch {}
+    const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
+    
+    const specs = [];
+    if (rolNamen.some(r => r.toLowerCase().includes('siv'))) specs.push('SIV');
+    if (rolNamen.some(r => r.toLowerCase().includes('gpt'))) specs.push('GPT');
+    if (rolNamen.some(r => r.toLowerCase().includes('motor'))) specs.push('Motor');
+    if (rolNamen.some(r => r.toLowerCase().includes('boot'))) specs.push('Boot');
+    if (rolNamen.some(r => r.toLowerCase().includes('zulu'))) specs.push('Zulu');
+    if (rolNamen.some(r => r.toLowerCase().includes('offroad'))) specs.push('Offroad');
+    
+    specialisatie = specs.length ? specs.join(', ') : '-';
+  } else {
+    specialisatie = '-';
+  }
+
   // Check of dit voertuig type onder min_eenheden zit
   let typeWarn = '';
   if (e.type && e.type !== '-' && window._specialisaties) {
@@ -311,10 +331,9 @@ function eenheidRow(e) {
   }
 
   return `<tr ${click} style="${canEdit ? 'cursor:pointer' : ''}">
-    <td>${e.id}</td><td>${e.medewerkers}</td><td>${e.voertuig}</td>
+    <td>${e.id}</td><td>${e.medewerkers}</td><td>${specialisatie}</td><td>${e.voertuig}</td>
     <td>${e.type}${typeWarn}</td><td>${e.taak}</td><td>${tijdIndienst}</td><td>${statusBadge(e.status)}</td>
   </tr>`;
-}
 
 function renderLeaderboard() {
   const metTijd = appData.eenheden.filter(e => e.indienstStart);
