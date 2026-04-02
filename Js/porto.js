@@ -1942,14 +1942,11 @@ function openKandidatenModal(rol) {
                 (typeof r === 'string' ? r : (r.naam || '')).toLowerCase() === rol.toLowerCase()
               );
               
-              // Check of eenheid in dienst is (via meerdere properties)
+              // Check of eenheid in dienst is
               const isWelInDienst = (eenheid.indienstStart && eenheid.ingedeeld) || 
                                      (eenheid.userId && eenheid.userId !== null);
               
-              console.log(`🔍 EENHEID CHECK: ${eenheid.medewerkers} - Heeft rol: ${heeftRol}, Wel in dienst: ${isWelInDienst}`);
-              console.log('🔍 EENHEID PROPS:', {
-                indienstStart: eenheid.indienstStart,
-                ingedeeld: eenheid.ingedeeld,
+              console.log('🔍 EENHEID CHECK: ' + eenheid.medewerkers + ' - Heeft rol: ' + heeftRol + ', Wel in dienst: ' + isWelInDienst);
                 userId: eenheid.userId
               });
               
