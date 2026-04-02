@@ -21,7 +21,6 @@ function clearAlertTimer() {
 function clearPingTimers() {
   clearWachtrijTimer();
   clearAlertTimer();
-  isOvdOfOpco();
 }
 
 
