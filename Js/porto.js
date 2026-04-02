@@ -2065,3 +2065,61 @@ function radVanFortuin() {
   console.log('🎰 RAD VAN FORTUIN - Gekozen kandidaat:', gekozenKandidaat);
   kiesKandidaat(gekozenKandidaat.id, _kandidatenRol);
 }
+
+// Start polling voor rolwijziging (alleen voor niet-leidinggevenden die in dienst zijn)
+function startRolPolling() {
+  const u = getUser();
+  if (!u || !u.id) return;
+  // Alleen starten als de gebruiker nog geen leidinggevende rol heeft EN in dienst is EN niet uit dienst
+  if (['ovd', 'opco', 'oc', 'ops'].includes(u.role)) return;
+  if (!u.indienstStart || u.status === 10) return;
+
+  // Bestaande interval stoppen indien aanwezig
+  if (window._rolPollInterval) clearInterval(window._rolPollInterval);
+
+  window._rolPollInterval = setInterval(async () => {
+    const currentUser = getUser();
+    if (!currentUser || !currentUser.id) {
+      stopRolPolling();
+      return;
+    }
+    // Stop als de rol inmiddels leidinggevend is geworden (voorkomt dubbel refreshen)
+    if (['ovd', 'opco', 'oc', 'ops'].includes(currentUser.role)) {
+      stopRolPolling();
+      return;
+    }
+    // Stop als gebruiker uit dienst is
+    if (!currentUser.indienstStart || currentUser.status === 10) {
+      stopRolPolling();
+      return;
+    }
+
+    try {
+      const resp = await fetch(`${API_URL}/api/rol-check/${currentUser.id}`);
+      const data = await resp.json();
+      if (data.role && ['ovd', 'opco', 'oc', 'ops'].includes(data.role) && currentUser.role !== data.role) {
+        console.log(`🔄 Rol gewijzigd naar ${data.role} – pagina wordt ververst.`);
+        stopRolPolling();
+        showToast(`Je bent aangesteld als ${data.role.toUpperCase()}! De pagina wordt nu ververst.`);
+        setTimeout(() => window.location.reload(), 500);
+      }
+    } catch (err) {
+      console.warn('Rol polling fout:', err);
+    }
+  }, 10000); // elke 10 seconden checken
+}
+
+function stopRolPolling() {
+  if (window._rolPollInterval) {
+    clearInterval(window._rolPollInterval);
+    window._rolPollInterval = null;
+  }
+}
+
+// Start de polling (alleen voor gebruikers die ervoor in aanmerking komen)
+startRolPolling();
+
+// Stop polling bij page unload
+window.addEventListener('beforeunload', () => {
+  stopRolPolling();
+});
