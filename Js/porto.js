@@ -1927,7 +1927,7 @@ function openKandidatenModal(rol) {
           .then(eenheden => {
             console.log('🔍 ALLE EENHEDEN:', eenheden.length);
             
-            // Filter gebruikers die de juiste rol hebben en NIET in dienst zijn
+            // Filter gebruikers die de juiste rol hebben en WEL in dienst zijn
             kandidaten = eenheden.filter(eenheid => {
               // Parse rollen string naar array
               let rollenArray = [];
@@ -1941,11 +1941,11 @@ function openKandidatenModal(rol) {
               const heeftRol = rollenArray.some(r => 
                 (typeof r === 'string' ? r : (r.naam || '')).toLowerCase() === rol.toLowerCase()
               );
-              const isNietInDienst = !eenheid.indienstStart && !eenheid.ingedeeld;
+              const isWelInDienst = eenheid.indienstStart && eenheid.ingedeeld;
               
-              console.log(`🔍 EENHEID CHECK: ${eenheid.medewerkers} - Heeft rol: ${heeftRol}, Niet in dienst: ${isNietInDienst}`);
+              console.log(`🔍 EENHEID CHECK: ${eenheid.medewerkers} - Heeft rol: ${heeftRol}, Wel in dienst: ${isWelInDienst}`);
               
-              return heeftRol && isNietInDienst;
+              return heeftRol && isWelInDienst;
             });
             
             console.log('🔍 GEFILTERDE KANDIDATEN:', kandidaten.length);
