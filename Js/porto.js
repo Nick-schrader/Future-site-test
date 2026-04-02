@@ -1175,7 +1175,7 @@ async function aanmeldenDirect() {
     .catch(() => ({ ovd:'-', opco:'-' }));
   
   if (dienstRollen.ovd === '-' && dienstRollen.opco === '-') {
-    showToast('Aanmelden niet mogelijk: geen OVD/OPCO actief');
+    window.UIComponents.NotificationManager.error('Aanmelden niet mogelijk: geen OVD/OPCO actief');
     return;
   }
 
@@ -1183,15 +1183,8 @@ async function aanmeldenDirect() {
   u.indienstStart = Date.now();
   saveUser(u);
 
-  // Eerst je roepnummer uit de wachtrij verwijderen
-  try {
-    await fetch(`${API_URL}/api/wachtrij/${u.id}`, { method: 'DELETE' });
-  } catch (err) {
-    console.warn('Kon roepnummer niet verwijderen uit wachtrij', err);
-  }
-
-  // Aanmelden
-  await fetch(`${API_URL}/api/aanmelden`, {
+  // Aanmelden - dit zou ook het roepnummer uit wachtrij moeten verwijderen
+  const aanmeldResponse = await fetch(`${API_URL}/api/aanmelden`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -1202,11 +1195,29 @@ async function aanmeldenDirect() {
     }),
   });
 
+  if (!aanmeldResponse.ok) {
+    console.error('Aanmelden mislukt:', aanmeldResponse.status);
+    window.UIComponents.NotificationManager.error('Aanmelden mislukt - probeer opnieuw');
+    return;
+  }
+
+  // Dubbelcheck: probeer nogmaals roepnummer uit wachtrij te verwijderen
+  try {
+    const deleteResponse = await fetch(`${API_URL}/api/wachtrij/${u.id}`, { method: 'DELETE' });
+    if (!deleteResponse.ok) {
+      console.warn('Kon roepnummer niet verwijderen uit wachtrij - status:', deleteResponse.status);
+    } else {
+      console.log('✅ Roepnummer succesvol verwijderd uit wachtrij');
+    }
+  } catch (err) {
+    console.error('Fout bij verwijderen roepnummer uit wachtrij:', err);
+  }
+
   // UI aanpassen
   document.querySelector('.porto-aanmeld-section').classList.add('hidden');
   document.getElementById('porto-wacht').classList.remove('hidden');
   startIndienstTimer('oc-tijd');
-  showToast('Aangemeld - wacht op indeling door OVD/OPCO');
+  window.UIComponents.NotificationManager.success('Aangemeld - wacht op indeling door OVD/OPCO');
 
   // ✅ Start automatische check elke 10 seconden
   startWachtrijPolling(u.id);
@@ -1224,10 +1235,29 @@ function startWachtrijPolling(userId) {
       if (data.ingedeeld) {
         clearInterval(wachtrijInterval);
         wachtrijInterval = null;
+        
+        // Update user data
+        const u = getUser();
+        u.ingedeeld = true;
+        u.voertuig = data.voertuig;
+        u.dienstnummer = data.roepnummer;
+        u.indienstStart = data.indienstStart || u.indienstStart;
+        saveUser(u);
+        
         // UI bijwerken naar ingedeeld scherm
         document.getElementById('porto-wacht').classList.add('hidden');
-        document.getElementById('porto-ingedeeld').classList.remove('hidden');
-        showToast('Je bent ingedeeld door OVD/OPCO!');
+        document.getElementById('porto-main').classList.remove('hidden');
+        document.getElementById('porto-main').style.display = '';
+        
+        // Update UI elementen
+        updateOCInfo();
+        highlightVoertuig(data.voertuig || '');
+        ['voertuig-error'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+        
+        // Start timer
+        startIndienstTimer('oc-tijd');
+        
+        window.UIComponents.NotificationManager.success('Je bent ingedeeld door OVD/OPCO!');
       }
     } catch (err) {
       console.error('Fout bij ophalen indeling', err);
