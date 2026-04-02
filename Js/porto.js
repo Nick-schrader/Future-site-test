@@ -1104,18 +1104,40 @@ function bevestigKoppel(keuze) {
 function kiesKandidaat(userId, rol) {
   const u = getUser();
   
-  // Stuur het juiste roepnummer mee naar de backend
-  const roepnummer = rol === 'ovd' ? '17-00' : 
-                   rol === 'opco' ? '17-01' : '';
+  // Bepaal de roepnummers
+  const nieuwOvdRoepnummer = rol === 'ovd' ? '17-00' : 
+                            rol === 'opco' ? '17-01' : '';
+  const mijnHuidigeRoepnummer = u.dienstnummer || '';
   
+  console.log('🔍 KIES KANDIDAAT - Rol:', rol);
+  console.log('🔍 KIES KANDIDAAT - Gekozen userId:', userId);
+  console.log('🔍 KIES KANDIDAAT - Nieuw OVD roepnummer:', nieuwOvdRoepnummer);
+  console.log('🔍 KIES KANDIDAAT - Mijn huidige roepnummer:', mijnHuidigeRoepnummer);
+  
+  // Update de backend: gekozen persoon krijgt OVD nummer, ik behoud mijn roepnummer
   fetch(`${API_URL}/api/rol-toewijzen`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId, nieuweRol: rol, oudeRol: rol, roepnummer }),
+    body: JSON.stringify({ 
+      userId, 
+      nieuweRol: rol, 
+      oudeRol: rol, 
+      roepnummer: nieuwOvdRoepnummer,  // Gekozen persoon krijgt OVD nummer
+      vorigeRoepnummer: mijnHuidigeRoepnummer  // Ik behoud mijn roepnummer
+    }),
   }).then(() => {
+    // Update mijn eigen rol naar normale gebruiker
+    u.role = 'user';  // of null, afhankelijk van wat je wilt
+    saveUser(u);
+    
     document.getElementById('kandidaten-modal').classList.add('hidden');
-    ovdUpdateInfo();
-    showToast('Nieuwe ' + rol.toUpperCase() + ' ingesteld');
+    showToast('Nieuwe ' + rol.toUpperCase() + ' ingesteld met roepnummer ' + nieuwOvdRoepnummer);
+    
+    // Refresh pagina om changes te zien
+    setTimeout(() => window.location.reload(), 1000);
+  }).catch(error => {
+    console.error('🔍 KIES KANDIDAAT ERROR:', error);
+    showToast('Fout bij toewijzen nieuwe ' + rol.toUpperCase());
   });
 }
 
