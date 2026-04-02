@@ -2119,6 +2119,14 @@ function stopRolPolling() {
 // Start de polling (alleen voor gebruikers die ervoor in aanmerking komen)
 startRolPolling();
 
+// Debug: log rol polling status elke 30 seconden
+setInterval(() => {
+  const u = getUser();
+  if (u && u.id) {
+    console.log('🔍 Rol polling status - User:', u.shortname || u.displayName, 'Role:', u.role, 'In dienst:', !!u.indienstStart && u.status !== 10, 'Polling active:', !!window._rolPollInterval);
+  }
+}, 30000);
+
 // Stop polling bij page unload
 window.addEventListener('beforeunload', () => {
   stopRolPolling();
