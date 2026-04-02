@@ -21,7 +21,10 @@ function clearAlertTimer() {
 function clearPingTimers() {
   clearWachtrijTimer();
   clearAlertTimer();
+  isOvdOfOpco();
 }
+
+
 
 window.onload = async () => {
   await syncUserFromDB();
@@ -1923,6 +1926,11 @@ setInterval(() => {
 // =====================================================================
 // VERBETERDE openKandidatenModal en renderKandidaten
 // =====================================================================
+
+// Helper: check of een gebruiker OVD of OPCO is (alleen via role property)
+function isOvdOfOpco(userObj) {
+    return userObj.role && (userObj.role.toLowerCase() === 'ovd' || userObj.role.toLowerCase() === 'opco');
+}
 
 function openKandidatenModal(rol) {
     _kandidatenRol = rol;
