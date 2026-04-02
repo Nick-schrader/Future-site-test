@@ -1938,9 +1938,9 @@ function openKandidatenModal(rol) {
             console.log('🔍 ALLE EENHEDEN:', eenheden.length);
             if (eenheden.length > 0) console.log('🔍 EERSTE EENHEID STRUCTUUR:', eenheden[0]);
 
-            // Filter eenheden die de gevraagde rol hebben EN actief zijn (in dienst)
+            // --- AANGEPASTE FILTER (juiste check voor actief in dienst) ---
             const bruikbareKandidaten = eenheden.filter(eenheid => {
-              // Bepaal of de eenheid de juiste rol heeft
+              // Rol check
               let rollenArray = [];
               try {
                 if (typeof eenheid.rollen === 'string') {
@@ -1959,17 +1959,13 @@ function openKandidatenModal(rol) {
                 return rolString.toLowerCase().includes(rol.toLowerCase());
               });
 
-              // Bepaal of de eenheid actief is (in dienst)
-              // Gebruik velden: indienst_start, ingedeeld, status, userId
-              const isActief = !!(eenheid.indienst_start || eenheid.indienstStart) &&
-                               (eenheid.ingedeeld === true || eenheid.ingedeeld === 1);
-              const isAlternatiefActief = eenheid.userId && (!eenheid.status || eenheid.status !== 10);
+              // ✅ CRITICAL FIX: alleen kijken of de eenheid in dienst is (indienst_start bestaat) en status niet 10
+              const isInDienst = !!eenheid.indienst_start && (!eenheid.status || eenheid.status !== 10);
 
-              const isWelInDienst = isActief || isAlternatiefActief;
-
-              console.log(`🔍 EENHEID CHECK: ${eenheid.shortname || eenheid.display_name} - Rol: ${heeftRol} - Actief: ${isWelInDienst}`);
-              return heeftRol && isWelInDienst;
+              console.log(`🔍 EENHEID CHECK: ${eenheid.shortname || eenheid.display_name} - Rol: ${heeftRol} - Actief: ${isInDienst}`);
+              return heeftRol && isInDienst;
             });
+            // --- EINDE AANPASSING ---
 
             console.log('🔍 GEFILTERDE KANDIDATEN:', bruikbareKandidaten.length);
             renderKandidaten(bruikbareKandidaten, rol, lijst);
