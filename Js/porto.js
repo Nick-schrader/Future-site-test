@@ -1917,14 +1917,37 @@ function openKandidatenModal(rol) {
       console.log('🔍 API RAW RESPONSE:', kandidaten);
       console.log('🔍 API LENGTH:', kandidaten.length);
 
-      // TEMP FIX: Als API leeg is, voeg huidige user toe als kandidaat
+      // TEMP FIX: Als API leeg is, haal alle gebruikers op met de juiste rol
       if (kandidaten.length === 0) {
-        const currentUser = getUser();
-        console.warn('⚠️ API geeft GEEN gebruikers terug');
-        console.log('🔍 Current user fallback:', currentUser);
-
-        kandidaten = [currentUser];
-        console.log('🔍 TEMP FIX - Adding current user', currentUser);
+        console.warn('⚠️ API geeft GEEN gebruikers terug - fallback naar alle gebruikers');
+        
+        // Haal alle gebruikers op om handmatig te filteren
+        fetch(`${API_URL}/api/users`)
+          .then(r => r.json())
+          .then(allUsers => {
+            console.log('🔍 ALLE GEBRUIKERS:', allUsers.length);
+            
+            // Filter gebruikers die de juiste rol hebben en NIET in dienst zijn
+            kandidaten = allUsers.filter(user => {
+              const heeftRol = user.rollen && user.rollen.some(r => 
+                (typeof r === 'string' ? r : (r.naam || '')).toLowerCase() === rol.toLowerCase()
+              );
+              const isNietInDienst = !user.indienstStart && !user.ingedeeld;
+              
+              console.log(`🔍 USER CHECK: ${user.displayName} - Heeft rol: ${heeftRol}, Niet in dienst: ${isNietInDienst}`);
+              
+              return heeftRol && isNietInDienst;
+            });
+            
+            console.log('🔍 GEFILTERDE KANDIDATEN:', kandidaten.length);
+          })
+          .catch(err => {
+            console.error('🔍 Fout bij ophalen alle gebruikers:', err);
+            // Fallback naar huidige user
+            const currentUser = getUser();
+            kandidaten = [currentUser];
+            console.log('🔍 Current user fallback:', currentUser);
+          });
       }
 
       _kandidatenLijst = kandidaten;
