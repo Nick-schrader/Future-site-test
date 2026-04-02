@@ -1,4 +1,8 @@
 // ---- PORTO PAGE ----
+<script>
+let _kandidatenRol = null;
+let _kandidatenLijst = [];
+</script>
 
 // Helper functions to clear specific ping timers
 function clearWachtrijTimer() {
@@ -1888,6 +1892,7 @@ function checkIndeling() {
       }
     }).catch(() => {});
 }
+
 function openKandidatenModal(rol) {
   _kandidatenRol = rol;
   document.getElementById('kandidaten-titel').textContent = 'Nieuwe ' + rol.toUpperCase() + ' kiezen';
@@ -1900,115 +1905,91 @@ function openKandidatenModal(rol) {
   fetch(`${API_URL}/api/kandidaten/${rol}`)
     .then(r => {
       console.log('🔍 API RESPONSE STATUS:', r.status, r.ok);
-      if (!r.ok) {
-        console.log('🔍 API RESPONSE NOT OK - Status:', r.status);
-        throw new Error(`HTTP ${r.status}`);
-      }
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
       return r.json();
     })
     .then(kandidaten => {
-
-      console.log("====================================");
-      console.log("🔍 DEBUG - API KANDIDATEN RESPONSE");
-      console.log("====================================");
-
+      console.log('====================================');
+      console.log('🔍 DEBUG - API KANDIDATEN RESPONSE');
+      console.log('====================================');
       console.log('🔍 API RAW RESPONSE:', kandidaten);
       console.log('🔍 API LENGTH:', kandidaten.length);
 
-      // Log elke user
-      kandidaten.forEach((k, index) => {
-        console.log(`👤 USER ${index + 1}`);
-        console.log("ID:", k.id);
-        console.log("Naam:", k.display_name || k.shortname || k.username);
-        console.log("Rollen:", k.rollen?.map(r => r.naam));
-        console.log("Role property:", k.role);
-        console.log("-----------------------------");
-      });
-
-      // TEMP FIX als leeg
+      // TEMP FIX: fallback naar current user als API leeg is
       if (kandidaten.length === 0) {
-        console.log("⚠️ API geeft GEEN gebruikers terug");
-
         const currentUser = getUser();
-
-        console.log("🔍 Current user fallback:", currentUser);
-
-        const heeftRol = currentUser.rollen?.some(r =>
-          (r.naam || '').toLowerCase().includes(rol.toLowerCase())
-        );
-
-        if (heeftRol) {
-          console.log('🔍 TEMP FIX - Adding current user');
-          kandidaten = [currentUser];
-        }
+        console.warn('⚠️ API geeft GEEN gebruikers terug');
+        console.log('🔍 Current user fallback:', currentUser);
+        kandidaten = [currentUser];
+        console.log('🔍 TEMP FIX - Adding current user');
       }
 
-      const lijst = document.getElementById('kandidaten-lijst');
+      _kandidatenLijst = kandidaten;
 
+      // Filter kandidaten op rol
       const gefilterdeKandidaten = kandidaten.filter(k => {
+        console.log('====================================');
+        console.log('🔍 FILTER CHECK');
 
-        console.log("====================================");
-        console.log("🔍 FILTER CHECK");
+        // Rollen array: alleen de 'naam' property gebruiken
+        let rollenNamen = [];
+        if (k.rollen && Array.isArray(k.rollen)) {
+          rollenNamen = k.rollen.map(r => r.naam.toLowerCase());
+        }
 
-        const naam = k.display_name || k.shortname || k.username;
-        console.log("👤 Naam:", naam);
+        const heeftRol = rollenNamen.includes(rol.toLowerCase()) || (k.role && k.role.toLowerCase() === rol.toLowerCase());
+        const isAlInDienst = !!k.indienstStart && !!k.ingedeeld;
 
-        const rollen = (k.rollen || []).map(r =>
-          (typeof r === 'string' ? r : r.naam || '').toLowerCase()
-        );
+        console.log('👤 Naam:', k.username || k.displayName || k.shortname);
+        console.log('🎭 Rollen:', rollenNamen);
+        console.log('✅ Heeft rol:', heeftRol);
+        console.log('⏱️ Indienst + ingedeeld:', isAlInDienst);
 
-        console.log("🎭 Rollen:", rollen);
+        // OVD/OPCO conflict
+        const isOvdOpco = ['ovd', 'opco'].includes(rol.toLowerCase());
+        const heeftConflictRol = isOvdOpco && heeftRol;
 
-        const heeftRol = rollen.some(r =>
-          r.includes(rol.toLowerCase())
-        );
-
-        console.log("✅ Heeft rol:", heeftRol);
+        if (isAlInDienst) {
+          console.log('❌ EXCLUDED - al in dienst');
+          return false;
+        }
+        if (heeftConflictRol) {
+          console.log('❌ EXCLUDED - conflict OVD/OPCO rol');
+          return false;
+        }
 
         return heeftRol;
       });
 
-      _kandidatenLijst = gefilterdeKandidaten;
+      console.log('====================================');
+      console.log('🔍 EIND RESULTAAT');
+      console.log('====================================');
+      console.log('Totaal kandidaten API:', kandidaten.length);
+      console.log('Gefilterd voor rol', rol, ':', gefilterdeKandidaten.length);
+      console.log('Result:', gefilterdeKandidaten);
 
-      console.log("====================================");
-      console.log("🔍 EIND RESULTAAT");
-      console.log("====================================");
-
-      console.log("Totaal kandidaten API:", kandidaten.length);
-      console.log("Gefilterd voor rol", rol, ":", gefilterdeKandidaten.length);
-      console.log("Result:", gefilterdeKandidaten);
-
+      const lijst = document.getElementById('kandidaten-lijst');
       if (gefilterdeKandidaten.length === 0) {
-        lijst.innerHTML =
-          '<div style="color:#888;text-align:center;padding:12px">Geen kandidaten met rol: ' +
-          rol +
-          '</div>';
+        lijst.innerHTML = `<div style="color:#888;text-align:center;padding:12px">Geen actieve kandidaten met rol: ${rol}</div>`;
       } else {
         lijst.innerHTML = gefilterdeKandidaten.map(k => `
           <div style="display:flex;justify-content:space-between;align-items:center;background:#1e2130;padding:10px 14px;border-radius:6px">
-            <span>${k.shortname || k.display_name || k.username}</span>
-            <button class="btn-purple small" onclick="kiesKandidaat('${k.id}','${rol}')">
-              Kiezen
-            </button>
+            <span>${k.shortname || k.displayName || k.username}</span>
+            <button class="btn-purple small" onclick="kiesKandidaat('${k.id}','${rol}')">Kiezen</button>
           </div>
         `).join('');
       }
-
     })
     .catch(error => {
       console.error('🔍 API ERROR:', error);
-
       const lijst = document.getElementById('kandidaten-lijst');
-
-      if (lijst) {
-        lijst.innerHTML =
-          '<div style="color:#f87171;text-align:center;padding:12px">Kan kandidaten niet laden: ' +
-          error.message +
-          '</div>';
-      }
+      if (lijst) lijst.innerHTML = `<div style="color:#f87171;text-align:center;padding:12px">Kan kandidaten niet laden: ${error.message}</div>`;
     });
 }
 
+/**
+ * Kies een willekeurige kandidaat uit de huidige lijst
+ */
 function radVanFortuin() {
   const kandidaten = _kandidatenLijst || [];
 
