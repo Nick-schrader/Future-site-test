@@ -334,7 +334,7 @@ function eenheidRow(e) {
     <td>${e.id}</td><td>${e.medewerkers}</td><td>${specialisatie}</td><td>${e.voertuig}</td>
     <td>${e.type}${typeWarn}</td><td>${e.taak}</td><td>${tijdIndienst}</td><td>${statusBadge(e.status)}</td>
   </tr>`;
-
+}
 function renderLeaderboard() {
   const metTijd = appData.eenheden.filter(e => e.indienstStart);
   const gesorteerd = [...metTijd].sort((a, b) => a.indienstStart - b.indienstStart).slice(0, 10);
