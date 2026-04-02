@@ -1345,6 +1345,16 @@ function inloggenDirect(type) {
     document.getElementById('inloggen-roepnummer').value = roep;
   }
 
+  // Check of huidige roepnummer correct is voor OVD/OPCO
+  if (type === 'OVD' && u.dienstnummer !== '17-00') {
+    console.log('🔍 OVD ROEPNUMMER CORRECTIE - Oud:', u.dienstnummer, '→ Nieuw: 17-00');
+    u.dienstnummer = '17-00';
+  }
+  if (type === 'OPCO' && u.dienstnummer !== '17-01') {
+    console.log('🔍 OPCO ROEPNUMMER CORRECTIE - Oud:', u.dienstnummer, '→ Nieuw: 17-01');
+    u.dienstnummer = '17-01';
+  }
+
   u.role = type.toLowerCase();
   u.dienstnummer = roep;
   saveUser(u);
