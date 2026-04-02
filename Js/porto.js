@@ -1930,11 +1930,16 @@ function openKandidatenModal(rol) {
       
       // Filter kandidaten op basis van rol - check zowel rollen array als rol property
       const gefilterdeKandidaten = kandidaten.filter(k => {
-        console.log('🔍 FILTERING KANDIDAAT:', k);
-        console.log('🔍 KANDIDAAT.rollen:', k.rollen);
-        console.log('🔍 KANDIDAAT.role:', k.role);
-        console.log('🔍 KANDIDAAT.status:', k.status);
-        console.log('🔍 KANDIDAAT.indienstStart:', k.indienstStart);
+        console.log('🔍 FILTERING KANDIDAAT:', {
+          id: k.id,
+          shortname: k.shortname,
+          display_name: k.display_name,
+          role: k.role,
+          rollen: k.rollen,
+          status: k.status,
+          indienstStart: k.indienstStart,
+          ingedeeld: k.ingedeeld
+        });
         
         // Check of kandidaat de juiste rol heeft (case-insensitive)
         let rolString = '';
@@ -1957,25 +1962,31 @@ function openKandidatenModal(rol) {
         
         // Sluit kandidaten uit die:
         // 1. Al in dienst zijn
-        // 2. Al de gezochte rol hebben (maar niet als we OVD/OPCO zoeken)
-        // 3. Al OVD/OPCO zijn (die kunnen niet gekozen worden)
+        // 2. Al de gezochte rol heeft EN al in die rol is (bijv. als OVD zoeken, mag geen OVD die al OVD is)
+        // 3. Al OVD/OPCO zijn en we zoeken naar OVD/OPCO (conflict prevention)
         const isAlInDienst = k.indienstStart && k.ingedeeld;
         const heeftAlRol = Array.isArray(rolString) 
           ? rolString.some(r => r.toLowerCase().includes(rol.toLowerCase()))
           : rolString.toLowerCase().includes(rol.toLowerCase());
         const isHuidigeOvdOpco = ['ovd', 'opco'].includes(rol.toLowerCase());
         
+        // Speciale check: als we OVD/OPCO zoeken, sluit dan kandidaten uit die al in die specifieke rol zijn
+        let heeftConflictRol = false;
+        if (isHuidigeOvdOpco && heeftAlRol) {
+          heeftConflictRol = true; // Heeft al de rol die we zoeken
+        }
+        
         console.log('🔍 KANDIDAAT FILTER CHECKS:', {
           isAlInDienst: isAlInDienst,
           heeftAlRol: heeftAlRol,
+          heeftConflictRol: heeftConflictRol,
           isHuidigeOvdOpco: isHuidigeOvdOpco
         });
         
         // Toon kandidaat NIET als:
         // - Al in dienst is
-        // - Al de gezochte rol heeft (maar niet als we OVD/OPCO zoeken)
-        // - Al OVD/OPCO en we zoeken naar OVD/OPCO
-        const shouldExclude = isAlInDienst || (heeftAlRol && !isHuidigeOvdOpco);
+        // - Heeft al de gezochte rol EN we zoeken naar OVD/OPCO (conflict)
+        const shouldExclude = isAlInDienst || heeftConflictRol;
         
         if (shouldExclude) {
           console.log('🔍 KANDIDAAT EXCLUDED - Already in service or has conflicting role');
