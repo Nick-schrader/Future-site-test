@@ -1954,9 +1954,10 @@ function openKandidatenModal(rol) {
                 rollenArray = [];
               }
 
-              const heeftRol = rollenArray.some(r =>
-                (r || '').toLowerCase().includes(rol.toLowerCase())
-              );
+              const heeftRol = rollenArray.some(r => {
+                const rolString = typeof r === 'string' ? r : (r.naam || '');
+                return rolString.toLowerCase().includes(rol.toLowerCase());
+              });
 
               // Bepaal of de eenheid actief is (in dienst)
               // Gebruik velden: indienst_start, ingedeeld, status, userId
