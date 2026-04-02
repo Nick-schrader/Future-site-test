@@ -80,6 +80,33 @@ window.onload = async () => {
 
   if (isOvdOpco) {
     console.log('🔍 SHOWING OVD VIEW');
+    
+    // Check en corrigeer roepnummer voor OVD/OPCO bij pagina load
+    if (role === 'ovd' && u.dienstnummer !== '17-00') {
+      console.log('🔍 AUTO OVD ROEPNUMMER CORRECTIE - Oud:', u.dienstnummer, '→ Nieuw: 17-00');
+      u.dienstnummer = '17-00';
+      saveUser(u);
+      
+      // Sync naar backend
+      fetch(`${API_URL}/api/rol`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: u.id, role: u.role, indienstStart: u.indienstStart || Date.now(), roepnummer: '17-00', rangicoon: u.rangicoon || '' }),
+      });
+    }
+    if (role === 'opco' && u.dienstnummer !== '17-01') {
+      console.log('🔍 AUTO OPCO ROEPNUMMER CORRECTIE - Oud:', u.dienstnummer, '→ Nieuw: 17-01');
+      u.dienstnummer = '17-01';
+      saveUser(u);
+      
+      // Sync naar backend
+      fetch(`${API_URL}/api/rol`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: u.id, role: u.role, indienstStart: u.indienstStart || Date.now(), roepnummer: '17-01', rangicoon: u.rangicoon || '' }),
+      });
+    }
+    
     document.getElementById('ovd-view').classList.remove('hidden');
     laadEenheden();
     renderMeldingen();
