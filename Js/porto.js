@@ -1831,7 +1831,7 @@ function openKandidatenModal(rol) {
       _kandidatenLijst = kandidaten;
       const lijst = document.getElementById('kandidaten-lijst');
       
-      // Filter kandidaten op basis van rol - check zowel rollen array als rollen property
+      // Filter kandidaten op basis van rol - check zowel rollen array als rol property
       const gefilterdeKandidaten = kandidaten.filter(k => {
         // Check of kandidaat de juiste rol heeft (case-insensitive)
         const heeftJuisteRol = k.rollen && k.rollen.some(r => {
