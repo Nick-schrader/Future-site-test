@@ -2000,7 +2000,10 @@ function renderKandidaten(kandidaten, rol, lijst) {
         rollenArray = k.rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
       }
     } catch (e) {}
-    const heeftRol = rollenArray.some(r => (r || '').toLowerCase().includes(rol.toLowerCase()));
+    const heeftRol = rollenArray.some(r => {
+      const rolString = typeof r === 'string' ? r : (r.naam || '');
+      return rolString.toLowerCase().includes(rol.toLowerCase());
+    });
     // Ook controleren op k.role property (sommige gebruikers hebben die)
     const heeftRolProperty = k.role && k.role.toLowerCase() === rol.toLowerCase();
     return heeftRol || heeftRolProperty;
