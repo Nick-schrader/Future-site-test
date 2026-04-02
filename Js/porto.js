@@ -1747,6 +1747,13 @@ function checkIndeling() {
   const u = getUser();
   if (!u.id) return;
 
+  console.log('🔍 CHECK INDELING - User state:', {
+    role: u.role,
+    ingedeeld: u.ingedeeld,
+    indienstStart: u.indienstStart,
+    status: u.status
+  });
+
   // Reset status 10 bij re-login (voorkom vastzitten in uitdienst modal)
   if (u.status === 10) {
     console.log('🔄 RE-LOGIN - Reset status 10 naar null');
@@ -1758,11 +1765,14 @@ function checkIndeling() {
   // Alleen checken als user nog niet OVD/OPCO/OC/OPS is
   const currentUserRole = u.role || '';
   if (!['ovd','opco','oc','ops'].includes(currentUserRole)) {
+    console.log('🔍 CHECKING ROLE CHANGE - Current role:', currentUserRole);
     fetch(`${API_URL}/api/rol-check/${u.id}`)
       .then(r => r.json())
       .then(data => {
+        console.log('🔍 ROLE CHECK RESPONSE:', data);
         // Alleen rol toewijzen als gebruiker NIET uitdienst is
         const isUitdienst = !u.indienstStart || u.status === 10;
+        console.log('🔍 Is uitdienst?', isUitdienst, 'New role:', data.role);
         if (!isUitdienst && ['ovd','opco','oc','ops'].includes(data.role)) {
           u.role = data.role;
           if (data.dienstnummer) u.dienstnummer = data.dienstnummer;
@@ -1773,14 +1783,18 @@ function checkIndeling() {
           setTimeout(() => window.location.reload(), 1000);
           return;
         }
-      }).catch(() => {});
+      }).catch(err => {
+        console.error('🔍 ROLE CHECK ERROR:', err);
+      });
   }
 
   if (u.ingedeeld) {
+    console.log('🔍 USER INGEDEELD - Checking indeling API');
     // Check of voertuig type veranderd is door OVD
     fetch(`${API_URL}/api/indeling/${u.id}`)
       .then(r => r.json())
       .then(data => {
+        console.log('🔍 INDELING API RESPONSE:', data);
         if (data.voertuig && data.voertuig !== u.voertuig) {
           u.voertuig = data.voertuig;
           saveUser(u);
@@ -1789,7 +1803,9 @@ function checkIndeling() {
           const isOvdOpco = ['ovd','opco','oc','ops'].includes(u.role);
           if (isOvdOpco) ovdUpdateInfo(); else updateOCInfo();
         }
-      }).catch(() => {});
+      }).catch(err => {
+        console.error('🔍 INDELING API ERROR:', err);
+      });
     return;
   }
   fetch(`${API_URL}/api/indeling/${u.id}`)
