@@ -1653,6 +1653,9 @@ function ovdUpdateInfo() {
   const roepnummer = document.getElementById('ovd-oc-roepnummer');
   const voertuig = document.getElementById('ovd-oc-voertuig');
   const koppel = document.getElementById('ovd-oc-koppel');
+  
+  console.log('🔍 OVD UPDATE INFO - User:', u.shortname || u.displayName, 'Role:', u.role, 'Dienstnummer:', u.dienstnummer, 'Voertuig:', u.voertuig);
+  
   if (naam) naam.textContent = u.shortname || u.displayName || '-';
   if (rol) rol.textContent = u.role ? u.role.toUpperCase() : '-';
   if (roepnummer) roepnummer.textContent = u.dienstnummer || '-';
@@ -1664,6 +1667,7 @@ function ovdUpdateInfo() {
     fetch(`${API_URL}/api/indeling/${u.id}`)
       .then(r => r.json())
       .then(data => {
+        console.log('🔍 OVD UPDATE INFO - API Response:', data);
         const vn = document.getElementById('ovd-oc-voertuig-naam');
         const koppel = document.getElementById('ovd-oc-koppel');
         if (vn) vn.textContent = data.voertuigNaam || '-';
@@ -2095,13 +2099,26 @@ function startRolPolling() {
     }
 
     try {
-      const resp = await fetch(`${API_URL}/api/rol-check/${currentUser.id}`);
+      const resp = await fetch(`${API_URL}/api/indeling/${currentUser.id}`);
       const data = await resp.json();
-      if (data.role && ['ovd', 'opco', 'oc', 'ops'].includes(data.role) && currentUser.role !== data.role) {
-        console.log(`🔄 Rol gewijzigd naar ${data.role} – pagina wordt ververst.`);
-        stopRolPolling();
-        showToast(`Je bent aangesteld als ${data.role.toUpperCase()}! De pagina wordt nu ververst.`);
-        setTimeout(() => window.location.reload(), 500);
+      // Update als er iets veranderd is (roepnummer, voertuig, koppelNaam, OF rol)
+      if (data.roepnummer !== currentUser.dienstnummer || 
+          data.voertuig !== currentUser.voertuig || 
+          data.koppelNaam !== currentUser.koppelNaam ||
+          data.role !== currentUser.role) {
+        
+        // Update user data
+        currentUser.dienstnummer = data.roepnummer;
+        currentUser.voertuig = data.voertuig;
+        currentUser.koppelNaam = data.koppelNaam;
+        currentUser.role = data.role; // Ook rol updaten!
+        saveUser(currentUser);
+        
+        // Update GUI
+        const isOvdOpco = ['ovd', 'opco', 'oc', 'ops'].includes(currentUser.role);
+        if (isOvdOpco) ovdUpdateInfo(); else updateOCInfo();
+        
+        console.log('🔄 GUI UPDATE - Indeling gewijzigd:', data);
       }
     } catch (err) {
       console.warn('Rol polling fout:', err);
