@@ -282,7 +282,7 @@ function renderEenheden() {
     let warnings = '';
 
     html += `<tr class="group-header" onclick="toggleGroep('${label}')" style="cursor:pointer">
-      <td colspan="7"><span style="margin-right:6px;font-size:0.7rem">${pijl}</span>${label} <span class="badge-tag">Totaal ${groep.length}</span></td>
+      <td colspan="6"><span style="margin-right:6px;font-size:0.7rem">${pijl}</span>${label} <span class="badge-tag">Totaal ${groep.length}</span></td>
     </tr>`;
     if (!ingeklapt) {
       groep.forEach(e => html += eenheidRow(e));
@@ -332,7 +332,7 @@ function eenheidRow(e) {
 
   return `<tr ${click} style="${canEdit ? 'cursor:pointer' : ''}">
     <td>${e.id}</td><td>${e.medewerkers}</td><td>${specialisatie}</td><td>${e.voertuig}</td>
-    <td>${e.type}${typeWarn}</td><td>${e.taak}</td><td>${tijdIndienst}</td><td>${statusBadge(e.status)}</td>
+    <td>${e.type}${typeWarn}</td><td>${tijdIndienst}</td><td>${statusBadge(e.status)}</td>
   </tr>`;
 }
 function renderLeaderboard() {
