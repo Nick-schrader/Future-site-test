@@ -1,8 +1,6 @@
 // ---- PORTO PAGE ----
-<script>
 let _kandidatenRol = null;
 let _kandidatenLijst = [];
-</script>
 
 // Helper functions to clear specific ping timers
 function clearWachtrijTimer() {
@@ -1060,9 +1058,6 @@ function highlightVoertuig(v) {
     b.classList.toggle('active', b.textContent.trim().toLowerCase() === v.toLowerCase());
   });
 }
-
-let _kandidatenRol = '';
-let _kandidatenLijst = [];
 
 function openKoppelModal() {
   const id = document.getElementById('edit-unit-id').value;
