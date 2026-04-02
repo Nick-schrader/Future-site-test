@@ -1302,6 +1302,16 @@ function inloggenDirect(type) {
     showToast('Je hebt de OPS rol niet'); return;
   }
 
+  // Voor OPS is roepnummer verplicht
+  if (type === 'OPS') {
+    const roepnummerInput = document.getElementById('inloggen-roepnummer').value.trim();
+    if (!roepnummerInput) {
+      showToast('Roepnummer is verplicht voor OPS');
+      document.getElementById('inloggen-roepnummer').focus();
+      return;
+    }
+  }
+
   // Always use specific call numbers regardless of input field
   let roep = '';
   if (type === 'OVD') roep = '17-00';
