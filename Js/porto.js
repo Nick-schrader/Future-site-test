@@ -1962,7 +1962,18 @@ function openKandidatenModal(rol) {
               // ✅ CRITICAL FIX: alleen kijken of de eenheid in dienst is (indienst_start bestaat) en status niet 10
               const isInDienst = !!eenheid.indienst_start && (!eenheid.status || eenheid.status !== 10);
 
-              console.log(`🔍 EENHEID CHECK: ${eenheid.shortname || eenheid.display_name} - Rol: ${heeftRol} - Actief: ${isInDienst}`);
+              // Check of persoon al OVD/OPCO is
+              let isOvdOfOpco = false;
+              if (eenheid.role === 'ovd' || eenheid.role === 'opco') {
+                isOvdOfOpco = true;
+              } else {
+                isOvdOfOpco = rollenArray.some(r => {
+                  const rolString = typeof r === 'string' ? r : (r.naam || '');
+                  return rolString.toLowerCase() === 'ovd' || rolString.toLowerCase() === 'opco';
+                });
+              }
+
+              console.log(`🔍 EENHEID CHECK: ${eenheid.shortname || eenheid.display_name} - Rol: ${heeftRol} - Actief: ${isInDienst} - OVD/OPCO: ${isOvdOfOpco}`);
               return heeftRol && isInDienst;
             });
             // --- EINDE AANPASSING ---
