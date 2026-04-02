@@ -1924,6 +1924,7 @@ function openKandidatenModal(rol) {
             rollen: currentUser.rollen
           }];
         }
+      }
       _kandidatenLijst = kandidaten;
       const lijst = document.getElementById('kandidaten-lijst');
       
