@@ -1906,3 +1906,21 @@ function openKandidatenModal(rol) {
       }
     });
 }
+
+function radVanFortuin() {
+  const kandidaten = _kandidatenLijst || [];
+  
+  if (kandidaten.length === 0) {
+    showToast('Geen kandidaten beschikbaar');
+    return;
+  }
+  
+  // Kies willekeurige kandidaat
+  const willekeurigeIndex = Math.floor(Math.random() * kandidaten.length);
+  const gekozenKandidaat = kandidaten[willekeurigeIndex];
+  
+  console.log('🎰 RAD VAN FORTUIN - Gekozen kandidaat:', gekozenKandidaat);
+  
+  // Roep kiesKandidaat aan met de willekeurige kandidaat
+  kiesKandidaat(gekozenKandidaat.id, _kandidatenRol);
+}
