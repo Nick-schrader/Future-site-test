@@ -1025,12 +1025,20 @@ app.get('/api/eenheden', async (_req, res) => {
     SELECT g.id, g.display_name, g.shortname, g.dienstnummer, g.voertuig, g.voertuig_naam, g.status, g.dienst,
            g.koppel_id, g.rollen, g.indienst_start, i.roepnummer, i.ingedeeld_door,
            k.shortname as koppel_naam, k.display_name as koppel_display, k.id as koppel_user_id
-           g.role 
     FROM gebruikers g
     LEFT JOIN indelingen i ON g.id = i.user_id
     LEFT JOIN gebruikers k ON g.koppel_id = k.id
     WHERE g.indienst_start IS NOT NULL
   `).all();
+
+  // ---- API: Rollen van actieve eenheden (alleen id + role) ----
+app.get('/api/eenheden-rollen', (_req, res) => {
+  const rollen = db.prepare(`
+    SELECT id, role FROM gebruikers
+    WHERE indienst_start IS NOT NULL
+  `).all();
+  res.json(rollen);
+});
 
   // Filter gekoppelde duplicaten
   const gefilterd = eenheden.filter(e => {

@@ -1927,8 +1927,8 @@ setInterval(() => {
 // =====================================================================
 
 // Helper: check of een gebruiker OVD of OPCO is (alleen via role property)
-function isOvdOfOpco(userObj) {
-    return userObj.role && (userObj.role.toLowerCase() === 'ovd' || userObj.role.toLowerCase() === 'opco');
+function isOvdOfOpco(role) {
+    return role === 'ovd' || role === 'opco';
 }
 
 function openKandidatenModal(rol) {
@@ -1952,43 +1952,46 @@ function openKandidatenModal(rol) {
         })
         .then(kandidaten => {
             if (kandidaten.length === 0) {
-                // Fallback: alle eenheden ophalen en zelf filteren
-                fetch(`${API_URL}/api/eenheden`)
-                    .then(r => r.json())
-                    .then(eenheden => {
-                        const bruikbareKandidaten = eenheden.filter(eenheid => {
-                            // Rol check via rollen array (voor de gevraagde rol)
-                            let rollenArray = [];
-                            try {
-                                if (typeof eenheid.rollen === 'string') {
-                                    rollenArray = JSON.parse(eenheid.rollen || '[]');
-                                } else if (Array.isArray(eenheid.rollen)) {
-                                    rollenArray = eenheid.rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
-                                }
-                            } catch (e) {}
+                // Fallback: haal eenheden + rollen apart op
+                Promise.all([
+                    fetch(`${API_URL}/api/eenheden`).then(r => r.json()),
+                    fetch(`${API_URL}/api/eenheden-rollen`).then(r => r.json())
+                ]).then(([eenheden, rollenData]) => {
+                    // Maak een map van userId -> role
+                    const roleMap = new Map();
+                    rollenData.forEach(r => roleMap.set(r.id, r.role));
 
-                            const heeftRol = rollenArray.some(r => {
-                                const rolStr = typeof r === 'string' ? r : (r.naam || '');
-                                return rolStr.toLowerCase().includes(rol.toLowerCase());
-                            });
-                            const heeftRolProperty = eenheid.role && eenheid.role.toLowerCase() === rol.toLowerCase();
-
-                            // Alleen in dienst
-                            const isInDienst = !!eenheid.indienst_start && (!eenheid.status || eenheid.status !== 10);
-
-                            // ❌ Uitsluiten als role property OVD of OPCO is
-                            if (isOvdOfOpco(eenheid)) {
-                                return false;
+                    const bruikbareKandidaten = eenheden.filter(eenheid => {
+                        // Rol check via rollen array (voor de gevraagde rol)
+                        let rollenArray = [];
+                        try {
+                            if (typeof eenheid.rollen === 'string') {
+                                rollenArray = JSON.parse(eenheid.rollen || '[]');
+                            } else if (Array.isArray(eenheid.rollen)) {
+                                rollenArray = eenheid.rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
                             }
+                        } catch (e) {}
 
-                            return (heeftRol || heeftRolProperty) && isInDienst;
+                        const heeftRol = rollenArray.some(r => {
+                            const rolStr = typeof r === 'string' ? r : (r.naam || '');
+                            return rolStr.toLowerCase().includes(rol.toLowerCase());
                         });
-                        renderKandidaten(bruikbareKandidaten, rol, lijst);
-                    })
-                    .catch(err => {
-                        console.error('❌ Fallback fout:', err);
-                        lijst.innerHTML = `<div style="color:#f87171;text-align:center;padding:12px">Kan kandidaten niet laden</div>`;
+                        const heeftRolProperty = eenheid.role && eenheid.role.toLowerCase() === rol.toLowerCase();
+
+                        const isInDienst = !!eenheid.indienst_start && (!eenheid.status || eenheid.status !== 10);
+
+                        // ❌ Uitsluiten op basis van role uit de aparte endpoint
+                        const userRole = roleMap.get(eenheid.id);
+                        const isOvdOpco = userRole && (userRole.toLowerCase() === 'ovd' || userRole.toLowerCase() === 'opco');
+                        if (isOvdOpco) return false;
+
+                        return (heeftRol || heeftRolProperty) && isInDienst;
                     });
+                    renderKandidaten(bruikbareKandidaten, rol, lijst);
+                }).catch(err => {
+                    console.error('❌ Fallback fout:', err);
+                    lijst.innerHTML = `<div style="color:#f87171;text-align:center;padding:12px">Kan kandidaten niet laden</div>`;
+                });
             } else {
                 renderKandidaten(kandidaten, rol, lijst);
             }
