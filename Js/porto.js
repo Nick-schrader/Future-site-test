@@ -85,7 +85,6 @@ window.onload = async () => {
     renderMeldingen();
     setInterval(() => { laadEenheden(); renderMeldingen(); ovdUpdateInfo(); }, 3000);
     setInterval(renderLeaderboard, 1000);
-    setInterval(checkIndeling, 3000);
 
     // Altijd DB checken voor status/voertuig/indienstStart
     if (u.id) {
