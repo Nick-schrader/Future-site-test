@@ -1824,31 +1824,57 @@ function openKandidatenModal(rol) {
   document.getElementById('kandidaten-titel').textContent = 'Nieuwe ' + rol.toUpperCase() + ' kiezen';
   document.getElementById('kandidaten-modal').classList.remove('hidden');
 
+  console.log('🔍 OPEN KANDIDATEN MODAL - Rol:', rol);
+  console.log('🔍 OPEN KANDIDATEN MODAL - API_URL:', API_URL);
+  console.log('🔍 OPEN KANDIDATEN MODAL - Full URL:', `${API_URL}/api/kandidaten/${rol}`);
+
   fetch(`${API_URL}/api/kandidaten/${rol}`)
-    .then(r => r.json())
+    .then(r => {
+      console.log('🔍 API RESPONSE STATUS:', r.status, r.ok);
+      if (!r.ok) {
+        console.log('🔍 API RESPONSE NOT OK - Status:', r.status);
+        throw new Error(`HTTP ${r.status}`);
+      }
+      return r.json();
+    })
     .then(kandidaten => {
+      console.log('🔍 API RAW RESPONSE:', kandidaten);
+      console.log('🔍 API RESPONSE TYPE:', typeof kandidaten);
+      console.log('🔍 API RESPONSE LENGTH:', kandidaten.length);
+      
       _kandidatenLijst = kandidaten;
       const lijst = document.getElementById('kandidaten-lijst');
       
       // Filter kandidaten op basis van rol - check zowel rollen array als rol property
       const gefilterdeKandidaten = kandidaten.filter(k => {
+        console.log('🔍 FILTERING KANDIDAAT:', k);
+        console.log('🔍 KANDIDAAT.rollen:', k.rollen);
+        console.log('🔍 KANDIDAAT.role:', k.role);
+        
         // Check of kandidaat de juiste rol heeft (case-insensitive)
         const heeftJuisteRol = k.rollen && k.rollen.some(r => {
           const rolString = typeof r === 'string' ? r : (r.naam || '');
-          return rolString.toLowerCase().includes(rol.toLowerCase());
+          const match = rolString.toLowerCase().includes(rol.toLowerCase());
+          console.log('🔍 ROL STRING MATCH:', rolString, 'vs', rol, '=>', match);
+          return match;
         });
         
         // Fallback: check ook role property als rollen leeg is
         const heeftRolProperty = k.role && k.role.toLowerCase() === rol.toLowerCase();
+        console.log('🔍 ROLE PROPERTY MATCH:', k.role, 'vs', rol, '=>', heeftRolProperty);
         
-        return heeftJuisteRol || heeftRolProperty;
+        const result = heeftJuisteRol || heeftRolProperty;
+        console.log('🔍 FINAL FILTER RESULT:', result);
+        return result;
       });
       
       console.log('🔍 KANDIDATEN FILTER - Rol:', rol, 'Totaal:', kandidaten.length, 'Gefilterd:', gefilterdeKandidaten.length);
       
       if (gefilterdeKandidaten.length === 0) {
+        console.log('🔍 NO CANDIDATES FOUND - Showing empty message');
         lijst.innerHTML = '<div style="color:#888;text-align:center;padding:12px">Geen actieve kandidaten met rol: ' + rol + '</div>';
       } else {
+        console.log('🔍 FOUND CANDIDATES - Rendering:', gefilterdeKandidaten);
         lijst.innerHTML = gefilterdeKandidaten.map(k => `
           <div style="display:flex;justify-content:space-between;align-items:center;background:#1e2130;padding:10px 14px;border-radius:6px">
             <span>${k.shortname || k.display_name}</span>
@@ -1858,7 +1884,10 @@ function openKandidatenModal(rol) {
       }
     })
     .catch(error => {
-      console.error('Fout bij ophalen kandidaten:', error);
-      lijst.innerHTML = '<div style="color:#f87171;text-align:center;padding:12px">Kan kandidaten niet laden</div>';
+      console.error('🔍 API ERROR:', error);
+      const lijst = document.getElementById('kandidaten-lijst');
+      if (lijst) {
+        lijst.innerHTML = '<div style="color:#f87171;text-align:center;padding:12px">Kan kandidaten niet laden: ' + error.message + '</div>';
+      }
     });
 }
