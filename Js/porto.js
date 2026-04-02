@@ -1323,15 +1323,27 @@ function startWachtrijPolling(userId) {
 
 function inloggenDirect(type) {
   const u = getUser();
-  const rollen = (u.rollen || []).map(r => r.naam || r);
+  
+  // Gebruik de 'role' property ipv 'rollen' array voor OVD/OPCO check
+  const userRole = u.role || '';
+  const userRollen = (u.rollen || []).map(r => r.naam || r);
 
-  if (type === 'OVD' && !rollen.some(r => r.includes('OVD') || r.includes('OvD'))) {
+  console.log('🔍 INLOGGEN DIRECT - User state:', {
+    type: type,
+    userRole: userRole,
+    userRollen: userRollen,
+    hasOVD: userRollen.some(r => r.includes('OVD') || r.includes('OvD')),
+    hasOPCO: userRollen.some(r => r.includes('OPCO')),
+    hasOPS: userRollen.some(r => r.includes('OPS'))
+  });
+
+  if (type === 'OVD' && !userRollen.some(r => r.includes('OVD') || r.includes('OvD'))) {
     showToast('Je hebt de OVD rol niet'); return;
   }
-  if (type === 'OPCO' && !rollen.some(r => r.includes('OPCO'))) {
+  if (type === 'OPCO' && !userRollen.some(r => r.includes('OPCO'))) {
     showToast('Je hebt de OPCO rol niet'); return;
   }
-  if (type === 'OPS' && !rollen.some(r => r.includes('OPS'))) {
+  if (type === 'OPS' && !userRollen.some(r => r.includes('OPS'))) {
     showToast('Je hebt de OPS rol niet'); return;
   }
 
