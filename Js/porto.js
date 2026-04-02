@@ -1937,8 +1937,18 @@ function openKandidatenModal(rol) {
         console.log('🔍 KANDIDAAT.indienstStart:', k.indienstStart);
         
         // Check of kandidaat de juiste rol heeft (case-insensitive)
-        const rolString = typeof k.rollen === 'string' ? k.rollen : (k.rollen && k.rollen.map ? k.rollen.map(r => r.naam || r) : []);
-        const match = rolString.toLowerCase().includes(rol.toLowerCase());
+        let rolString = '';
+        if (k.rollen) {
+          if (Array.isArray(k.rollen)) {
+            rolString = k.rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
+          } else {
+            rolString = [k.rollen];
+          }
+        }
+        
+        const match = Array.isArray(rolString) 
+          ? rolString.some(r => r.toLowerCase().includes(rol.toLowerCase()))
+          : rolString.toLowerCase().includes(rol.toLowerCase());
         console.log('🔍 ROL STRING MATCH:', rolString, 'vs', rol, '=>', match);
         
         // Fallback: check ook role property als rollen leeg is
@@ -1950,7 +1960,9 @@ function openKandidatenModal(rol) {
         // 2. Al de gezochte rol hebben (maar niet als we OVD/OPCO zoeken)
         // 3. Al OVD/OPCO zijn (die kunnen niet gekozen worden)
         const isAlInDienst = k.indienstStart && k.ingedeeld;
-        const heeftAlRol = rolString.toLowerCase().includes(rol.toLowerCase());
+        const heeftAlRol = Array.isArray(rolString) 
+          ? rolString.some(r => r.toLowerCase().includes(rol.toLowerCase()))
+          : rolString.toLowerCase().includes(rol.toLowerCase());
         const isHuidigeOvdOpco = ['ovd', 'opco'].includes(rol.toLowerCase());
         
         console.log('🔍 KANDIDAAT FILTER CHECKS:', {
