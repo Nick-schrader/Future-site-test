@@ -1223,15 +1223,32 @@ async function aanmeldenDirect() {
   }
 
   // Dubbelcheck: probeer nogmaals roepnummer uit wachtrij te verwijderen
-  // Alleen proberen als de endpoint bestaat (geen 404)
+  // Probeer verschillende endpoints om roepnummer te verwijderen
   try {
-    const deleteResponse = await fetch(`${API_URL}/api/wachtrij/${u.id}`, { method: 'DELETE' });
+    // Eerst proberen via DELETE op wachtrij met userId
+    let deleteResponse = await fetch(`${API_URL}/api/wachtrij/${u.id}`, { method: 'DELETE' });
     if (deleteResponse.status === 404) {
-      console.log('📝 Wachtrij endpoint bestaat niet - waarschijnlijk wordt dit al via aanmelden afgehandeld');
+      console.log('📝 DELETE wachtrij/${userId} endpoint bestaat niet');
+      
+      // Probeer via POST naar wachtrij met delete actie
+      deleteResponse = await fetch(`${API_URL}/api/wachtrij`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'remove', userId: u.id })
+      });
+      
+      if (!deleteResponse.ok) {
+        console.log('📝 POST wachtrij remove endpoint ook niet beschikbaar');
+        
+        // Laatste optie: check of de aanmelden endpoint het roepnummer al verwijderd heeft
+        console.log('📝 Vertrouwen op aanmelden endpoint voor wachtrij cleanup');
+      } else {
+        console.log('✅ Roepnummer succesvol verwijderd via POST wachtrij');
+      }
     } else if (!deleteResponse.ok) {
       console.warn('Kon roepnummer niet verwijderen uit wachtrij - status:', deleteResponse.status);
     } else {
-      console.log('✅ Roepnummer succesvol verwijderd uit wachtrij');
+      console.log('✅ Roepnummer succesvol verwijderd via DELETE wachtrij');
     }
   } catch (err) {
     console.error('Fout bij verwijderen roepnummer uit wachtrij:', err);
