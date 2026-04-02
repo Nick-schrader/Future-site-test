@@ -93,11 +93,17 @@ window.onload = async () => {
         .then(r => r.json())
         .then(data => {
           console.log('🔍 INDELING DATA:', data);
+          console.log('🔍 data.ingedeeld:', data.ingedeeld);
+          console.log('🔍 u.ingedeeld before:', u.ingedeeld);
+          
           if (data.indienstStart && !u.indienstStart) u.indienstStart = data.indienstStart;
           // NIET automatisch indienstStart zetten - alleen als database dit heeft
           if (data.status) u.status = data.status;
           if (data.voertuig) u.voertuig = data.voertuig;
-          if (data.ingedeeld !== undefined) u.ingedeeld = data.ingedeeld;
+          if (data.ingedeeld !== undefined) {
+            u.ingedeeld = data.ingedeeld;
+            console.log('🔍 u.ingedeeld after update:', u.ingedeeld);
+          }
           
           // Als niet ingedeeld, reset rol naar user
           if (!data.ingedeeld && ['ovd','opco','oc','ops'].includes(u.role)) {
@@ -106,9 +112,11 @@ window.onload = async () => {
           }
           
           saveUser(u);
+          console.log('🔍 After saveUser - u.ingedeeld:', u.ingedeeld);
           
           // Alleen ovd-porto-main tonen als echt ingedeeld
           if (data.ingedeeld) {
+            console.log('🔍 SHOWING ovd-porto-main because data.ingedeeld is true');
             const main = document.getElementById('ovd-porto-main');
             if (main) { main.style.display = ''; }
             startIndienstTimer('ovd-oc-tijd');
@@ -1184,7 +1192,11 @@ async function aanmeldenDirect() {
     .catch(() => ({ ovd:'-', opco:'-' }));
   
   if (dienstRollen.ovd === '-' && dienstRollen.opco === '-') {
-    window.UIComponents.NotificationManager.error('Aanmelden niet mogelijk: geen OVD/OPCO actief');
+    if (window.UIComponents && window.UIComponents.NotificationManager) {
+      window.UIComponents.NotificationManager.error('Aanmelden niet mogelijk: geen OVD/OPCO actief');
+    } else {
+      showToast('Aanmelden niet mogelijk: geen OVD/OPCO actief');
+    }
     return;
   }
 
@@ -1211,9 +1223,12 @@ async function aanmeldenDirect() {
   }
 
   // Dubbelcheck: probeer nogmaals roepnummer uit wachtrij te verwijderen
+  // Alleen proberen als de endpoint bestaat (geen 404)
   try {
     const deleteResponse = await fetch(`${API_URL}/api/wachtrij/${u.id}`, { method: 'DELETE' });
-    if (!deleteResponse.ok) {
+    if (deleteResponse.status === 404) {
+      console.log('📝 Wachtrij endpoint bestaat niet - waarschijnlijk wordt dit al via aanmelden afgehandeld');
+    } else if (!deleteResponse.ok) {
       console.warn('Kon roepnummer niet verwijderen uit wachtrij - status:', deleteResponse.status);
     } else {
       console.log('✅ Roepnummer succesvol verwijderd uit wachtrij');
@@ -1226,7 +1241,13 @@ async function aanmeldenDirect() {
   document.querySelector('.porto-aanmeld-section').classList.add('hidden');
   document.getElementById('porto-wacht').classList.remove('hidden');
   startIndienstTimer('oc-tijd');
-  window.UIComponents.NotificationManager.success('Aangemeld - wacht op indeling door OVD/OPCO');
+  
+  // Gebruik fallback notificatie systeem
+  if (window.UIComponents && window.UIComponents.NotificationManager) {
+    window.UIComponents.NotificationManager.success('Aangemeld - wacht op indeling door OVD/OPCO');
+  } else {
+    showToast('Aangemeld - wacht op indeling door OVD/OPCO');
+  }
 
   // ✅ Start automatische check elke 10 seconden
   startWachtrijPolling(u.id);
@@ -1267,6 +1288,11 @@ function startWachtrijPolling(userId) {
         startIndienstTimer('oc-tijd');
         
         window.UIComponents.NotificationManager.success('Je bent ingedeeld door OVD/OPCO!');
+        if (window.UIComponents && window.UIComponents.NotificationManager) {
+          window.UIComponents.NotificationManager.success('Je bent ingedeeld door OVD/OPCO!');
+        } else {
+          showToast('Je bent ingedeeld door OVD/OPCO!');
+        }
       }
     } catch (err) {
       console.error('Fout bij ophalen indeling', err);
