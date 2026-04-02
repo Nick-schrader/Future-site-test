@@ -1917,24 +1917,24 @@ function openKandidatenModal(rol) {
       console.log('🔍 API RAW RESPONSE:', kandidaten);
       console.log('🔍 API LENGTH:', kandidaten.length);
 
-      // TEMP FIX: Als API leeg is, haal alle gebruikers op met de juiste rol
+      // TEMP FIX: Als API leeg is, haal alle eenheden op (bevat gebruiker data)
       if (kandidaten.length === 0) {
-        console.warn('⚠️ API geeft GEEN gebruikers terug - fallback naar alle gebruikers');
+        console.warn('⚠️ API geeft GEEN gebruikers terug - fallback naar eenheden');
         
-        // Haal alle gebruikers op om handmatig te filteren
-        fetch(`${API_URL}/api/users`)
+        // Haal alle eenheden op om handmatig te filteren
+        fetch(`${API_URL}/api/eenheden`)
           .then(r => r.json())
-          .then(allUsers => {
-            console.log('🔍 ALLE GEBRUIKERS:', allUsers.length);
+          .then(eenheden => {
+            console.log('🔍 ALLE EENHEDEN:', eenheden.length);
             
             // Filter gebruikers die de juiste rol hebben en NIET in dienst zijn
-            kandidaten = allUsers.filter(user => {
-              const heeftRol = user.rollen && user.rollen.some(r => 
+            kandidaten = eenheden.filter(eenheid => {
+              const heeftRol = eenheid.rollen && eenheid.rollen.some(r => 
                 (typeof r === 'string' ? r : (r.naam || '')).toLowerCase() === rol.toLowerCase()
               );
-              const isNietInDienst = !user.indienstStart && !user.ingedeeld;
+              const isNietInDienst = !eenheid.indienstStart && !eenheid.ingedeeld;
               
-              console.log(`🔍 USER CHECK: ${user.displayName} - Heeft rol: ${heeftRol}, Niet in dienst: ${isNietInDienst}`);
+              console.log(`🔍 EENHEID CHECK: ${eenheid.medewerkers} - Heeft rol: ${heeftRol}, Niet in dienst: ${isNietInDienst}`);
               
               return heeftRol && isNietInDienst;
             });
@@ -1942,7 +1942,7 @@ function openKandidatenModal(rol) {
             console.log('🔍 GEFILTERDE KANDIDATEN:', kandidaten.length);
           })
           .catch(err => {
-            console.error('🔍 Fout bij ophalen alle gebruikers:', err);
+            console.error('🔍 Fout bij ophalen eenheden:', err);
             // Fallback naar huidige user
             const currentUser = getUser();
             kandidaten = [currentUser];
