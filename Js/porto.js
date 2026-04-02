@@ -1102,27 +1102,6 @@ function bevestigKoppel(keuze) {
   });
 }
 
-function openKandidatenModal(rol) {
-  _kandidatenRol = rol;
-  document.getElementById('kandidaten-titel').textContent = 'Nieuwe ' + rol.toUpperCase() + ' kiezen';
-  document.getElementById('kandidaten-modal').classList.remove('hidden');
-
-  fetch(`${API_URL}/api/kandidaten/${rol}`)
-    .then(r => r.json())
-    .then(kandidaten => {
-      _kandidatenLijst = kandidaten;
-      const lijst = document.getElementById('kandidaten-lijst');
-      
-      // Filter kandidaten op basis van rol - check zowel rollen array als role property
-      const gefilterdeKandidaten = kandidaten.filter(k => {
-        // Check of kandidaat de juiste rol heeft (case-insensitive)
-        const heeftJuisteRol = k.rollen && k.rollen.some(r => {
-          const rolString = typeof r === 'string' ? r : (r.naam || '');
-          return rolString.toLowerCase().includes(rol.toLowerCase());
-        });
-  kiesKandidaat(winnaar.id, _kandidatenRol);
-}
-
 function kiesKandidaat(userId, rol) {
   const u = getUser();
   
