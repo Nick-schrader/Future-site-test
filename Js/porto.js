@@ -1895,6 +1895,36 @@ function checkIndeling() {
     }).catch(() => {});
 }
 
+// Real-time update check voor OVD/OPCO - elke 5 seconden verversen
+setInterval(() => {
+  const u = getUser();
+  if (u.id && ['ovd', 'opco', 'oc', 'ops'].includes(u.role)) {
+    // Check of er wijzigingen zijn in indeling
+    fetch(`${API_URL}/api/indeling/${u.id}`)
+      .then(r => r.json())
+      .then(data => {
+        // Update alleen als er iets veranderd is
+        if (data.roepnummer !== u.dienstnummer || 
+            data.voertuig !== u.voertuig || 
+            data.koppelNaam !== u.koppelNaam) {
+          
+          // Update user data
+          u.dienstnummer = data.roepnummer;
+          u.voertuig = data.voertuig;
+          u.koppelNaam = data.koppelNaam;
+          saveUser(u);
+          
+          // Update GUI
+          const isOvdOpco = ['ovd', 'opco', 'oc', 'ops'].includes(u.role);
+          if (isOvdOpco) ovdUpdateInfo(); else updateOCInfo();
+          
+          console.log('🔄 GUI UPDATE - Indeling gewijzigd:', data);
+        }
+      })
+      .catch(() => {});
+  }
+}, 5000);
+
 // =====================================================================
 // VERBETERDE openKandidatenModal en renderKandidaten
 // =====================================================================
