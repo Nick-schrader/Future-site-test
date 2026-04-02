@@ -76,7 +76,7 @@ window.onload = async () => {
   console.log('isOvdOpco:', isOvdOpco);
   console.log('isAdmin:', isAdmin);
   console.log('indienstStart:', u.indienstStart);
-  console.log('ingedeeld:', u.ingedeled);
+  console.log('ingedeeld:', u.ingedeeld);
 
   if (isOvdOpco) {
     console.log('🔍 SHOWING OVD VIEW');
