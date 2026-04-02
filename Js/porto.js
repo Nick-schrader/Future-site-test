@@ -1908,19 +1908,37 @@ function openKandidatenModal(rol) {
     })
     .then(kandidaten => {
 
-      console.log('🔍 API RAW RESPONSE:', kandidaten);
-      console.log('🔍 API RESPONSE LENGTH:', kandidaten.length);
+      console.log("====================================");
+      console.log("🔍 DEBUG - API KANDIDATEN RESPONSE");
+      console.log("====================================");
 
-      // TEMP FIX: Als API leeg is, voeg huidige user toe
+      console.log('🔍 API RAW RESPONSE:', kandidaten);
+      console.log('🔍 API LENGTH:', kandidaten.length);
+
+      // Log elke user
+      kandidaten.forEach((k, index) => {
+        console.log(`👤 USER ${index + 1}`);
+        console.log("ID:", k.id);
+        console.log("Naam:", k.display_name || k.shortname || k.username);
+        console.log("Rollen:", k.rollen?.map(r => r.naam));
+        console.log("Role property:", k.role);
+        console.log("-----------------------------");
+      });
+
+      // TEMP FIX als leeg
       if (kandidaten.length === 0) {
+        console.log("⚠️ API geeft GEEN gebruikers terug");
+
         const currentUser = getUser();
+
+        console.log("🔍 Current user fallback:", currentUser);
 
         const heeftRol = currentUser.rollen?.some(r =>
           (r.naam || '').toLowerCase().includes(rol.toLowerCase())
         );
 
         if (heeftRol) {
-          console.log('🔍 TEMP FIX - Adding current user as candidate:', currentUser);
+          console.log('🔍 TEMP FIX - Adding current user');
           kandidaten = [currentUser];
         }
       }
@@ -1929,45 +1947,43 @@ function openKandidatenModal(rol) {
 
       const gefilterdeKandidaten = kandidaten.filter(k => {
 
-        console.log('🔍 FILTERING:', k.display_name || k.shortname);
+        console.log("====================================");
+        console.log("🔍 FILTER CHECK");
 
-        // Rollen ophalen
+        const naam = k.display_name || k.shortname || k.username;
+        console.log("👤 Naam:", naam);
+
         const rollen = (k.rollen || []).map(r =>
           (typeof r === 'string' ? r : r.naam || '').toLowerCase()
         );
 
-        console.log('🔍 Rollen:', rollen);
+        console.log("🎭 Rollen:", rollen);
 
-        // Check rol
         const heeftRol = rollen.some(r =>
           r.includes(rol.toLowerCase())
         );
 
-        console.log('🔍 Heeft rol:', heeftRol);
+        console.log("✅ Heeft rol:", heeftRol);
 
         return heeftRol;
       });
 
       _kandidatenLijst = gefilterdeKandidaten;
 
-      console.log(
-        '🔍 KANDIDATEN FILTER:',
-        'Rol:', rol,
-        'Totaal:', kandidaten.length,
-        'Gefilterd:', gefilterdeKandidaten.length
-      );
+      console.log("====================================");
+      console.log("🔍 EIND RESULTAAT");
+      console.log("====================================");
+
+      console.log("Totaal kandidaten API:", kandidaten.length);
+      console.log("Gefilterd voor rol", rol, ":", gefilterdeKandidaten.length);
+      console.log("Result:", gefilterdeKandidaten);
 
       if (gefilterdeKandidaten.length === 0) {
-        console.log('🔍 NO CANDIDATES FOUND');
-
         lijst.innerHTML =
           '<div style="color:#888;text-align:center;padding:12px">Geen kandidaten met rol: ' +
           rol +
           '</div>';
       } else {
-
-        console.log('🔍 FOUND CANDIDATES:', gefilterdeKandidaten);
-
         lijst.innerHTML = gefilterdeKandidaten.map(k => `
           <div style="display:flex;justify-content:space-between;align-items:center;background:#1e2130;padding:10px 14px;border-radius:6px">
             <span>${k.shortname || k.display_name || k.username}</span>
@@ -1995,18 +2011,16 @@ function openKandidatenModal(rol) {
 
 function radVanFortuin() {
   const kandidaten = _kandidatenLijst || [];
-  
+
   if (kandidaten.length === 0) {
     showToast('Geen kandidaten beschikbaar');
     return;
   }
-  
-  // Kies willekeurige kandidaat
+
   const willekeurigeIndex = Math.floor(Math.random() * kandidaten.length);
   const gekozenKandidaat = kandidaten[willekeurigeIndex];
-  
+
   console.log('🎰 RAD VAN FORTUIN - Gekozen kandidaat:', gekozenKandidaat);
-  
-  // Roep kiesKandidaat aan met de willekeurige kandidaat
+
   kiesKandidaat(gekozenKandidaat.id, _kandidatenRol);
 }
