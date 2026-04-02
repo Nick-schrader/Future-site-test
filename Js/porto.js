@@ -1218,7 +1218,11 @@ async function aanmeldenDirect() {
 
   if (!aanmeldResponse.ok) {
     console.error('Aanmelden mislukt:', aanmeldResponse.status);
-    window.UIComponents.NotificationManager.error('Aanmelden mislukt - probeer opnieuw');
+    if (window.UIComponents && window.UIComponents.NotificationManager) {
+      window.UIComponents.NotificationManager.error('Aanmelden mislukt - probeer opnieuw');
+    } else {
+      showToast('Aanmelden mislukt - probeer opnieuw');
+    }
     return;
   }
 
