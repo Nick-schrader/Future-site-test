@@ -795,6 +795,14 @@ function updateOCInfo() {
         const koppel = document.getElementById('oc-koppel');
         if (vn) vn.textContent = data.voertuigNaam || '-';
         if (koppel) koppel.textContent = data.koppelNaam || '-';
+        
+        // Update status van gebruiker
+        if (data.status !== undefined) {
+          u.status = data.status;
+          saveUser(u);
+          highlightStatus(data.status);
+        }
+        
         // Vul eigen voertuig input
         const input = document.getElementById('eigen-voertuig-input');
         if (input && data.voertuigNaam) {
