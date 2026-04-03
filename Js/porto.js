@@ -308,6 +308,23 @@ function renderEenheden() {
     }
   });
 
+  // Sorteer elke groep oplopend op basis van roepnummer (17-00, 17-01, 17-02, ...)
+  Object.keys(groepen).forEach(groep => {
+    groepen[groep].sort((a, b) => {
+      // Extract numeriek deel voor correcte sortering
+      const getNummer = (id) => {
+        const match = id.match(/(\d+)-(\d+)/);
+        if (match) {
+          return parseInt(match[1]) * 100 + parseInt(match[2]);
+        }
+        // Fallback voor andere formaten
+        const numMatch = id.match(/\d+/);
+        return numMatch ? parseInt(numMatch[0]) : 0;
+      };
+      return getNummer(a.id) - getNummer(b.id);
+    });
+  });
+
   const labels = ['Wachtrij', ...GROEPEN, ...(groepen['Overig'] ? ['Overig'] : [])];
 
   let html = '';
