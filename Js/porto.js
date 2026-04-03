@@ -116,6 +116,8 @@ window.onload = async () => {
     renderMeldingen();
     setInterval(() => { laadEenheden(); renderMeldingen(); ovdUpdateInfo(); }, 3000);
     setInterval(renderLeaderboard, 1000);
+    // Live specialisaties update (zonder hele tabel refresh)
+    setInterval(updateSpecialisatiesLive, 10000); // elke 10 seconden
 
     // Altijd DB checken voor status/voertuig/indienstStart
     if (u.id) {
@@ -354,49 +356,28 @@ function eenheidRow(e) {
   const click = canEdit ? `onclick="openVoertuigModal('${e.id}')"` : '';
   const tijdIndienst = e.indienstStart ? formatDuur(Date.now() - e.indienstStart) : '-';
 
-  // Haal specialisaties op via database (zoals edit-specs)
+  // Haal specialisaties op via database (direct, niet async)
   let specialisatie = '-';
   
-  // Haal live rollen en specialisaties op
-  if (e.userId) {
-    Promise.all([
-      fetch(`${API_URL}/api/rollen/${e.userId}`).then(r => r.json()).catch(() => {
-        let rollen = [];
-        try { rollen = JSON.parse(e.rollen || '[]'); } catch {}
-        return rollen;
-      }),
-      fetch(`${API_URL}/api/specialisaties`).then(r => r.json()).catch(() => []),
-    ]).then(([rollen, specialisaties]) => {
-      const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
-      
-      // Bouw specialisaties op basis van vereiste_rol in specialisaties (zoals edit-specs)
-      const opties = specialisaties
-        .filter(s => {
-          if (!s.vereiste_rol) return true; // geen vereiste = altijd beschikbaar (Noodhulp)
-          return rolNamen.some(r => r.toLowerCase().includes(s.vereiste_rol.toLowerCase()));
-        })
-        .map(s => s.voertuig);
+  // Check of we de specialisaties al hebben in window._specialisaties
+  if (e.rollen && window._specialisaties) {
+    let rollen = [];
+    try { rollen = JSON.parse(e.rollen || '[]'); } catch {}
+    const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
+    
+    // Bouw specialisaties op basis van vereiste_rol in specialisaties (zoals edit-specs)
+    const opties = window._specialisaties
+      .filter(s => {
+        if (!s.vereiste_rol) return true; // geen vereiste = altijd beschikbaar (Noodhulp)
+        return rolNamen.some(r => r.toLowerCase().includes(s.vereiste_rol.toLowerCase()));
+      })
+      .map(s => s.voertuig);
 
-      const specs = opties.filter(o => o !== 'Noodhulp');
-      const uniekSpecs = [...new Set(specs.map(s => s.replace(/ \d+$/, '')))];
-      
-      console.log('🔍 DEBUG EENHEIDROW - User:', e.medewerkers, 'Rollen:', rolNamen, 'Specialisaties:', uniekSpecs);
-      
-      // Update de specialisatie cel met een betere selector
-      const rows = document.querySelectorAll('#eenheden-tbody tr');
-      rows.forEach(row => {
-        const firstCell = row.querySelector('td:first-child');
-        if (firstCell && firstCell.textContent.trim() === e.id) {
-          const specCell = row.querySelector('td:nth-child(3)');
-          if (specCell) {
-            specCell.textContent = uniekSpecs.length ? uniekSpecs.join(', ') : '-';
-            console.log('✅ Specialisatie cel bijgewerkt voor', e.id, ':', uniekSpecs.join(', '));
-          }
-        }
-      });
-    }).catch(err => {
-      console.warn('Fout bij ophalen specialisaties:', err);
-    });
+    const specs = opties.filter(o => o !== 'Noodhulp');
+    const uniekSpecs = [...new Set(specs.map(s => s.replace(/ \d+$/, '')))];
+    specialisatie = uniekSpecs.length ? uniekSpecs.join(', ') : '-';
+    
+    console.log(' DEBUG EENHEIDROW - User:', e.medewerkers, 'Rollen:', rolNamen, 'Specialisaties:', uniekSpecs);
   }
 
   // Check of dit voertuig type onder min_eenheden zit
@@ -420,6 +401,46 @@ function eenheidRow(e) {
     <td>${tijdIndienst}</td>
     <td>${statusBadge(e.status)}</td>
    </tr>`;
+}
+
+// Functie om specialisaties live bij te werken zonder hele tabel te refreshen
+function updateSpecialisatiesLive() {
+  if (!appData.eenheden || !window._specialisaties) return;
+  
+  appData.eenheden.forEach(e => {
+    if (!e.userId) return;
+    
+    // Haal live rollen op
+    fetch(`${API_URL}/api/rollen/${e.userId}`)
+      .then(r => r.json())
+      .then(rollen => {
+        const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
+        
+        // Bouw specialisaties op basis van vereiste_rol
+        const opties = window._specialisaties
+          .filter(s => {
+            if (!s.vereiste_rol) return true;
+            return rolNamen.some(r => r.toLowerCase().includes(s.vereiste_rol.toLowerCase()));
+          })
+          .map(s => s.voertuig);
+
+        const specs = opties.filter(o => o !== 'Noodhulp');
+        const uniekSpecs = [...new Set(specs.map(s => s.replace(/ \d+$/, '')))];
+        
+        // Update alleen de specialisatie cel
+        const rows = document.querySelectorAll('#eenheden-tbody tr');
+        rows.forEach(row => {
+          const firstCell = row.querySelector('td:first-child');
+          if (firstCell && firstCell.textContent.trim() === e.id) {
+            const specCell = row.querySelector('td:nth-child(3)');
+            if (specCell) {
+              specCell.textContent = uniekSpecs.length ? uniekSpecs.join(', ') : '-';
+            }
+          }
+        });
+      })
+      .catch(err => console.warn('Fout bij live update specialisaties:', err));
+  });
 }
 
 function renderLeaderboard() {
