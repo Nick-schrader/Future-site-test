@@ -382,11 +382,18 @@ function eenheidRow(e) {
       
       console.log('🔍 DEBUG EENHEIDROW - User:', e.medewerkers, 'Rollen:', rolNamen, 'Specialisaties:', uniekSpecs);
       
-      // Update de specialisatie cel direct
-      const specCell = document.querySelector(`#eenheden-tbody tr:has(td:first-child:contains("${e.id}")) td:nth-child(3)`);
-      if (specCell) {
-        specCell.textContent = uniekSpecs.length ? uniekSpecs.join(', ') : '-';
-      }
+      // Update de specialisatie cel met een betere selector
+      const rows = document.querySelectorAll('#eenheden-tbody tr');
+      rows.forEach(row => {
+        const firstCell = row.querySelector('td:first-child');
+        if (firstCell && firstCell.textContent.trim() === e.id) {
+          const specCell = row.querySelector('td:nth-child(3)');
+          if (specCell) {
+            specCell.textContent = uniekSpecs.length ? uniekSpecs.join(', ') : '-';
+            console.log('✅ Specialisatie cel bijgewerkt voor', e.id, ':', uniekSpecs.join(', '));
+          }
+        }
+      });
     }).catch(err => {
       console.warn('Fout bij ophalen specialisaties:', err);
     });
