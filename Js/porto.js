@@ -354,24 +354,42 @@ function eenheidRow(e) {
   const click = canEdit ? `onclick="openVoertuigModal('${e.id}')"` : '';
   const tijdIndienst = e.indienstStart ? formatDuur(Date.now() - e.indienstStart) : '-';
 
-  // Haal specialisaties op basis van rollen
-  let specialisatie = '';
-  if (e.rollen) {
-    let rollen = [];
-    try { rollen = JSON.parse(e.rollen || '[]'); } catch {}
-    const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
-    
-    const specs = [];
-    if (rolNamen.some(r => r.toLowerCase().includes('siv'))) specs.push('SIV');
-    if (rolNamen.some(r => r.toLowerCase().includes('gpt'))) specs.push('GPT');
-    if (rolNamen.some(r => r.toLowerCase().includes('motor'))) specs.push('Motor');
-    if (rolNamen.some(r => r.toLowerCase().includes('boot'))) specs.push('Boot');
-    if (rolNamen.some(r => r.toLowerCase().includes('zulu'))) specs.push('Zulu');
-    if (rolNamen.some(r => r.toLowerCase().includes('offroad'))) specs.push('Offroad');
-    
-    specialisatie = specs.length ? specs.join(', ') : '-';
-  } else {
-    specialisatie = '-';
+  // Haal specialisaties op via database (zoals edit-specs)
+  let specialisatie = '-';
+  
+  // Haal live rollen en specialisaties op
+  if (e.userId) {
+    Promise.all([
+      fetch(`${API_URL}/api/rollen/${e.userId}`).then(r => r.json()).catch(() => {
+        let rollen = [];
+        try { rollen = JSON.parse(e.rollen || '[]'); } catch {}
+        return rollen;
+      }),
+      fetch(`${API_URL}/api/specialisaties`).then(r => r.json()).catch(() => []),
+    ]).then(([rollen, specialisaties]) => {
+      const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
+      
+      // Bouw specialisaties op basis van vereiste_rol in specialisaties (zoals edit-specs)
+      const opties = specialisaties
+        .filter(s => {
+          if (!s.vereiste_rol) return true; // geen vereiste = altijd beschikbaar (Noodhulp)
+          return rolNamen.some(r => r.toLowerCase().includes(s.vereiste_rol.toLowerCase()));
+        })
+        .map(s => s.voertuig);
+
+      const specs = opties.filter(o => o !== 'Noodhulp');
+      const uniekSpecs = [...new Set(specs.map(s => s.replace(/ \d+$/, '')))];
+      
+      console.log('🔍 DEBUG EENHEIDROW - User:', e.medewerkers, 'Rollen:', rolNamen, 'Specialisaties:', uniekSpecs);
+      
+      // Update de specialisatie cel direct
+      const specCell = document.querySelector(`#eenheden-tbody tr:has(td:first-child:contains("${e.id}")) td:nth-child(3)`);
+      if (specCell) {
+        specCell.textContent = uniekSpecs.length ? uniekSpecs.join(', ') : '-';
+      }
+    }).catch(err => {
+      console.warn('Fout bij ophalen specialisaties:', err);
+    });
   }
 
   // Check of dit voertuig type onder min_eenheden zit
