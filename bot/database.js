@@ -186,16 +186,16 @@ const defaults = [
   { voertuig: 'Siv 1',    max: 2,  min: 2,  start: null,    eind: null,    rol: 'SIV' },
   { voertuig: 'Siv 2',    max: 4,  min: 4,  start: null,    eind: null,    rol: 'SIV' },
   { voertuig: 'Siv 3',    max: 6,  min: 6,  start: null,    eind: null,    rol: 'SIV' },
-  { voertuig: 'GPT 1',    max: 3,  min: 3,  start: null,    eind: null,    rol: 'GPT' },
-  { voertuig: 'GPT 2',    max: 6,  min: 6,  start: null,    eind: null,    rol: 'GPT' },
+  { voertuig: 'GPT 1',    max: 3,  min: 3,  start: null,    eind: null,    rol: 'Unmarked GPT' },
+  { voertuig: 'GPT 2',    max: 6,  min: 6,  start: null,    eind: null,    rol: 'Unmarked GPT' },
   { voertuig: 'Motor 1',  max: 4,  min: 4,  start: null,    eind: null,    rol: 'Motor' },
   { voertuig: 'Motor 2',  max: 6,  min: 6,  start: null,    eind: null,    rol: 'Motor' },
   { voertuig: 'Motor 3',  max: 10, min: 10, start: null,    eind: null,    rol: 'Motor' },
-  { voertuig: 'Boot 1',   max: 1,  min: 1,  start: null,    eind: null,    rol: 'Boot' },
-  { voertuig: 'Boot 2',   max: 2,  min: 2,  start: null,    eind: null,    rol: 'Boot' },
-  { voertuig: 'Zulu',     max: 99, min: 0,  start: '20:00', eind: '06:00', rol: 'Zulu' },
+  { voertuig: 'Boot 1',   max: 1,  min: 1,  start: null,    eind: null,    rol: 'Kustwacht' },
+  { voertuig: 'Boot 2',   max: 2,  min: 2,  start: null,    eind: null,    rol: 'Kustwacht' },
+  { voertuig: 'Zulu',     max: 99, min: 0,  start: null,    eind: null,    rol: 'Piloot cert.' },
   { voertuig: 'Noodhulp', max: 99, min: 0,  start: null,    eind: null,    rol: null },
-  { voertuig: 'Offroad',  max: 99, min: 0,  start: null,    eind: null,    rol: null },
+  { voertuig: 'Offroad',  max: 99, min: 0,  start: null,    eind: null,    rol: 'Off-road' },
 ];
 const insertSpec = db.prepare(`
   INSERT OR IGNORE INTO specialisatie_instellingen (voertuig, max_eenheden, min_eenheden, tijdslot_start, tijdslot_eind, vereiste_rol)

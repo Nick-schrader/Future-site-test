@@ -264,7 +264,10 @@ function laadEenheden() {
     fetch(`${API_URL}/api/eenheden`).then(r => r.json()),
     fetch(`${API_URL}/api/specialisaties`).then(r => r.json()).catch(() => []),
   ]).then(([data, specs]) => {
+    // Forceer refresh van specialisaties cache
     window._specialisaties = specs;
+    console.log('🔄 SPECIALISATIES CACHE VERVERSCHERD:', specs.length, 'specialisaties');
+    
     appData.eenheden = data.map(e => ({
       id: e.roepnummer || e.dienstnummer || '-',
       medewerkers: e.koppel_id
@@ -279,8 +282,16 @@ function laadEenheden() {
       rollen: e.rollen || '[]',
       indienstStart: e.indienst_start || null,
     }));
+    
+    // Render eenheden en forceer directe specialisaties update
     renderEenheden();
     renderLeaderboard();
+    
+    // Forceer live specialisaties update na 1 seconde
+    setTimeout(() => {
+      console.log('🔄 FORCEER LIVE SPECIALISATIES UPDATE');
+      updateSpecialisatiesLive();
+    }, 1000);
   }).catch(() => {});
 }
 
