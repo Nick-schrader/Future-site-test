@@ -427,16 +427,26 @@ function updateSpecialisatiesLive() {
       .then(rollen => {
         const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
         
+        // DEBUG: Toon alle rollen voor deze gebruiker
+        console.log('🔍 DEBUG ROLLEN - User:', e.medewerkers, 'Alle rollen:', rolNamen);
+        
         // Bouw specialisaties op basis van vereiste_rol
         const opties = window._specialisaties
           .filter(s => {
             if (!s.vereiste_rol) return true;
-            return rolNamen.some(r => r.toLowerCase().includes(s.vereiste_rol.toLowerCase()));
+            
+            // DEBUG: Check elke specialisatie tegen rollen
+            const hasRol = rolNamen.some(r => r.toLowerCase().includes(s.vereiste_rol.toLowerCase()));
+            console.log('🔍 DEBUG SPECIALISATIE CHECK:', s.voertuig, 'vereist:', s.vereiste_rol, 'heeft rol:', hasRol);
+            
+            return hasRol;
           })
           .map(s => s.voertuig);
 
         const specs = opties.filter(o => o !== 'Noodhulp');
         const uniekSpecs = [...new Set(specs.map(s => s.replace(/ \d+$/, '')))];
+        
+        console.log('🔍 DEBUG FINAL - User:', e.medewerkers, 'Specialisaties:', uniekSpecs);
         
         // Update alleen de specialisatie cel
         const rows = document.querySelectorAll('#eenheden-tbody tr');
@@ -445,7 +455,13 @@ function updateSpecialisatiesLive() {
           if (firstCell && firstCell.textContent.trim() === e.id) {
             const specCell = row.querySelector('td:nth-child(3)');
             if (specCell) {
+              const oldSpecs = specCell.textContent;
               specCell.textContent = uniekSpecs.length ? uniekSpecs.join(', ') : '-';
+              
+              // DEBUG: Toon verandering
+              if (oldSpecs !== specCell.textContent) {
+                console.log('🔄 SPECIALISATIE VERANDERD:', e.id, 'van:', oldSpecs, 'naar:', specCell.textContent);
+              }
             }
           }
         });
