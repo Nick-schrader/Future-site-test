@@ -993,18 +993,10 @@ function setStatus(s) {
   const isLeavingUrgentStatus = [6, 7].includes(previousStatus) && ![6, 7].includes(s);
   console.log('🔄 Is leaving urgent status (6/7):', isLeavingUrgentStatus, 'from:', previousStatus, 'to:', s);
   
-  // Opslaan in DB
   if (u.id) fetch(`${API_URL}/api/status`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId: u.id, status: s }),
   }).then(() => {
-    if (!isLeavingUrgentStatus) {
-      console.log('🔄 Not leaving urgent status - no cleanup needed');
-      return;
-    }
-    
-    console.log('🔄 Status saved to DB - Now cleaning up alerts...');
-    // CRITICAL FIX: Remove any existing status alerts for this user when status changes
     return fetch(`${API_URL}/api/status-alerts`).then(r => r.json());
   }).then(alerts => {
     if (!alerts) return; // Skip if no cleanup needed
