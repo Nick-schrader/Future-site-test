@@ -67,7 +67,7 @@ async function syncUserFromDB() {
       status: data.status ?? null,
       voertuig: data.voertuig ?? null,
       indienstStart: data.indienstStart ?? null,
-      dienstnummer: isUitdienst ? u.dienstnummer : (data.dienstnummer || u.dienstnummer || ''),
+      dienstnummer: '', // BELANGRIJK: Altijd leeg bij inloggen/sync
       rollen: (data.rollen && data.rollen.length > 0) ? data.rollen : (u.rollen || []),
     };
     
