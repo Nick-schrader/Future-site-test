@@ -376,11 +376,16 @@ function eenheidRow(e) {
     try { rollen = JSON.parse(e.rollen || '[]'); } catch {}
     const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
     
-    // Bouw specialisaties op basis van vereiste_rol in specialisaties (zoals edit-specs)
+    // Bouw specialisaties op basis van vereiste_rol
     const opties = window._specialisaties
       .filter(s => {
-        if (!s.vereiste_rol) return true; // geen vereiste = altijd beschikbaar (Noodhulp)
-        return rolNamen.some(r => r.toLowerCase().includes(s.vereiste_rol.toLowerCase()));
+        if (!s.vereiste_rol) return true;
+        
+        // DEBUG: Check elke specialisatie tegen rollen
+        const hasRol = rolNamen.some(r => r.toLowerCase().includes(s.vereiste_rol.toLowerCase()));
+        console.log('🔍 DEBUG SPECIALISATIE CHECK:', s.voertuig, 'vereist:', s.vereiste_rol, 'heeft rol:', hasRol);
+        
+        return hasRol;
       })
       .map(s => s.voertuig);
 
@@ -930,6 +935,8 @@ function updateOCInfo() {
         const koppel = document.getElementById('oc-koppel');
         if (vn) vn.textContent = data.voertuigNaam || '-';
         if (koppel) koppel.textContent = data.koppelNaam || '-';
+        
+        console.log('UPDATE OC INFO - API Response:', data);
         
         // Update status van gebruiker
         if (data.status !== undefined) {

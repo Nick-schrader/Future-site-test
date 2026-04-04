@@ -214,7 +214,7 @@ function hideToast() {
 
   // Toon OPS link als de user de OPS Discord rol heeft
   const rollen = (u.rollen || []).map(r => r.naam || r);
-  if (rollen.some(r => r.includes('OPS'))) {
+  if (rollen.some(r => r.includes('Porto Perms'))) {
     const opsLink = document.getElementById('nav-ops');
     if (opsLink) opsLink.style.display = '';
     const logsLink = document.getElementById('nav-logs');
