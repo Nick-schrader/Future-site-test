@@ -212,11 +212,17 @@ function hideToast() {
     el.innerHTML = '<a href="account.html" style="color:inherit;text-decoration:none;">' + name + '</a>';
   });
 
-  // Toon OPS link als de user de OPS Discord rol heeft
+  // Toon navigation links op basis van Discord rollen
   const rollen = (u.rollen || []).map(r => r.naam || r);
-  if (rollen.some(r => r.includes('Porto Perms'))) {
+  
+  // Toon OPS link als de user 'Ops' rol heeft
+  if (rollen.some(r => r.includes('Ops'))) {
     const opsLink = document.getElementById('nav-ops');
     if (opsLink) opsLink.style.display = '';
+  }
+  
+  // Toon Logs & Settings links als de user 'Porto Perms' rol heeft
+  if (rollen.some(r => r.includes('Porto Perms'))) {
     const logsLink = document.getElementById('nav-logs');
     if (logsLink) logsLink.style.display = '';
     const settingsLink = document.getElementById('nav-settings');
