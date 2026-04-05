@@ -2,6 +2,33 @@
 let _kandidatenRol = null;
 let _kandidatenLijst = [];
 
+// Debug function to clear all user data
+function clearAllUserData() {
+  console.log('🧹 CLEAR ALL USER DATA - Complete reset...');
+  
+  // Clear all localStorage
+  localStorage.clear();
+  
+  // Clear session storage
+  sessionStorage.clear();
+  
+  // Reset all window variables
+  window._currentAlerts = null;
+  window._vorigeAlerts = null;
+  window._wachtrij = null;
+  window._vorigeWachtrijCount = 0;
+  window._alertPingTimer = null;
+  window._pingHerhaalTimer = null;
+  
+  console.log('✅ All user data cleared');
+  console.log('🔄 Refreshing page...');
+  
+  // Force page reload
+  setTimeout(() => {
+    location.reload();
+  }, 500);
+}
+
 // Helper functions to clear specific ping timers
 function clearWachtrijTimer() {
   if (window._pingHerhaalTimer) {
