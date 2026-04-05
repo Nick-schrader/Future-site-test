@@ -1223,7 +1223,7 @@ function openKoppelModal() {
       lijst.innerHTML = kandidaten.map(k => `
         <div style="display:flex;justify-content:space-between;align-items:center;background:#1e2130;padding:10px 14px;border-radius:6px">
           <span>${k.shortname || k.display_name} ${k.roepnummer ? '(' + k.roepnummer + ')' : ''}</span>
-          <button class="btn-purple small" onclick="koppelEenheden('${unit.userId}','${k.id}','${unit.id}','${k.roepnummer || ''}')">Koppelen</button>
+          <button class="btn-purple small" onclick="koppelEenheden('${unit.userId}','${k.id}')">Koppelen</button>
         </div>
       `).join('');
     });
@@ -1231,45 +1231,66 @@ function openKoppelModal() {
 
 let _koppelData = null;
 
-function koppelEenheden(userId1, userId2, roep1, roep2) {
-  _koppelData = { userId1, userId2, roepnummers: [roep1, roep2] };
+function koppelEenheden(userId1, userId2) {
+  _koppelData = { userId1, userId2 };
   
-  // Toon duidelijke keuze interface
-  const modal = document.getElementById('koppel-modal');
-  const keuzeSectie = modal.querySelector('.modal-body') || modal.querySelector('div');
-  
-  keuzeSectie.innerHTML = `
-    <h3 style="margin-bottom:16px">Kies een persoon om te koppelen</h3>
-    <div style="display:flex;flex-direction:column;gap:12px">
-      <button class="btn-purple" style="padding:12px;font-size:1rem" onclick="bevestigKoppel(0)">
-        <div style="font-weight:bold">${roep1 || 'Persoon 1'}</div>
-        <div style="font-size:0.8rem;opacity:0.8">Roepnummer: ${roep1 || 'Geen'}</div>
-      </button>
-      <button class="btn-purple" style="padding:12px;font-size:1rem" onclick="bevestigKoppel(1)">
-        <div style="font-weight:bold">${roep2 || 'Persoon 2'}</div>
-        <div style="font-size:0.8rem;opacity:0.8">Roepnummer: ${roep2 || 'Geen'}</div>
-      </button>
-    </div>
-  `;
-  
-  document.getElementById('koppel-modal').classList.remove('hidden');
+  // Haal huidige roepnummers op
+  Promise.all([
+    fetch(`${API_URL}/api/indeling/${userId1}`).then(r => r.json()).catch(() => ({})),
+    fetch(`${API_URL}/api/indeling/${userId2}`).then(r => r.json()).catch(() => ({}))
+  ]).then(([ind1, ind2]) => {
+    const roep1 = ind1.roepnummer || '';
+    const roep2 = ind2.roepnummer || '';
+    
+    // Toon duidelijke keuze interface
+    const modal = document.getElementById('koppel-modal');
+    const keuzeSectie = modal.querySelector('.modal-body') || modal.querySelector('div');
+    
+    keuzeSectie.innerHTML = `
+      <h3 style="margin-bottom:16px">Kies een roepnummer voor de koppeleenheid</h3>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        ${roep1 ? `
+          <button class="btn-purple" style="padding:12px;font-size:1rem" onclick="bevestigKoppel('${roep1}')">
+            <div style="font-weight:bold">${roep1}</div>
+            <div style="font-size:0.8rem;opacity:0.8">Huidig roepnummer van gebruiker 1</div>
+          </button>
+        ` : ''}
+        ${roep2 ? `
+          <button class="btn-purple" style="padding:12px;font-size:1rem" onclick="bevestigKoppel('${roep2}')">
+            <div style="font-weight:bold">${roep2}</div>
+            <div style="font-size:0.8rem;opacity:0.8">Huidig roepnummer van gebruiker 2</div>
+          </button>
+        ` : ''}
+        ${!roep1 && !roep2 ? `
+          <div style="color:#888;text-align:center;padding:12px">Geen roepnummers beschikbaar</div>
+        ` : ''}
+      </div>
+    `;
+    
+    document.getElementById('koppel-modal').classList.remove('hidden');
+  });
 }
 
-function bevestigKoppel(keuze) {
+function bevestigKoppel(gekozenRoepnummer) {
   if (!_koppelData) return;
-  const { userId1, userId2, roepnummers } = _koppelData;
-  const gekozenRoepnummer = roepnummers[keuze];
+  const { userId1, userId2 } = _koppelData;
+  
   fetch(`${API_URL}/api/koppel`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId1, userId2, roepnummer: gekozenRoepnummer }),
   }).then(r => r.json()).then(data => {
     document.getElementById('koppel-modal').classList.add('hidden');
-    document.getElementById('koppel-roepnummer-sectie').style.display = 'none';
     _koppelData = null;
-    if (data.error) { showToast('Fout: ' + data.error); return; }
+    if (data.error) { 
+      showToast('Fout: ' + data.error); 
+      return; 
+    }
     laadEenheden();
     showToast('Eenheden gekoppeld met roepnummer ' + gekozenRoepnummer);
+  }).catch(err => {
+    console.error('Koppel fout:', err);
+    showToast('Fout bij koppelen');
   });
 }
 

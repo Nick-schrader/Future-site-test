@@ -958,9 +958,17 @@ app.post('/api/koppel', async (req, res) => {
   const { userId1, userId2, roepnummer } = req.body;
   if (!userId1 || !userId2) return res.status(400).json({ error: 'Ontbrekende velden' });
 
+  // Check of gebruikers bestaan en in dienst zijn
+  const g1 = db.prepare('SELECT id, koppel_id FROM gebruikers WHERE id = ? AND indienst_start IS NOT NULL').get(userId1);
+  const g2 = db.prepare('SELECT id, koppel_id FROM gebruikers WHERE id = ? AND indienst_start IS NOT NULL').get(userId2);
+  if (!g1 || !g2) return res.status(400).json({ error: 'Een of beide gebruikers niet gevonden of niet in dienst' });
+
+  // Check of gebruikers al gekoppeld zijn
+  if (g1.koppel_id || g2.koppel_id) return res.status(400).json({ error: 'Een of beide gebruikers zijn al gekoppeld' });
+
   const ind1 = db.prepare('SELECT roepnummer, voertuig FROM indelingen WHERE user_id = ?').get(userId1);
   const ind2 = db.prepare('SELECT roepnummer, voertuig FROM indelingen WHERE user_id = ?').get(userId2);
-  const gekozenRoep = roepnummer || ind1?.roepnummer;
+  const gekozenRoep = roepnummer || ind1?.roepnummer || ind2?.roepnummer;
   const voertuig = ind1?.voertuig || ind2?.voertuig || 'Noodhulp';
 
   if (!gekozenRoep) return res.status(400).json({ error: 'Geen roepnummer beschikbaar' });
@@ -968,15 +976,16 @@ app.post('/api/koppel', async (req, res) => {
   // Check max koppel
   const maxKoppelRow = db.prepare("SELECT waarde FROM systeem_instellingen WHERE sleutel = 'max_koppel'").get();
   const maxKoppel = parseInt(maxKoppelRow?.waarde || '2');
-  const g1 = db.prepare('SELECT koppel_id FROM gebruikers WHERE id = ?').get(userId1);
-  if (g1?.koppel_id) return res.status(400).json({ error: 'Eenheid is al gekoppeld' });
 
-  // Koppel instellen
-  db.prepare('UPDATE gebruikers SET koppel_id = ? WHERE id = ?').run(userId2, userId1);
-  db.prepare('UPDATE gebruikers SET koppel_id = ? WHERE id = ?').run(userId1, userId2);
+  // Koppel instellen - userId1 is de hoofdgebruiker (laagste ID)
+  const hoofdUserId = userId1 < userId2 ? userId1 : userId2;
+  const gekoppeldeUserId = userId1 < userId2 ? userId2 : userId1;
+  
+  db.prepare('UPDATE gebruikers SET koppel_id = ? WHERE id = ?').run(gekoppeldeUserId, hoofdUserId);
+  db.prepare('UPDATE gebruikers SET koppel_id = ? WHERE id = ?').run(hoofdUserId, gekoppeldeUserId);
 
   // Beide krijgen hetzelfde roepnummer en voertuig
-  for (const uid of [userId1, userId2]) {
+  for (const uid of [hoofdUserId, gekoppeldeUserId]) {
     db.prepare(`INSERT INTO indelingen (user_id, roepnummer, voertuig, ingedeeld_door, tijd)
       VALUES (?, ?, ?, 'koppel', ?)
       ON CONFLICT(user_id) DO UPDATE SET roepnummer = excluded.roepnummer, voertuig = excluded.voertuig
@@ -986,25 +995,38 @@ app.post('/api/koppel', async (req, res) => {
   // Update DC namen van beide
   try {
     const guild = await client.guilds.fetch(process.env.GUILD_ID);
-    for (const uid of [userId1, userId2]) {
+    for (const uid of [hoofdUserId, gekoppeldeUserId]) {
       const member = await guild.members.fetch(uid);
       const g = db.prepare('SELECT shortname, display_name, rangicoon, role FROM gebruikers WHERE id = ?').get(uid);
       await member.setNickname(maakDienstNaam(gekozenRoep, g, g?.role));
     }
   } catch (err) { console.error('Naam koppel update mislukt:', err.message); }
 
-  res.json({ success: true });
+  console.log(`[KOPPEL] ${hoofdUserId} <-> ${gekoppeldeUserId} met roepnummer ${gekozenRoep}`);
+  res.json({ success: true, hoofdgebruiker: hoofdUserId });
 });
 
 // ---- API: Ontkoppelen ----
 app.post('/api/ontkoppel', async (req, res) => {
   const { userId } = req.body;
   if (!userId) return res.status(400).json({ error: 'Geen userId' });
+  
+  // Haal koppel informatie op
   const g = db.prepare('SELECT koppel_id, shortname, display_name, dienstnummer FROM gebruikers WHERE id = ?').get(userId);
-  if (g?.koppel_id) {
+  if (!g) return res.status(400).json({ error: 'Gebruiker niet gevonden' });
+  
+  if (g.koppel_id) {
+    // Ontkoppel beide kanten
     db.prepare('UPDATE gebruikers SET koppel_id = NULL WHERE id = ?').run(g.koppel_id);
+    db.prepare('UPDATE gebruikers SET koppel_id = NULL WHERE id = ?').run(userId);
+    
+    // Reset indelingen voor beide gebruikers
+    db.prepare('DELETE FROM indelingen WHERE user_id = ? AND ingedeeld_door = "koppel"').run(userId);
+    db.prepare('DELETE FROM indelingen WHERE user_id = ? AND ingedeeld_door = "koppel"').run(g.koppel_id);
+    
+    console.log(`[ONTKOPPEL] ${userId} <-> ${g.koppel_id}`);
   }
-  db.prepare('UPDATE gebruikers SET koppel_id = NULL WHERE id = ?').run(userId);
+  
   res.json({ success: true });
 });
 
