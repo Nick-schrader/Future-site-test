@@ -1287,6 +1287,35 @@ function overnemen(type) {
 let wachtrijInterval = null;
 
 async function aanmeldenDirect() {
+  const u = getUser();
+  
+  // EERST: Reset gebruiker naar 'user' rol om OVD/OPCO status te verwijderen
+  console.log('🔄 AANMELDEN - Resetting user to "user" role first...');
+  u.role = 'user';
+  u.dienstnummer = '';
+  u.indienstStart = null;
+  u.status = null;
+  u.voertuig = null;
+  saveUser(u);
+  
+  // Sync reset naar database
+  try {
+    await fetch(`${API_URL}/api/rol`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        userId: u.id, 
+        role: 'user', 
+        indienstStart: null, 
+        roepnummer: '', 
+        rangicoon: u.rangicoon || '' 
+      }),
+    });
+    console.log('✅ User reset to "user" role in database');
+  } catch (err) {
+    console.error('❌ Failed to reset user role:', err);
+  }
+  
   const dienstRollen = await fetch(`${API_URL}/api/dienst-rollen`)
     .then(r => r.json())
     .catch(() => ({ ovd:'-', opco:'-' }));
@@ -1300,7 +1329,7 @@ async function aanmeldenDirect() {
     return;
   }
 
-  const u = getUser();
+  // NU pas aanmelden met schone state
   u.indienstStart = Date.now();
   saveUser(u);
 
