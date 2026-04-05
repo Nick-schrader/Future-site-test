@@ -183,9 +183,9 @@ db.prepare("UPDATE specialisatie_instellingen SET min_eenheden = max_eenheden WH
 
 // Standaard waarden invoegen als ze nog niet bestaan
 const defaults = [
-  { voertuig: 'Siv 1',    max: 2,  min: 2,  start: null,    eind: null,    rol: 'SIV' },
-  { voertuig: 'Siv 2',    max: 4,  min: 4,  start: null,    eind: null,    rol: 'SIV' },
-  { voertuig: 'Siv 3',    max: 6,  min: 6,  start: null,    eind: null,    rol: 'SIV' },
+  { voertuig: 'SIV 1',    max: 2,  min: 2,  start: null,    eind: null,    rol: 'SIV' },
+  { voertuig: 'SIV 2',    max: 4,  min: 4,  start: null,    eind: null,    rol: 'SIV' },
+  { voertuig: 'SIV 3',    max: 6,  min: 6,  start: null,    eind: null,    rol: 'SIV' },
   { voertuig: 'GPT 1',    max: 3,  min: 3,  start: null,    eind: null,    rol: 'Unmarked GPT' },
   { voertuig: 'GPT 2',    max: 6,  min: 6,  start: null,    eind: null,    rol: 'Unmarked GPT' },
   { voertuig: 'Motor 1',  max: 4,  min: 4,  start: null,    eind: null,    rol: 'Motor' },
