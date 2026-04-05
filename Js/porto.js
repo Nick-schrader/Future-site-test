@@ -1,4 +1,74 @@
-// ---- PORTO PAGE ----
+// Console database clear command
+function clearDatabase() {
+  if (!confirm('Weet je zeker dat je de hele database wilt legen? Dit kan niet ongedaan worden!')) {
+    return;
+  }
+  
+  console.log('🗑️ DATABASE CLEAR - Starting database cleanup...');
+  
+  // Toon loading state
+  const originalText = document.body.style.cursor;
+  document.body.style.cursor = 'wait';
+  
+  fetch(`${API_URL}/api/clear-all-data`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: 'console_clear' }) // Speciale identificatie
+  }).then(response => {
+    if (!response.ok) {
+      throw new Error('Database clear failed');
+    }
+    return response.json();
+  }).then(data => {
+    console.log('✅ DATABASE CLEAR - Success:', data);
+    showToast('Database succesvol geleegd!');
+    
+    // Clear local storage en session storage
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Reset window variables
+    window._specialisaties = null;
+    window._currentAlerts = null;
+    window._vorigeAlerts = null;
+    window._groepIngeklapt = null;
+    
+    // Forceer pagina reload na 2 seconden
+    setTimeout(() => {
+      console.log('🔄 DATABASE CLEAR - Reloading page...');
+      window.location.reload();
+    }, 2000);
+    
+  }).catch(error => {
+    console.error('❌ DATABASE CLEAR - Error:', error);
+    showToast('Fout bij database legen: ' + error.message);
+    document.body.style.cursor = originalText;
+  });
+}
+
+// Maak de functie globaal beschikbaar voor console
+window.clearDatabase = clearDatabase;
+window.dbClear = clearDatabase; // Korte alias
+
+// Console help functie
+function showDatabaseCommands() {
+  console.log(`
+🗄️ DATABASE COMMANDS:
+==================
+clearDatabase()  - Leeg de hele database (admin only)
+dbClear()        - Korte alias voor clearDatabase()
+
+📋 USAGE:
+1. Open browser console (F12)
+2. Typ: clearDatabase() of dbClear()
+3. Bevestig de prompt
+4. Database wordt geleegd en pagina herladen
+
+⚠️  WARNING: Dit kan niet ongedaan worden!
+  `);
+}
+
+window.dbHelp = showDatabaseCommands;
 let _kandidatenRol = null;
 let _kandidatenLijst = [];
 

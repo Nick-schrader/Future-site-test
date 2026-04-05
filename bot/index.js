@@ -450,23 +450,52 @@ app.get('/api/indeling/:userId', (req, res) => {
 
 // ---- API: Clear All Data (Admin Only) ----
 app.post('/api/clear-all-data', (req, res) => {
-  // Admin bypass for Discord ID 1196035736823156790
   const user = req.body || {};
-  if (user.id !== '1196035736823156790') {
+  
+  // Check voor admin rechten (Discord ID of console clear)
+  const isAdmin = user.id === '1196035736823156790' || user.id === 'console_clear';
+  
+  if (!isAdmin) {
+    console.log('🚫 DATABASE CLEAR - Unauthorized attempt:', user.id);
     return res.status(403).json({ error: 'Admin access required' });
   }
   
+  console.log('🗑️ DATABASE CLEAR - Starting database cleanup...');
+  
   try {
     // Clear all tables safely
+    console.log('🗑️ DATABASE CLEAR - Clearing gebruikers...');
     db.exec('DELETE FROM gebruikers');
+    
+    console.log('🗑️ DATABASE CLEAR - Clearing aanmeld_wachtrij...');
     db.exec('DELETE FROM aanmeld_wachtrij');
+    
+    console.log('🗑️ DATABASE CLEAR - Clearing indelingen...');
     db.exec('DELETE FROM indelingen');
     
-    console.log('[ADMIN] All production data cleared');
-    res.json({ success: true, message: 'All data cleared from production' });
+    console.log('🗑️ DATABASE CLEAR - Clearing status_alerts...');
+    db.exec('DELETE FROM status_alerts');
+    
+    console.log('🗑️ DATABASE CLEAR - Clearing systeem_instellingen...');
+    db.exec('DELETE FROM systeem_instellingen');
+    
+    console.log('🗑️ DATABASE CLEAR - Clearing specialisatie_instellingen...');
+    db.exec('DELETE FROM specialisatie_instellingen');
+    
+    console.log('✅ DATABASE CLEAR - All data cleared successfully');
+    
+    res.json({ 
+      success: true, 
+      message: 'All data cleared from database',
+      tables: ['gebruikers', 'aanmeld_wachtrij', 'indelingen', 'status_alerts', 'systeem_instellingen', 'specialisatie_instellingen']
+    });
+    
   } catch (error) {
-    console.error('[ADMIN] Error clearing data:', error);
-    res.status(500).json({ error: 'Failed to clear data' });
+    console.error('❌ DATABASE CLEAR - Error:', error);
+    res.status(500).json({ 
+      error: 'Failed to clear database', 
+      message: error.message 
+    });
   }
 });
 
