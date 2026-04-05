@@ -1815,6 +1815,7 @@ function ovdAanmelden() {
 
 function ovdUpdateInfo() {
   const u = getUser();
+  const naam = document.getElementById('ovd-oc-naam');
   const rol = document.getElementById('ovd-oc-rol');
   const roepnummer = document.getElementById('ovd-oc-roepnummer');
   const voertuig = document.getElementById('ovd-oc-voertuig');
@@ -1822,6 +1823,8 @@ function ovdUpdateInfo() {
   
   console.log('🔍 OVD UPDATE INFO - User:', u.shortname || u.displayName, 'Role:', u.role, 'Dienstnummer:', u.dienstnummer, 'Voertuig:', u.voertuig);
   
+  // Update basis info
+  if (naam) naam.textContent = u.shortname || u.displayName || '-';
   if (rol) rol.textContent = u.role ? u.role.toUpperCase() : '-';
   if (roepnummer) roepnummer.textContent = u.dienstnummer || '-';
   if (voertuig) voertuig.textContent = u.voertuig || 'Niet geselecteerd';
