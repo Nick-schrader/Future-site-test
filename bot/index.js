@@ -396,18 +396,17 @@ app.get('/api/indeling/:userId', (req, res) => {
     // Als gebruiker niet ingedeeld is, check of er koppel info is
     let koppelNaam = null;
     if (gebruiker?.koppel_id) {
-      // Haal de naam van de koppel groep op
+      // Haal ALLEEN de naam van de partner op (niet jezelf)
       const koppelInfo = db.prepare(`
-        SELECT g1.shortname, g1.display_name, g2.shortname as partner_shortname, g2.display_name as partner_display_name
-        FROM gebruikers g1
-        LEFT JOIN gebruikers g2 ON g1.koppel_id = g2.id
-        WHERE g1.id = ?
+        SELECT k.shortname as partner_shortname, k.display_name as partner_display_name
+        FROM gebruikers g
+        LEFT JOIN gebruikers k ON g.koppel_id = k.id
+        WHERE g.id = ?
       `).get(req.params.userId);
       
       if (koppelInfo) {
-        const eigenNaam = koppelInfo.shortname || koppelInfo.display_name;
-        const partnerNaam = koppelInfo.partner_shortname || koppelInfo.partner_display_name;
-        koppelNaam = partnerNaam ? `${eigenNaam} + ${partnerNaam}` : eigenNaam;
+        // ALLEEN de naam van de partner
+        koppelNaam = koppelInfo.partner_shortname || koppelInfo.partner_display_name || null;
       }
     }
     
@@ -424,18 +423,17 @@ app.get('/api/indeling/:userId', (req, res) => {
   // Als gebruiker ingedeeld is, check ook koppel info
   let koppelNaam = gebruiker?.koppel_naam || null;
   if (gebruiker?.koppel_id) {
-    // Haal de volledige koppel naam op
+    // Haal ALLEEN de naam van de partner op
     const koppelInfo = db.prepare(`
-      SELECT g1.shortname, g1.display_name, g2.shortname as partner_shortname, g2.display_name as partner_display_name
-      FROM gebruikers g1
-      LEFT JOIN gebruikers g2 ON g1.koppel_id = g2.id
-      WHERE g1.id = ?
+      SELECT k.shortname as partner_shortname, k.display_name as partner_display_name
+      FROM gebruikers g
+      LEFT JOIN gebruikers k ON g.koppel_id = k.id
+      WHERE g.id = ?
     `).get(req.params.userId);
     
     if (koppelInfo) {
-      const eigenNaam = koppelInfo.shortname || koppelInfo.display_name;
-      const partnerNaam = koppelInfo.partner_shortname || koppelInfo.partner_display_name;
-      koppelNaam = partnerNaam ? `${eigenNaam} + ${partnerNaam}` : eigenNaam;
+      // ALLEEN de naam van de partner
+      koppelNaam = koppelInfo.partner_shortname || koppelInfo.partner_display_name || null;
     }
   }
   
