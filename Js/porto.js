@@ -23,8 +23,6 @@ function clearPingTimers() {
   clearAlertTimer();
 }
 
-
-
 window.onload = async () => {
   await syncUserFromDB();
   
@@ -70,6 +68,7 @@ window.onload = async () => {
   window.addEventListener('beforeunload', () => {
     clearPingTimers();
   });
+  
   const role = (u.role || '').toLowerCase();
   const isAdmin = role === 'admin';
   const isOvdOpco = ['ovd', 'opco', 'oc', 'ops'].includes(role);
@@ -268,21 +267,64 @@ function laadEenheden() {
     window._specialisaties = specs;
     console.log('🔄 SPECIALISATIES CACHE VERVERSCHERD:', specs.length, 'specialisaties');
     
-    appData.eenheden = data.map(e => ({
-      id: e.roepnummer || e.dienstnummer || '-',
-      medewerkers: e.koppel_id
-        ? `${e.shortname || e.display_name} + ${e.koppel_naam || e.koppel_display || '?'}`
-        : (e.shortname || e.display_name),
-      voertuig: e.voertuig_naam || '-',
-      type: e.voertuig || '-',
-      taak: 'Surveillance',
-      status: e.status || 1,
-      userId: e.id,
-      koppelId: e.koppel_id || null,
-      rollen: e.rollen || '[]',
-      indienstStart: e.indienst_start || null,
-      isHoofd: e.isHoofd || true, // Nieuwe property om hoofdgebruiker te identificeren
-    }));
+    // Groepeer gekoppelde gebruikers op roepnummer
+    const gegroepeerd = {};
+    const verwerkteIds = new Set();
+    
+    data.forEach(e => {
+      const roepnummer = e.roepnummer || e.dienstnummer || '-';
+      
+      if (!gegroepeerd[roepnummer]) {
+        gegroepeerd[roepnummer] = [];
+      }
+      
+      gegroepeerd[roepnummer].push(e);
+      verwerkteIds.add(e.id);
+    });
+    
+    // Converteer naar appData.eenheden formaat
+    appData.eenheden = Object.entries(gegroepeerd).map(([roepnummer, gebruikers]) => {
+      if (gebruikers.length === 1) {
+        // Enkele gebruiker (niet gekoppeld)
+        const e = gebruikers[0];
+        return {
+          id: roepnummer,
+          medewerkers: e.shortname || e.display_name,
+          voertuig: e.voertuig_naam || '-',
+          type: e.voertuig || '-',
+          taak: 'Surveillance',
+          status: e.status || 1,
+          userId: e.id,
+          koppelId: e.koppel_id || null,
+          rollen: e.rollen || '[]',
+          indienstStart: e.indienst_start || null,
+          isHoofd: e.isHoofd || true,
+          isGekoppeld: false,
+        };
+      } else {
+        // Gekoppelde gebruikers - toon als één eenheid
+        const hoofd = gebruikers.find(g => g.isHoofd) || gebruikers[0];
+        const gekoppelde = gebruikers.filter(g => !g.isHoofd);
+        
+        return {
+          id: roepnummer,
+          medewerkers: `${hoofd.shortname || hoofd.display_name} + ${gekoppelde.map(g => g.shortname || g.display_name).join(' + ')}`,
+          voertuig: hoofd.voertuig_naam || '-',
+          type: hoofd.voertuig || '-',
+          taak: 'Surveillance',
+          status: hoofd.status || 1,
+          userId: hoofd.id,
+          koppelId: hoofd.koppel_id || null,
+          rollen: hoofd.rollen || '[]',
+          indienstStart: hoofd.indienst_start || null,
+          isHoofd: hoofd.isHoofd || true,
+          isGekoppeld: true,
+          gekoppeldeGebruikers: gebruikers, // Voor debugging
+        };
+      }
+    });
+    
+    console.log('🔄 GEGROEPEERDE EENHEDEN:', appData.eenheden.length, 'eenheden');
     
     // Render eenheden en forceer directe specialisaties update
     renderEenheden();
