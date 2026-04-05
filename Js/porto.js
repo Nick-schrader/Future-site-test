@@ -934,7 +934,13 @@ function updateOCInfo() {
         const vn = document.getElementById('oc-voertuig-naam');
         const koppel = document.getElementById('oc-koppel');
         if (vn) vn.textContent = data.voertuigNaam || '-';
-        if (koppel) koppel.textContent = data.koppelNaam || '-';
+        // FIX: Gebruik beide velden voor backward compatibility
+        const koppelNaam = data.koppelNaam || data.koppel_naam || '-';
+        if (koppel) koppel.textContent = koppelNaam;
+        
+        // Update lokale user data voor consistentie
+        u.koppelNaam = koppelNaam;
+        saveUser(u);
         
         console.log('UPDATE OC INFO - API Response:', data);
         
@@ -1766,7 +1772,6 @@ function ovdAanmelden() {
 
 function ovdUpdateInfo() {
   const u = getUser();
-  const naam = document.getElementById('ovd-oc-naam');
   const rol = document.getElementById('ovd-oc-rol');
   const roepnummer = document.getElementById('ovd-oc-roepnummer');
   const voertuig = document.getElementById('ovd-oc-voertuig');
@@ -1774,7 +1779,6 @@ function ovdUpdateInfo() {
   
   console.log('🔍 OVD UPDATE INFO - User:', u.shortname || u.displayName, 'Role:', u.role, 'Dienstnummer:', u.dienstnummer, 'Voertuig:', u.voertuig);
   
-  if (naam) naam.textContent = u.shortname || u.displayName || '-';
   if (rol) rol.textContent = u.role ? u.role.toUpperCase() : '-';
   if (roepnummer) roepnummer.textContent = u.dienstnummer || '-';
   if (voertuig) voertuig.textContent = u.voertuig || 'Niet geselecteerd';
@@ -1789,7 +1793,14 @@ function ovdUpdateInfo() {
         const vn = document.getElementById('ovd-oc-voertuig-naam');
         const koppel = document.getElementById('ovd-oc-koppel');
         if (vn) vn.textContent = data.voertuigNaam || '-';
-        if (koppel) koppel.textContent = data.koppelNaam || '-';
+        // FIX: Gebruik beide velden voor backward compatibility
+        const koppelNaam = data.koppelNaam || data.koppel_naam || '-';
+        if (koppel) koppel.textContent = koppelNaam;
+        
+        // Update lokale user data voor consistentie
+        u.koppelNaam = koppelNaam;
+        saveUser(u);
+        
         if (data.voertuigNaam) highlightVoertuig(data.voertuigNaam);
       }).catch(() => {});
   }
