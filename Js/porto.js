@@ -281,6 +281,7 @@ function laadEenheden() {
       koppelId: e.koppel_id || null,
       rollen: e.rollen || '[]',
       indienstStart: e.indienst_start || null,
+      isHoofd: e.isHoofd || true, // Nieuwe property om hoofdgebruiker te identificeren
     }));
     
     // Render eenheden en forceer directe specialisaties update

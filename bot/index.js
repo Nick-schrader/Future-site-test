@@ -1040,10 +1040,13 @@ app.get('/api/eenheden-rollen', (_req, res) => {
   res.json(rollen);
 });
 
-  // Filter gekoppelde duplicaten
-  const gefilterd = eenheden.filter(e => {
-    if (!e.koppel_id) return true;
-    return e.id < e.koppel_id;
+  // FIX: Toon alle gekoppelde gebruikers, maar markeer de hoofdgebruiker
+  const gefilterd = eenheden.map(e => {
+    if (!e.koppel_id) return { ...e, isHoofd: true };
+    
+    // Bepaal wie de hoofdgebruiker is (laagste ID)
+    const isHoofd = e.id < e.koppel_id;
+    return { ...e, isHoofd };
   });
 
   res.json(gefilterd);
