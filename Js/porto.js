@@ -1860,16 +1860,20 @@ function ovdUpdateInfo() {
         const vn = document.getElementById('ovd-oc-voertuig-naam');
         const koppel = document.getElementById('ovd-oc-koppel');
         if (vn) vn.textContent = data.voertuigNaam || '-';
-        // FIX: Gebruik beide velden voor backward compatibility
-        const koppelNaam = data.koppelNaam || data.koppel_naam || '-';
+        
+        // FIX: Gebruik de nieuwe koppelNaam van de backend
+        const koppelNaam = data.koppelNaam || '-';
         if (koppel) koppel.textContent = koppelNaam;
         
         // Update lokale user data voor consistentie
         u.koppelNaam = koppelNaam;
+        u.voertuig = data.voertuig || u.voertuig;
         saveUser(u);
         
         if (data.voertuigNaam) highlightVoertuig(data.voertuigNaam);
-      }).catch(() => {});
+      }).catch(err => {
+        console.error('🔍 OVD UPDATE INFO - Error:', err);
+      });
   }
 
   fetch(`${API_URL}/api/dienst-rollen`)

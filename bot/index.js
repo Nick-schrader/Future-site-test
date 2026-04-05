@@ -385,13 +385,69 @@ app.post('/api/indelen', async (req, res) => {
 app.get('/api/indeling/:userId', (req, res) => {
   const indeling = getIndeling.get(req.params.userId);
   const gebruiker = db.prepare(`
-    SELECT g.indienst_start, g.status, g.voertuig, g.voertuig_naam, k.shortname as koppel_naam, k.display_name as koppel_display
+    SELECT g.indienst_start, g.status, g.voertuig, g.voertuig_naam, g.koppel_id, 
+           k.shortname as koppel_naam, k.display_name as koppel_display
     FROM gebruikers g
     LEFT JOIN gebruikers k ON g.koppel_id = k.id
     WHERE g.id = ?
   `).get(req.params.userId);
-  if (!indeling) return res.json({ ingedeeld: false, indienstStart: gebruiker?.indienst_start || null, status: gebruiker?.status || null, voertuig: gebruiker?.voertuig || null, voertuigNaam: gebruiker?.voertuig_naam || null, koppelNaam: null });
-  res.json({ ingedeeld: true, roepnummer: indeling.roepnummer, voertuig: indeling.voertuig || gebruiker?.voertuig, voertuigNaam: gebruiker?.voertuig_naam || null, koppelNaam: gebruiker?.koppel_naam || null, indienstStart: gebruiker?.indienst_start || null, status: gebruiker?.status || null });
+  
+  if (!indeling) {
+    // Als gebruiker niet ingedeeld is, check of er koppel info is
+    let koppelNaam = null;
+    if (gebruiker?.koppel_id) {
+      // Haal de naam van de koppel groep op
+      const koppelInfo = db.prepare(`
+        SELECT g1.shortname, g1.display_name, g2.shortname as partner_shortname, g2.display_name as partner_display_name
+        FROM gebruikers g1
+        LEFT JOIN gebruikers g2 ON g1.koppel_id = g2.id
+        WHERE g1.id = ?
+      `).get(req.params.userId);
+      
+      if (koppelInfo) {
+        const eigenNaam = koppelInfo.shortname || koppelInfo.display_name;
+        const partnerNaam = koppelInfo.partner_shortname || koppelInfo.partner_display_name;
+        koppelNaam = partnerNaam ? `${eigenNaam} + ${partnerNaam}` : eigenNaam;
+      }
+    }
+    
+    return res.json({ 
+      ingedeeld: false, 
+      indienstStart: gebruiker?.indienst_start || null, 
+      status: gebruiker?.status || null, 
+      voertuig: gebruiker?.voertuig || null, 
+      voertuigNaam: gebruiker?.voertuig_naam || null, 
+      koppelNaam: koppelNaam
+    });
+  }
+  
+  // Als gebruiker ingedeeld is, check ook koppel info
+  let koppelNaam = gebruiker?.koppel_naam || null;
+  if (gebruiker?.koppel_id) {
+    // Haal de volledige koppel naam op
+    const koppelInfo = db.prepare(`
+      SELECT g1.shortname, g1.display_name, g2.shortname as partner_shortname, g2.display_name as partner_display_name
+      FROM gebruikers g1
+      LEFT JOIN gebruikers g2 ON g1.koppel_id = g2.id
+      WHERE g1.id = ?
+    `).get(req.params.userId);
+    
+    if (koppelInfo) {
+      const eigenNaam = koppelInfo.shortname || koppelInfo.display_name;
+      const partnerNaam = koppelInfo.partner_shortname || koppelInfo.partner_display_name;
+      koppelNaam = partnerNaam ? `${eigenNaam} + ${partnerNaam}` : eigenNaam;
+    }
+  }
+  
+  res.json({ 
+    ingedeeld: true, 
+    roepnummer: indeling.roepnummer, 
+    voertuig: indeling.voertuig || gebruiker?.voertuig, 
+    voertuigNaam: gebruiker?.voertuig_naam || null, 
+    koppelNaam: koppelNaam, 
+    indienstStart: gebruiker?.indienst_start || null, 
+    status: gebruiker?.status || null 
+  });
 });
 
 // ---- API: Clear All Data (Admin Only) ----
