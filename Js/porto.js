@@ -729,6 +729,8 @@ function speelAanmeldGeluid(debugInfo = '') {
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.5);
+    
+    console.log('🔊 PING SUCCESS - Audio played');
   } catch (error) {
     console.error('🔊 AUDIO ERROR:', error);
     // Fallback: try to play a simple beep using Web Audio API alternative
