@@ -674,7 +674,6 @@ function toggleGroep(label) {
   window._groepIngeklapt[label] = !window._groepIngeklapt[label];
   renderEenheden();
 }
-
 function dragEenheid(event, userId) {
   event.dataTransfer.setData('userId', userId);
 }
@@ -710,17 +709,6 @@ function statusBadge(s) {
   return `<span class="badge ${cls}">${label}</span>`;
 }
 
-function renderGPS() {
-  const container = document.getElementById('gps-units');
-  container.innerHTML = '';
-  appData.eenheden.forEach(e => {
-    if (e.status === 5) return;
-    const dot = document.createElement('div');
-    dot.className = 'gps-unit-dot';
-    dot.style.left = e.x + '%';
-    dot.style.top = e.y + '%';
-    dot.textContent = e.id;
-    container.appendChild(dot);
 let vorigeWachtrijCount = 0;
 
 function speelAanmeldGeluid(debugInfo = '') {
