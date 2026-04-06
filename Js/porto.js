@@ -1826,6 +1826,22 @@ function setStatusVoorEenheid(status) {
       fetch(`${API_URL}/api/status-alerts/${alert.id}`, { method: 'DELETE' })
         .catch(err => console.error('Failed to remove alert', alert.id, err));
     });
+    
+    // CRITICAL FIX: Update local _currentAlerts to stop pings
+    if (window._currentAlerts) {
+      const beforeCount = window._currentAlerts.length;
+      window._currentAlerts = window._currentAlerts.filter(alert => alert.userId !== unit.userId);
+      const afterCount = window._currentAlerts.length;
+      console.log('🔄 LOCAL ALERTS CLEANUP - Before:', beforeCount, 'After:', afterCount);
+      
+      // Stop ping timer if no alerts remain
+      if (afterCount === 0 && window._alertPingTimer) {
+        clearInterval(window._alertPingTimer);
+        window._alertPingTimer = null;
+        console.log('🔄 Ping timer stopped - no alerts remaining');
+      }
+    }
+    
     // Refresh meldingen to update the UI
     renderMeldingen();
     showToast(`${unit.medewerkers} → Status ${status}`);
