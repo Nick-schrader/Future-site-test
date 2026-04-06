@@ -1030,7 +1030,7 @@ function updateOCInfo() {
   const voertuig = document.getElementById('oc-voertuig');
   const koppel = document.getElementById('oc-koppel');
   if (roepnummer) roepnummer.textContent = u.dienstnummer || '-';
-  if (voertuig) voertuig.textContent = u.voertuig || 'Niet geselecteerd';
+  if (voertuig) voertuig.textContent = u.voertuig || '-';
   if (koppel) koppel.textContent = u.koppelNaam || '-';
 
   // Laad voertuig_naam en koppel informatie vanuit DB en vul input
