@@ -1413,11 +1413,16 @@ function overnemen(type) {
   const roepnummer = type === 'ovd' ? '17-00' : 
                    type === 'opco' ? '17-01' : u.dienstnummer;
 
-  // Sync naar DB
-  fetch(`${API_URL}/api/rol`, {
+  // Sync naar DB met rol-toewijzen om max 1 OVD/OPCO te garanderen
+  fetch(`${API_URL}/api/rol-toewijzen`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId: u.id, role: type, indienstStart: u.indienstStart || Date.now(), roepnummer, rangicoon: u.rangicoon || '' }),
+    body: JSON.stringify({ 
+      userId: u.id, 
+      nieuweRol: type, 
+      oudeRol: type,  // Reset vorige persoon met dezelfde rol
+      roepnummer: roepnummer
+    }),
   });
 
   showToast(type.toUpperCase() + ' overgenomen');
@@ -1651,11 +1656,16 @@ function inloggenDirect(type) {
   u.dienstnummer = roep;
   saveUser(u);
 
-  // Sync naar DB inclusief roepnummer
-  fetch(`${API_URL}/api/rol`, {
+  // Sync naar DB met rol-toewijzen om max 1 OVD/OPCO te garanderen
+  fetch(`${API_URL}/api/rol-toewijzen`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId: u.id, role: u.role, indienstStart: u.indienstStart || Date.now(), roepnummer: roep, rangicoon: u.rangicoon || '' }),
+    body: JSON.stringify({ 
+      userId: u.id, 
+      nieuweRol: u.role, 
+      oudeRol: u.role,  // Reset vorige persoon met dezelfde rol
+      roepnummer: roep
+    }),
   }).then(r => r.json()).then(data => {
     if (data.indienstStart) { u.indienstStart = data.indienstStart; saveUser(u); }
   });

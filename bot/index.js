@@ -904,11 +904,19 @@ app.get('/api/kandidaten/:rol', (_req, res) => {
 
 // ---- API: Rol toewijzen aan gebruiker ----
 app.post('/api/rol-toewijzen', async (req, res) => {
-  const { userId, nieuweRol, oudeRol } = req.body;
+  const { userId, nieuweRol, oudeRol, roepnummer } = req.body;
   if (!userId || !nieuweRol) return res.status(400).json({ error: 'Ontbrekende velden' });
+  
   // Reset vorige persoon met die rol
   if (oudeRol) db.prepare("UPDATE gebruikers SET role = 'user' WHERE role = ? AND id != ?").run(oudeRol, userId);
   db.prepare('UPDATE gebruikers SET role = ? WHERE id = ?').run(nieuweRol, userId);
+  
+  // Update roepnummer indien meegegeven
+  if (roepnummer) {
+    db.prepare('UPDATE gebruikers SET dienstnummer = ? WHERE id = ?').run(roepnummer, userId);
+    // Update ook indelingen tabel
+    db.prepare(`UPDATE indelingen SET roepnummer = ? WHERE user_id = ?`).run(roepnummer, userId);
+  }
 
   // Queue Discord naam update
   addDiscordOperation('assign_role_nickname', { userId, nieuweRol }, async (data) => {
