@@ -1848,7 +1848,7 @@ function setStatusVoorEenheid(status) {
     }
     
     // CRITICAL FIX: Clear all ping timers when leaving urgent status
-    if (isLeavingUrgentStatus) {
+    if ([6, 7].includes(previousStatus) && ![6, 7].includes(status)) {
       clearPingTimers();
       console.log('🔄 All ping timers cleared - leaving urgent status');
     }
