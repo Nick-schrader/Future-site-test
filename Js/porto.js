@@ -721,9 +721,6 @@ function renderGPS() {
     dot.style.top = e.y + '%';
     dot.textContent = e.id;
     container.appendChild(dot);
-  });
-}
-
 let vorigeWachtrijCount = 0;
 
 function speelAanmeldGeluid(debugInfo = '') {
@@ -745,35 +742,61 @@ function speelAanmeldGeluid(debugInfo = '') {
     pingHerhaalTimer: !!window._pingHerhaalTimer
   });
   
-  const ctx = new (window.AudioContext || window.webkitAudioContext)();
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-  osc.frequency.value = 880;
-  osc.type = 'sine';
-  const volume = window.audioVolume || 0.3;
-  gain.gain.setValueAtTime(volume, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
-  osc.start(ctx.currentTime);
-  osc.stop(ctx.currentTime + 0.5);
+  try {
+    // Resume AudioContext if suspended (required by modern browsers)
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
+    
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 880;
+    osc.type = 'sine';
+    const volume = window.audioVolume || 0.3;
+    gain.gain.setValueAtTime(volume, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.5);
+  } catch (error) {
+    console.error('🔊 AUDIO ERROR:', error);
+    // Fallback: try to play a simple beep using Web Audio API alternative
+    try {
+      const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
+      audio.volume = window.audioVolume || 0.3;
+      audio.play().catch(e => console.log('Fallback audio failed:', e));
+    } catch (fallbackError) {
+      console.log('All audio methods failed:', fallbackError);
+    }
+  }
 }
 
 function speelVoertuigGeluid() {
-  const ctx = new (window.AudioContext || window.webkitAudioContext)();
-  const gain = ctx.createGain();
-  gain.connect(ctx.destination);
-  const volume = window.audioVolume || 0.3;
-  gain.gain.setValueAtTime(volume, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
-  [660, 880].forEach((freq, i) => {
-    const osc = ctx.createOscillator();
-    osc.connect(gain);
-    osc.frequency.value = freq;
-    osc.type = 'sine';
-    osc.start(ctx.currentTime + i * 0.15);
-    osc.stop(ctx.currentTime + i * 0.15 + 0.2);
-  });
+  try {
+    // Resume AudioContext if suspended (required by modern browsers)
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
+    
+    const gain = ctx.createGain();
+    gain.connect(ctx.destination);
+    const volume = window.audioVolume || 0.3;
+    gain.gain.setValueAtTime(volume, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+    [660, 880].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      osc.connect(gain);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      osc.start(ctx.currentTime + i * 0.15);
+      osc.stop(ctx.currentTime + i * 0.15 + 0.2);
+    });
+  } catch (error) {
+    console.error('🔊 VOERTUIG AUDIO ERROR:', error);
+  }
 }
 
 function renderMeldingen() {
