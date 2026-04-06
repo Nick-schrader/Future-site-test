@@ -183,7 +183,8 @@ window.onload = async () => {
     document.getElementById('ovd-view').classList.remove('hidden');
     laadEenheden();
     renderMeldingen();
-    setInterval(() => { laadEenheden(); renderMeldingen(); ovdUpdateInfo(); }, 3000);
+    setInterval(() => { laadEenheden(); renderMeldingen(); }, 3000);
+    setInterval(() => { ovdUpdateInfo(); }, 10000); // Elke 10 seconden ipv elke 3
     setInterval(renderLeaderboard, 1000);
     // Live specialisaties update (zonder hele tabel refresh)
     setInterval(updateSpecialisatiesLive, 10000); // elke 10 seconden
@@ -335,7 +336,11 @@ function laadEenheden() {
   ]).then(([data, specs]) => {
     // Forceer refresh van specialisaties cache
     window._specialisaties = specs;
-    console.log('🔄 SPECIALISATIES CACHE VERVERSCHERD:', specs.length, 'specialisaties');
+    // Alleen loggen als het aantal specialisaties echt veranderd is
+    if (window._lastSpecsCount !== specs.length) {
+      console.log('🔄 SPECIALISATIES CACHE VERVERSCHERD:', specs.length, 'specialisaties');
+      window._lastSpecsCount = specs.length;
+    }
     
     // Groepeer gekoppelde gebruikers op roepnummer
     const gegroepeerd = {};
