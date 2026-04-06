@@ -1779,6 +1779,10 @@ function setStatusVoorEenheid(status) {
   const id = document.getElementById('edit-unit-id').value;
   const unit = appData.eenheden.find(e => e.id === id);
   if (!unit) return;
+  
+  // Store previous status for proper alert cleanup logic
+  const previousStatus = unit.status;
+  
   fetch(`${API_URL}/api/status`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -1789,12 +1793,36 @@ function setStatusVoorEenheid(status) {
     closeVoertuigModal();
     renderEenheden();
     
-    // CRITICAL FIX: Remove any existing status alerts for this user when status changes
+    // Update current user status if this is the logged-in user
+    const currentUser = getUser();
+    if (currentUser && currentUser.id === unit.userId) {
+      currentUser.status = status;
+      saveUser(currentUser);
+      highlightStatus(status);
+      console.log('🔄 Updated current user status to:', status);
+    }
+    
+    // Only cleanup alerts if moving AWAY from status 6/7
+    const isLeavingUrgentStatus = [6, 7].includes(previousStatus) && ![6, 7].includes(status);
+    console.log('🔄 UNIT STATUS CHANGE - Previous:', previousStatus, 'New:', status, 'Leaving urgent:', isLeavingUrgentStatus);
+    
+    if (!isLeavingUrgentStatus) {
+      console.log('🔄 Not leaving urgent status - keeping alerts');
+      renderMeldingen();
+      showToast(`${unit.medewerkers} → Status ${status}`);
+      return;
+    }
+    
+    // CRITICAL FIX: Remove alerts only when leaving urgent status
     return fetch(`${API_URL}/api/status-alerts`).then(r => r.json());
   }).then(alerts => {
+    if (!alerts) return;
+    
+    console.log('🔄 Cleaning up alerts for unit status change');
     // Remove alerts for this user that are no longer valid
     const userAlerts = alerts.filter(alert => alert.userId === unit.userId);
     userAlerts.forEach(alert => {
+      console.log('🔄 Removing alert for unit:', alert.id, 'status:', alert.status);
       fetch(`${API_URL}/api/status-alerts/${alert.id}`, { method: 'DELETE' })
         .catch(err => console.error('Failed to remove alert', alert.id, err));
     });
