@@ -193,7 +193,7 @@ const defaults = [
   { voertuig: 'Motor 3',  max: 10, min: 10, start: null,    eind: null,    rol: 'Motor' },
   { voertuig: 'Boot 1',   max: 1,  min: 1,  start: null,    eind: null,    rol: 'Kustwacht' },
   { voertuig: 'Boot 2',   max: 2,  min: 2,  start: null,    eind: null,    rol: 'Kustwacht' },
-  { voertuig: 'Zulu',     max: 99, min: 0,  start: null,    eind: null,    rol: 'Piloot cert.' },
+  { voertuig: 'Zulu',     max: 99, min: 5,  start: null,    eind: null,    rol: 'Piloot cert.' },
   { voertuig: 'Noodhulp', max: 99, min: 0,  start: null,    eind: null,    rol: null },
   { voertuig: 'Offroad',  max: 99, min: 0,  start: null,    eind: null,    rol: 'Off-road' },
 ];
