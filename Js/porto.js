@@ -1090,15 +1090,18 @@ function updateOCInfo() {
 }
 
 function setStatus(s) {
+  const u = getUser();
+  const previousStatus = u.status; // Store previous status BEFORE changing
+  
   console.log('🔄 STATUS CHANGE - User setting status to:', s);
+  console.log('🔄 Previous status:', previousStatus, 'New status:', s);
   console.log('🔄 Before change - Current alerts:', window._currentAlerts?.length || 0);
   
   if (s === 10) {
     document.getElementById('uitdienst-modal').classList.remove('hidden');
     return;
   }
-  const u = getUser();
-  const previousStatus = u.status; // Store previous status
+  
   u.status = s;
   saveUser(u);
   highlightStatus(s);
@@ -1109,7 +1112,7 @@ function setStatus(s) {
   
   // Only cleanup alerts if moving AWAY from status 6/7
   const isLeavingUrgentStatus = [6, 7].includes(previousStatus) && ![6, 7].includes(s);
-  console.log('🔄 Is leaving urgent status (6/7):', isLeavingUrgentStatus, 'from:', previousStatus, 'to:', s);
+  console.log('🔄 Is leaving urgent status (6/7):', isLeavingUrgentStatus);
   
   if (u.id) fetch(`${API_URL}/api/status`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
