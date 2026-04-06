@@ -1855,12 +1855,14 @@ function setStatusVoorEenheid(status) {
       // CRITICAL: Force immediate refresh of alerts to prevent new pings
       setTimeout(() => {
         console.log('🔄 Forcing alerts refresh after timer clear');
+        console.log('🔄 DEBUG: User status before renderMeldingen:', getUser().status);
         renderMeldingen();
+        console.log('🔄 DEBUG: _currentAlerts after renderMeldingen:', window._currentAlerts?.length || 0);
       }, 100);
     }
     
     // Refresh meldingen to update the UI
-    renderMeldingen();
+    // renderMeldingen(); // REMOVED - already called in setTimeout above
     showToast(`${unit.medewerkers} → Status ${status}`);
   }).catch(err => console.error('Status update failed', err));
 }
