@@ -495,7 +495,7 @@ function eenheidRow(e) {
         if (!s.vereiste_rol) return true;
         
         // DEBUG: Check elke specialisatie tegen rollen
-        const hasRol = rolNamen.some(r => r.toLowerCase().includes(s.vereiste_rol.toLowerCase()));
+        const hasRol = rolNamen.some(r => r.toLowerCase() === s.vereiste_rol.toLowerCase());
         console.log('🔍 DEBUG SPECIALISATIE CHECK:', s.voertuig, 'vereist:', s.vereiste_rol, 'heeft rol:', hasRol);
         
         return hasRol;
@@ -554,7 +554,7 @@ function updateSpecialisatiesLive() {
             if (!s.vereiste_rol) return true;
             
             // DEBUG: Check elke specialisatie tegen rollen
-            const hasRol = rolNamen.some(r => r.toLowerCase().includes(s.vereiste_rol.toLowerCase()));
+            const hasRol = rolNamen.some(r => r.toLowerCase() === s.vereiste_rol.toLowerCase());
             console.log('🔍 DEBUG SPECIALISATIE CHECK:', s.voertuig, 'vereist:', s.vereiste_rol, 'heeft rol:', hasRol);
             
             return hasRol;
@@ -1749,7 +1749,7 @@ function openVoertuigModal(id) {
     const opties = specialisaties
       .filter(s => {
         if (!s.vereiste_rol) return true; // geen vereiste = altijd beschikbaar (Noodhulp)
-        return rolNamen.some(r => r.toLowerCase().includes(s.vereiste_rol.toLowerCase()));
+        return rolNamen.some(r => r.toLowerCase() === s.vereiste_rol.toLowerCase());
       })
       .map(s => s.voertuig);
 
@@ -1912,8 +1912,15 @@ function ovdUpdateInfo() {
   const voertuig = document.getElementById('ovd-oc-voertuig');
   const koppel = document.getElementById('ovd-oc-koppel');
   
-  console.log('🔍 OVD UPDATE INFO - User:', u.shortname || u.displayName, 'Role:', u.role, 'Dienstnummer:', u.dienstnummer, 'Voertuig:', u.voertuig);
-  
+  console.log(' OVD UPDATE INFO - User state:', {
+    type: type,
+    userRole: userRole,
+    userRollen: userRollen,
+    hasOVD: userRollen.some(r => r.includes('OVD') || r.includes('OvD')),
+    hasOPCO: userRollen.some(r => r.includes('OPCO')),
+    hasOPS: userRollen.some(r => r.includes('OPS'))
+  });
+
   // Update basis info
   if (naam) naam.textContent = u.shortname || u.displayName || '-';
   if (rol) rol.textContent = u.role ? u.role.toUpperCase() : '-';
@@ -1926,7 +1933,7 @@ function ovdUpdateInfo() {
     fetch(`${API_URL}/api/indeling/${u.id}`)
       .then(r => r.json())
       .then(data => {
-        console.log('🔍 OVD UPDATE INFO - API Response:', data);
+        console.log(' OVD UPDATE INFO - API Response:', data);
         const vn = document.getElementById('ovd-oc-voertuig-naam');
         const koppel = document.getElementById('ovd-oc-koppel');
         if (vn) vn.textContent = data.voertuigNaam || '-';
@@ -1942,7 +1949,7 @@ function ovdUpdateInfo() {
         
         if (data.voertuigNaam) highlightVoertuig(data.voertuigNaam);
       }).catch(err => {
-        console.error('🔍 OVD UPDATE INFO - Error:', err);
+        console.error(' OVD UPDATE INFO - Error:', err);
       });
   }
 
@@ -1992,7 +1999,7 @@ function openIndelenModal(index) {
     const opties = specialisaties
       .filter(s => {
         if (!s.vereiste_rol) return true; // geen vereiste = altijd beschikbaar (Noodhulp)
-        return rolNamen.some(r => r.toLowerCase().includes(s.vereiste_rol.toLowerCase()));
+        return rolNamen.some(r => r.toLowerCase() === s.vereiste_rol.toLowerCase());
       })
       .map(s => s.voertuig);
 

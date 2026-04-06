@@ -327,7 +327,8 @@ app.post('/api/indelen', async (req, res) => {
     let rollen = [];
     try { rollen = JSON.parse(g?.rollen || '[]'); } catch {}
     const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
-    const heeftRol = rolNamen.some(r => r.toLowerCase().includes(spec.vereiste_rol.toLowerCase()));
+    // FIX: Exacte match i.p.v. includes() om K-SIV niet te matchen met SIV
+    const heeftRol = rolNamen.some(r => r.toLowerCase() === spec.vereiste_rol.toLowerCase());
     if (!heeftRol) return res.status(400).json({ error: `${voertuig} vereist de ${spec.vereiste_rol} specialisatie` });
   }
 
