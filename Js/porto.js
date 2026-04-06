@@ -1110,9 +1110,15 @@ function setStatus(s) {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId: u.id, status: s }),
   }).then(() => {
+    // Only cleanup alerts if leaving urgent status
+    if (!isLeavingUrgentStatus) {
+      console.log('🔄 Not leaving urgent status - keeping alerts');
+      return;
+    }
+    
     return fetch(`${API_URL}/api/status-alerts`).then(r => r.json());
   }).then(alerts => {
-    if (!alerts) return; // Skip if no cleanup needed
+    if (!alerts || !isLeavingUrgentStatus) return; // Skip if no cleanup needed
     
     console.log('🔄 Found alerts in DB:', alerts.length);
     console.log('🔄 Current user ID:', u.id);
@@ -1129,22 +1135,6 @@ function setStatus(s) {
       console.log('🔄 Removing alert:', alert.id, 'status:', alert.status, 'userId:', alert.userId, 'user_id:', alert.user_id);
       fetch(`${API_URL}/api/status-alerts/${alert.id}`, { method: 'DELETE' })
         .catch(err => console.error('Failed to remove alert', alert.id, err));
-    });
-    
-    // Update local _currentAlerts to remove deleted ones
-    const beforeCount = window._currentAlerts?.length || 0;
-    window._currentAlerts = window._currentAlerts?.filter(alert => {
-      const alertUserId = alert.userId || alert.user_id;
-      return alertUserId !== u.id;
-    }) || [];
-    const afterCount = window._currentAlerts?.length || 0;
-    
-    console.log('🔄 LOCAL CLEANUP - Before:', beforeCount, 'After:', afterCount);
-    console.log('🔄 Timer should stop if no alerts remain:', afterCount === 0);
-    
-    // Wait a moment for database to update, then refresh meldingen
-    setTimeout(() => {
-      renderMeldingen();
     }, 500);
   }).catch(err => console.error('Status update failed', err));
   
