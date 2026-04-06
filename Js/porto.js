@@ -1847,6 +1847,12 @@ function setStatusVoorEenheid(status) {
       }
     }
     
+    // CRITICAL FIX: Clear all ping timers when leaving urgent status
+    if (isLeavingUrgentStatus) {
+      clearPingTimers();
+      console.log('🔄 All ping timers cleared - leaving urgent status');
+    }
+    
     // Refresh meldingen to update the UI
     renderMeldingen();
     showToast(`${unit.medewerkers} → Status ${status}`);
