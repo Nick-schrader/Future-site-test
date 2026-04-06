@@ -36,10 +36,62 @@ const rangHiërarchie = [
 
 // Initialiseer de pagina
 document.addEventListener('DOMContentLoaded', function() {
+    checkPermissies();
     laadPersoneel();
     setupEventListeners();
     updateStatistieken();
 });
+
+// Controleer of gebruiker Administratie rol heeft
+function checkPermissies() {
+    const user = getUser();
+    if (!user || !user.rollen) {
+        toonGeenToegang();
+        return;
+    }
+    
+    const rollen = Array.isArray(user.rollen) ? user.rollen : JSON.parse(user.rollen || '[]');
+    const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
+    
+    const heeftAdministratie = rolNamen.some(rol => 
+        rol.toLowerCase().includes('administratie') || 
+        rol.toLowerCase().includes('admin')
+    );
+    
+    if (!heeftAdministratie) {
+        toonGeenToegang();
+    } else {
+        currentUser = user;
+        console.log('✅ Administratie permissie bevestigd voor:', user.displayName);
+    }
+}
+
+// Toon geen toegang bericht
+function toonGeenToegang() {
+    document.querySelector('.roepnummer-container').innerHTML = `
+        <div style="text-align: center; padding: 50px; background: #1a1a2e; border-radius: 12px; margin: 50px auto; max-width: 500px;">
+            <h2 style="color: #ef4444; margin-bottom: 20px;">🚫 Geen Toegang</h2>
+            <p style="color: #888; font-size: 1.1rem; line-height: 1.6;">
+                Je hebt geen <strong>Administratie</strong> rol nodig om het roepnummer bestand te beheren.
+            </p>
+            <p style="color: #888; margin-top: 15px;">
+                Neem contact op met een beheerder als je denkt dat je toegang moet hebben.
+            </p>
+            <button onclick="window.location.href='porto.html'" style="
+                background: #8b5cf6; 
+                color: white; 
+                border: none; 
+                padding: 12px 24px; 
+                border-radius: 8px; 
+                cursor: pointer; 
+                margin-top: 20px;
+                font-size: 1rem;
+            ">
+                ← Terug naar Porto
+            </button>
+        </div>
+    `;
+}
 
 // Setup event listeners
 function setupEventListeners() {
