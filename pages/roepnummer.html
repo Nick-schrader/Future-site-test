@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roepnummer Bestand - Porto Systeem</title>
+    <link rel="stylesheet" href="css/porto.css">
+    <link rel="stylesheet" href="css/roepnummer.css">
+</head>
+<body>
+    <div class="roepnummer-container">
+        <h1 style="color: #a78bfa; text-align: center; margin-bottom: 30px;">Roepnummer Bestand</h1>
+        
+        <!-- Statistieken -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-number" id="totaalPersoneel">0</div>
+                <div class="stat-label">Totaal Personeel</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totaalManschappen">0</div>
+                <div class="stat-label">Manschappen</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totaalKorporaals">0</div>
+                <div class="stat-label">Korporaals</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totaalOfficieren">0</div>
+                <div class="stat-label">Officieren</div>
+            </div>
+        </div>
+        
+        <!-- Zoekbalk -->
+        <input type="text" class="search-box" id="zoekBox" placeholder="Zoek personeel op naam of roepnummer...">
+        
+        <!-- Admin knop -->
+        <button class="btn-toevoegen" id="nieuwePersoneelBtn">+ Nieuw Personeel Toevoegen</button>
+        
+        <!-- Manschappen -->
+        <div class="rang-sectie" data-rang-categorie="manschappen">
+            <div class="rang-titel">Manschappen</div>
+            <div class="rang-subsectie" data-rang="4e klasse">
+                <h4 style="color: #888; margin-bottom: 10px;">4e Klasse (56-81 tot 56-140)</h4>
+                <div class="personeel-lijst" data-roepnummer-min="56-81" data-roepnummer-max="56-140"></div>
+            </div>
+            <div class="rang-subsectie" data-rang="3e klasse">
+                <h4 style="color: #888; margin-bottom: 10px;">3e Klasse (56-41 tot 56-80)</h4>
+                <div class="personeel-lijst" data-roepnummer-min="56-41" data-roepnummer-max="56-80"></div>
+            </div>
+            <div class="rang-subsectie" data-rang="2e klasse">
+                <h4 style="color: #888; margin-bottom: 10px;">2e Klasse (56-21 tot 56-40)</h4>
+                <div class="personeel-lijst" data-roepnummer-min="56-21" data-roepnummer-max="56-40"></div>
+            </div>
+            <div class="rang-subsectie" data-rang="1e klasse">
+                <h4 style="color: #888; margin-bottom: 10px;">1e Klasse (56-01 tot 56-20)</h4>
+                <div class="personeel-lijst" data-roepnummer-min="56-01" data-roepnummer-max="56-20"></div>
+            </div>
+        </div>
+        
+        <!-- Korporaals -->
+        <div class="rang-sectie" data-rang-categorie="korporaals">
+            <div class="rang-titel">Korporaals</div>
+            <div class="rang-subsectie" data-rang="wachtmeester">
+                <h4 style="color: #888; margin-bottom: 10px;">Wachtmeesters (55-41 tot 55-60)</h4>
+                <div class="personeel-lijst" data-roepnummer-min="55-41" data-roepnummer-max="55-60"></div>
+            </div>
+            <div class="rang-subsectie" data-rang="wachtmeester 1e klasse">
+                <h4 style="color: #888; margin-bottom: 10px;">Wachtmeesters 1e Klasse (55-25 tot 55-48)</h4>
+                <div class="personeel-lijst" data-roepnummer-min="55-25" data-roepnummer-max="55-48"></div>
+            </div>
+            <div class="rang-subsectie" data-rang="opperwachtmeester">
+                <h4 style="color: #888; margin-bottom: 10px;">Opperwachtmeester (55-01 tot 55-24)</h4>
+                <div class="personeel-lijst" data-roepnummer-min="55-01" data-roepnummer-max="55-24"></div>
+            </div>
+        </div>
+        
+        <!-- Onderofficieren -->
+        <div class="rang-sectie" data-rang-categorie="onderofficieren">
+            <div class="rang-titel">Onderofficieren</div>
+            <div class="rang-subsectie" data-rang="adjudant-onderofficier">
+                <h4 style="color: #888; margin-bottom: 10px;">Adjudant-Onderofficier (54-09 tot 54-23)</h4>
+                <div class="personeel-lijst" data-roepnummer-min="54-09" data-roepnummer-max="54-23"></div>
+            </div>
+            <div class="rang-subsectie" data-rang="kornet">
+                <h4 style="color: #888; margin-bottom: 10px;">Kornet (54-01 tot 54-08)</h4>
+                <div class="personeel-lijst" data-roepnummer-min="54-01" data-roepnummer-max="54-08"></div>
+            </div>
+        </div>
+        
+        <!-- Officieren -->
+        <div class="rang-sectie" data-rang-categorie="officieren">
+            <div class="rang-titel">Officieren</div>
+            <div class="rang-subsectie" data-rang="tweede luitenant">
+                <h4 style="color: #888; margin-bottom: 10px;">Tweede Luitenant (53-06 tot 53-12)</h4>
+                <div class="personeel-lijst" data-roepnummer-min="53-06" data-roepnummer-max="53-12"></div>
+            </div>
+            <div class="rang-subsectie" data-rang="eerste luitenant">
+                <h4 style="color: #888; margin-bottom: 10px;">Eerste Luitenant (53-04 tot 53-05)</h4>
+                <div class="personeel-lijst" data-roepnummer-min="53-04" data-roepnummer-max="53-05"></div>
+            </div>
+            <div class="rang-subsectie" data-rang="kapitein">
+                <h4 style="color: #888; margin-bottom: 10px;">Kapitein (53-01 tot 53-03)</h4>
+                <div class="personeel-lijst" data-roepnummer-min="53-01" data-roepnummer-max="53-03"></div>
+            </div>
+        </div>
+        
+        <!-- Hoofdofficieren -->
+        <div class="rang-sectie" data-rang-categorie="hoofdofficieren">
+            <div class="rang-titel">Hoofdofficieren</div>
+            <div class="rang-subsectie" data-rang="majoor">
+                <h4 style="color: #888; margin-bottom: 10px;">Majoor (52-07 tot 52-09)</h4>
+                <div class="personeel-lijst" data-roepnummer-min="52-07" data-roepnummer-max="52-09"></div>
+            </div>
+            <div class="rang-subsectie" data-rang="luitenant-kolonel">
+                <h4 style="color: #888; margin-bottom: 10px;">Luitenant-Kolonel (52-04 tot 52-06)</h4>
+                <div class="personeel-lijst" data-roepnummer-min="52-04" data-roepnummer-max="52-06"></div>
+            </div>
+            <div class="rang-subsectie" data-rang="kolonel">
+                <h4 style="color: #888; margin-bottom: 10px;">Kolonel (52-01 tot 52-03)</h4>
+                <div class="personeel-lijst" data-roepnummer-min="52-01" data-roepnummer-max="52-03"></div>
+            </div>
+        </div>
+        
+        <!-- Kader -->
+        <div class="rang-sectie" data-rang-categorie="kader">
+            <div class="rang-titel">Kader</div>
+            <div class="rang-subsectie" data-rang="brigade-generaal">
+                <h4 style="color: #888; margin-bottom: 10px;">Brigade-Generaal (51-04 tot 51-06)</h4>
+                <div class="personeel-lijst" data-roepnummer-min="51-04" data-roepnummer-max="51-06"></div>
+            </div>
+            <div class="rang-subsectie" data-rang="generaal-majoor">
+                <h4 style="color: #888; margin-bottom: 10px;">Generaal-Majoor (51-02 tot 51-03)</h4>
+                <div class="personeel-lijst" data-roepnummer-min="51-02" data-roepnummer-max="51-03"></div>
+            </div>
+            <div class="rang-subsectie" data-rang="luitenant-generaal">
+                <h4 style="color: #888; margin-bottom: 10px;">Luitenant-Generaal (51-01)</h4>
+                <div class="personeel-lijst" data-roepnummer-min="51-01" data-roepnummer-max="51-01"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal voor nieuw personeel -->
+    <div class="modal" id="nieuwePersoneelModal">
+        <div class="modal-content">
+            <h2 class="modal-titel">Nieuw Personeel Toevoegen</h2>
+            <div class="form-group">
+                <label class="form-label">Naam</label>
+                <input type="text" class="form-input" id="nieuweNaam" placeholder="Volledige naam">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Discord ID</label>
+                <input type="text" class="form-input" id="nieuweDiscordId" placeholder="Discord gebruiker ID">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Rang</label>
+                <select class="form-input" id="nieuweRang">
+                    <option value="">Kies rang...</option>
+                    <optgroup label="Manschappen">
+                        <option value="4e klasse">4e Klasse</option>
+                        <option value="3e klasse">3e Klasse</option>
+                        <option value="2e klasse">2e Klasse</option>
+                        <option value="1e klasse">1e Klasse</option>
+                    </optgroup>
+                    <optgroup label="Korporaals">
+                        <option value="wachtmeester">Wachtmeester</option>
+                        <option value="wachtmeester 1e klasse">Wachtmeester 1e Klasse</option>
+                        <option value="opperwachtmeester">Opperwachtmeester</option>
+                    </optgroup>
+                    <optgroup label="Onderofficieren">
+                        <option value="adjudant-onderofficier">Adjudant-Onderofficier</option>
+                        <option value="kornet">Kornet</option>
+                    </optgroup>
+                    <optgroup label="Officieren">
+                        <option value="tweede luitenant">Tweede Luitenant</option>
+                        <option value="eerste luitenant">Eerste Luitenant</option>
+                        <option value="kapitein">Kapitein</option>
+                    </optgroup>
+                    <optgroup label="Hoofdofficieren">
+                        <option value="majoor">Majoor</option>
+                        <option value="luitenant-kolonel">Luitenant-Kolonel</option>
+                        <option value="kolonel">Kolonel</option>
+                    </optgroup>
+                    <optgroup label="Kader">
+                        <option value="brigade-generaal">Brigade-Generaal</option>
+                        <option value="generaal-majoor">Generaal-Majoor</option>
+                        <option value="luitenant-generaal">Luitenant-Generaal</option>
+                    </optgroup>
+                </select>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="sluitModal()">Annuleren</button>
+                <button class="btn-confirm" onclick="voegPersoneelToe()">Toevoegen</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="Js/porto.js"></script>
+    <script src="Js/roepnummer.js"></script>
+</body>
+</html>

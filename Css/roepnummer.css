@@ -1,0 +1,294 @@
+.roepnummer-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.rang-sectie {
+    background: #1a1a2e;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #2a2a3a;
+}
+
+.rang-titel {
+    color: #a78bfa;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #3a3a4a;
+}
+
+.personeel-rij {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: #252540;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    border: 1px solid #3a3a4a;
+    transition: all 0.3s ease;
+}
+
+.personeel-rij:hover {
+    background: #2a2a4a;
+    transform: translateY(-1px);
+}
+
+.personeel-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.personeel-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #4a4a6a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+
+.personeel-details {
+    flex: 1;
+}
+
+.personeel-naam {
+    color: #fff;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.personeel-discord {
+    color: #888;
+    font-size: 0.85rem;
+}
+
+.personeel-roepnummer {
+    background: #3a3a4a;
+    color: #4ade80;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: bold;
+    min-width: 80px;
+    text-align: center;
+    margin-right: 10px;
+}
+
+.personeel-acties {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-small {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-promoveer {
+    background: #22c55e;
+    color: white;
+}
+
+.btn-promoveer:hover {
+    background: #16a34a;
+}
+
+.btn-demotion {
+    background: #f59e0b;
+    color: white;
+}
+
+.btn-demotion:hover {
+    background: #d97706;
+}
+
+.btn-ontsla {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-ontsla:hover {
+    background: #dc2626;
+}
+
+.btn-toevoegen {
+    background: #8b5cf6;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.btn-toevoegen:hover {
+    background: #7c3aed;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #1a1a2e;
+    border-radius: 12px;
+    padding: 30px;
+    max-width: 500px;
+    margin: 50px auto;
+    border: 1px solid #3a3a4a;
+}
+
+.modal-titel {
+    color: #a78bfa;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-label {
+    color: #fff;
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px;
+    background: #252540;
+    border: 1px solid #3a3a4a;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 1rem;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #8b5cf6;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.btn-cancel {
+    background: #6b7280;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-confirm {
+    background: #8b5cf6;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.drag-over {
+    background: #2a2a4a !important;
+    border-color: #8b5cf6 !important;
+}
+
+.dragging {
+    opacity: 0.5;
+}
+
+.search-box {
+    width: 100%;
+    padding: 12px;
+    background: #252540;
+    border: 1px solid #3a3a4a;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 1rem;
+    margin-bottom: 20px;
+}
+
+.search-box:focus {
+    outline: none;
+    border-color: #8b5cf6;
+}
+
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    background: #1a1a2e;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #3a3a4a;
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #4ade80;
+}
+
+.stat-label {
+    color: #888;
+    margin-top: 5px;
+}
+
+.rang-subsectie {
+    margin-bottom: 20px;
+}
+
+.rang-subsectie h4 {
+    color: #888;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+}
+
+.personeel-lijst {
+    min-height: 50px;
+    border: 1px dashed #3a3a4a;
+    border-radius: 6px;
+    padding: 10px;
+}
+
+.personeel-lijst:empty::before {
+    content: "Sleep personeel hierheen of voeg toe via de knop hierboven";
+    color: #666;
+    font-style: italic;
+    display: block;
+    text-align: center;
+    padding: 20px;
+}
