@@ -708,6 +708,13 @@ function speelAanmeldGeluid(debugInfo = '') {
     return;
   }
   
+  // CRITICAL FIX: Check if user is still in urgent status (6/7)
+  if (u && ![6, 7].includes(u.status)) {
+    console.log('🔇 PING GEBLOKEERD - User status not urgent:', u.status, 'Debug info:', debugInfo);
+    console.log('🔇 User is no longer in urgent status, blocking ping');
+    return;
+  }
+  
   console.log('🔊 PING SPELEN - Debug info:', debugInfo);
   console.log('🔊 Current alerts:', window._currentAlerts);
   console.log('🔊 Wachtrij:', window._wachtrij);
