@@ -1830,9 +1830,14 @@ function setStatusVoorEenheid(status) {
     // CRITICAL FIX: Update local _currentAlerts to stop pings
     if (window._currentAlerts) {
       const beforeCount = window._currentAlerts.length;
-      window._currentAlerts = window._currentAlerts.filter(alert => alert.userId !== unit.userId);
+      window._currentAlerts = window._currentAlerts.filter(alert => {
+        // Check both userId and user_id properties
+        const alertUserId = alert.userId || alert.user_id;
+        return alertUserId !== unit.userId;
+      });
       const afterCount = window._currentAlerts.length;
       console.log('🔄 LOCAL ALERTS CLEANUP - Before:', beforeCount, 'After:', afterCount);
+      console.log('🔄 Unit userId:', unit.userId, 'Alerts being removed for this user');
       
       // Stop ping timer if no alerts remain
       if (afterCount === 0 && window._alertPingTimer) {
