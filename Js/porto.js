@@ -1851,6 +1851,12 @@ function setStatusVoorEenheid(status) {
     if ([6, 7].includes(previousStatus) && ![6, 7].includes(status)) {
       clearPingTimers();
       console.log('🔄 All ping timers cleared - leaving urgent status');
+      
+      // CRITICAL: Force immediate refresh of alerts to prevent new pings
+      setTimeout(() => {
+        console.log('🔄 Forcing alerts refresh after timer clear');
+        renderMeldingen();
+      }, 100);
     }
     
     // Refresh meldingen to update the UI
