@@ -402,8 +402,7 @@ function laadEenheden() {
     
     // Forceer live specialisaties update na 1 seconde
     setTimeout(() => {
-      console.log('🔄 FORCEER LIVE SPECIALISATIES UPDATE');
-      updateSpecialisatiesLive();
+        updateSpecialisatiesLive();
     }, 1000);
   }).catch(() => {});
 }
@@ -493,20 +492,13 @@ function eenheidRow(e) {
     const opties = window._specialisaties
       .filter(s => {
         if (!s.vereiste_rol) return true;
-        
-        // DEBUG: Check elke specialisatie tegen rollen
-        const hasRol = rolNamen.some(r => r.toLowerCase() === s.vereiste_rol.toLowerCase());
-        console.log('🔍 DEBUG SPECIALISATIE CHECK:', s.voertuig, 'vereist:', s.vereiste_rol, 'heeft rol:', hasRol);
-        
-        return hasRol;
+        return rolNamen.some(r => r.toLowerCase() === s.vereiste_rol.toLowerCase());
       })
       .map(s => s.voertuig);
 
     const specs = opties.filter(o => o !== 'Noodhulp');
     const uniekSpecs = [...new Set(specs.map(s => s.replace(/ \d+$/, '')))];
     specialisatie = uniekSpecs.length ? uniekSpecs.join(', ') : '-';
-    
-    console.log(' DEBUG EENHEIDROW - User:', e.medewerkers, 'Rollen:', rolNamen, 'Specialisaties:', uniekSpecs);
   }
 
   // Check of dit voertuig type onder min_eenheden zit
@@ -545,26 +537,16 @@ function updateSpecialisatiesLive() {
       .then(rollen => {
         const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
         
-        // DEBUG: Toon alle rollen voor deze gebruiker
-        console.log('🔍 DEBUG ROLLEN - User:', e.medewerkers, 'Alle rollen:', rolNamen);
-        
         // Bouw specialisaties op basis van vereiste_rol
         const opties = window._specialisaties
           .filter(s => {
             if (!s.vereiste_rol) return true;
-            
-            // DEBUG: Check elke specialisatie tegen rollen
-            const hasRol = rolNamen.some(r => r.toLowerCase() === s.vereiste_rol.toLowerCase());
-            console.log('🔍 DEBUG SPECIALISATIE CHECK:', s.voertuig, 'vereist:', s.vereiste_rol, 'heeft rol:', hasRol);
-            
-            return hasRol;
+            return rolNamen.some(r => r.toLowerCase() === s.vereiste_rol.toLowerCase());
           })
           .map(s => s.voertuig);
 
         const specs = opties.filter(o => o !== 'Noodhulp');
         const uniekSpecs = [...new Set(specs.map(s => s.replace(/ \d+$/, '')))];
-        
-        console.log('🔍 DEBUG FINAL - User:', e.medewerkers, 'Specialisaties:', uniekSpecs);
         
         // Update alleen de specialisatie cel
         const rows = document.querySelectorAll('#eenheden-tbody tr');
@@ -576,9 +558,8 @@ function updateSpecialisatiesLive() {
               const oldSpecs = specCell.textContent;
               specCell.textContent = uniekSpecs.length ? uniekSpecs.join(', ') : '-';
               
-              // DEBUG: Toon verandering
               if (oldSpecs !== specCell.textContent) {
-                console.log('🔄 SPECIALISATIE VERANDERD:', e.id, 'van:', oldSpecs, 'naar:', specCell.textContent);
+                // Specialisatie bijgewerkt
               }
             }
           }
@@ -1933,10 +1914,12 @@ function ovdUpdateInfo() {
   const voertuig = document.getElementById('ovd-oc-voertuig');
   const koppel = document.getElementById('ovd-oc-koppel');
   
-  // Haal rollen op voor logging
-  let userRollen = [];
-  try { userRollen = JSON.parse(u.rollen || '[]'); } catch {}
+  // Haal rollen op voor logging (gebruik de rollen array property)
+  const userRollen = u.rollen || [];
   const rolNamen = userRollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
+  
+  // Check of gebruiker OVD/OPCO/OPS rollen heeft voor ping
+  const hasOvdOpcoOps = rolNamen.some(r => r.includes('OVD') || r.includes('OvD') || r.includes('OPCO') || r.includes('OPS'));
   
   console.log(' OVD UPDATE INFO - User state:', {
     userRole: u.role,
