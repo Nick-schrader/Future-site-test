@@ -1912,13 +1912,17 @@ function ovdUpdateInfo() {
   const voertuig = document.getElementById('ovd-oc-voertuig');
   const koppel = document.getElementById('ovd-oc-koppel');
   
+  // Haal rollen op voor logging
+  let userRollen = [];
+  try { userRollen = JSON.parse(u.rollen || '[]'); } catch {}
+  const rolNamen = userRollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
+  
   console.log(' OVD UPDATE INFO - User state:', {
-    type: type,
-    userRole: userRole,
-    userRollen: userRollen,
-    hasOVD: userRollen.some(r => r.includes('OVD') || r.includes('OvD')),
-    hasOPCO: userRollen.some(r => r.includes('OPCO')),
-    hasOPS: userRollen.some(r => r.includes('OPS'))
+    userRole: u.role,
+    userRollen: rolNamen,
+    hasOVD: rolNamen.some(r => r.includes('OVD') || r.includes('OvD')),
+    hasOPCO: rolNamen.some(r => r.includes('OPCO')),
+    hasOPS: rolNamen.some(r => r.includes('OPS'))
   });
 
   // Update basis info
