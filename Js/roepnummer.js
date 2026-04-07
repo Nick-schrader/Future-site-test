@@ -39,7 +39,6 @@ document.addEventListener('DOMContentLoaded', function() {
     checkPermissies();
     laadPersoneel();
     setupEventListeners();
-    updateStatistieken();
 });
 
 // Controleer of gebruiker Administratie rol heeft
@@ -142,13 +141,11 @@ async function laadPersoneel() {
         const response = await fetch(`${API_URL}/api/roepnummer-bestand`);
         personeelData = await response.json();
         renderPersoneel();
-        updateStatistieken();
     } catch (error) {
         console.error('Fout bij laden personeel:', error);
         // Fallback lege data als API niet beschikbaar is
         personeelData = [];
         renderPersoneel();
-        updateStatistieken();
     }
 }
 
@@ -241,7 +238,6 @@ async function voegPersoneelToe() {
         await savePersoneel(nieuwPersoneel);
         personeelData.push(nieuwPersoneel);
         renderPersoneel();
-        updateStatistieken();
         sluitModal();
         showToast('Personeel succesvol toegevoegd');
     } catch (error) {
@@ -265,7 +261,6 @@ async function promoveerPersoneel(personeelId, nieuweRang) {
     try {
         await savePersoneel(personeel);
         renderPersoneel();
-        updateStatistieken();
         showToast(`${personeel.naam} gepromoveerd van ${oudeRang} naar ${nieuweRang}`);
     } catch (error) {
         console.error('Fout bij promoveren:', error);
@@ -314,7 +309,6 @@ async function ontslaPersoneel(personeelId) {
         await deletePersoneel(personeelId);
         personeelData = personeelData.filter(p => p.id !== personeelId);
         renderPersoneel();
-        updateStatistieken();
         showToast(`${personeel.naam} is ontslagen`);
     } catch (error) {
         console.error('Fout bij ontslaan personeel:', error);
@@ -360,24 +354,6 @@ function filterPersoneel() {
             rij.style.display = (matchNaam || matchRoepnummer || matchDiscord) ? 'flex' : 'none';
         }
     });
-}
-
-// Update statistieken
-function updateStatistieken() {
-    const stats = {
-        totaal: personeelData.length,
-        manschappen: personeelData.filter(p => rangDefinities[p.rang]?.categorie === 'manschappen').length,
-        corporaals: personeelData.filter(p => rangDefinities[p.rang]?.categorie === 'korporaals').length,
-        officieren: personeelData.filter(p => {
-            const cat = rangDefinities[p.rang]?.categorie;
-            return cat === 'officieren' || cat === 'hoofdofficieren' || cat === 'kader';
-        }).length
-    };
-    
-    document.getElementById('totaalPersoneel').textContent = stats.totaal;
-    document.getElementById('totaalManschappen').textContent = stats.manschappen;
-    document.getElementById('totaalKorporaals').textContent = stats.corporaals;
-    document.getElementById('totaalOfficieren').textContent = stats.officieren;
 }
 
 // Save personeel naar backend
