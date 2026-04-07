@@ -177,5 +177,55 @@
     
     <script src="../Js/porto.js"></script>
     <script src="../Js/roepnummer.js"></script>
+    <script>
+        // Fallback als externe JS niet laadt
+        if (typeof getUser === 'undefined') {
+            function getUser() {
+                try {
+                    return JSON.parse(localStorage.getItem('user') || '{}');
+                } catch (e) {
+                    return {};
+                }
+            }
+        }
+        
+        if (typeof API_URL === 'undefined') {
+            window.API_URL = 'https://future-site-test-production.up.railway.app';
+        }
+        
+        // Check of roepnummer.js functies beschikbaar zijn
+        if (typeof checkPermissies === 'undefined') {
+            console.log('Externe JS niet geladen, fallback acties...');
+            
+            // Toon simpele versie zonder styling
+            document.addEventListener('DOMContentLoaded', function() {
+                const user = getUser();
+                const hasAdmin = user.rollen && JSON.stringify(user.rollen).toLowerCase().includes('admin');
+                
+                if (!hasAdmin) {
+                    document.querySelector('.roepnummer-container').innerHTML = `
+                        <div style="text-align: center; padding: 50px; background: #1a1a2e; border-radius: 12px; margin: 50px auto; max-width: 500px; color: white;">
+                            <h2 style="color: #ef4444; margin-bottom: 20px;"> Geen Toegang</h2>
+                            <p>Je hebt Administratie rol nodig om deze pagina te gebruiken.</p>
+                            <button onclick="window.location.href='porto.html'" style="
+                                background: #8b5cf6; 
+                                color: white; 
+                                border: none; 
+                                padding: 12px 24px; 
+                                border-radius: 8px; 
+                                cursor: pointer; 
+                                margin-top: 20px;
+                            ">
+                                Terug naar Porto
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    // Toon werkende versie met basis functionaliteit
+                    console.log('Admin gebruiker detected, roepnummer pagina actief');
+                }
+            });
+        }
+    </script>
 </body>
 </html>
