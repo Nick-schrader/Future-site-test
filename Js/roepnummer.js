@@ -69,9 +69,11 @@ function checkPermissies() {
     );
     
     if (!heeftAdministratie) {
-        toonGeenToegang();
+        // Toon alleen de personeel lijsten, zonder admin knoppen
+        document.getElementById('nieuwePersoneelBtn').style.display = 'none';
+        console.log('Gebruiker heeft geen Administratie rol - alleen bekijken modus');
     } else {
-        currentUser = user;
+        // Toon admin knoppen
         document.getElementById('nieuwePersoneelBtn').style.display = 'block';
         console.log(' Administratie permissie bevestigd voor:', user.displayName);
     }
@@ -79,14 +81,38 @@ function checkPermissies() {
 
 // Toon geen toegang bericht
 function toonGeenToegang() {
-    document.querySelector('.roepnummer-container').innerHTML = `
+    const user = getUser();
+    const discordRoles = Array.isArray(user.discordRoles) ? user.discordRoles : [];
+    const rolNamen = discordRoles.map(r => r.name || '');
+    
+    // Toon personeel lijsten voor iedereen, maar zonder admin knoppen
+    const container = document.querySelector('.roepnummer-container');
+    container.innerHTML = `
         <div class="geen-toegang">
-            <h2> Geen Toegang</h2>
-            <p>Je hebt <strong>Administratie</strong> Discord rol nodig om het roepnummer bestand te beheren.</p>
-            <p>Neem contact op met een beheerder als je denkt dat je toegang moet hebben.</p>
-            <button onclick="window.location.href='porto.html'">Terug naar Porto</button>
+            <h2> Alleen Bekijken Modus</h2>
+            <p>Je hebt geen <strong>Administratie</strong> Discord rol nodig om aanpassingen te doen.</p>
+            <p style="color: #888; margin-top: 10px;">
+                Huidige rollen: ${rolNamen.join(', ') || 'Geen rollen gevonden'}
+            </p>
+            <p style="color: #4ade80; margin-top: 15px;">
+                Je kunt het roepnummer bestand wel bekijken, maar niet aanpassen.
+            </p>
+            <button onclick="window.location.href='porto.html'" style="
+                background: #8b5cf6; 
+                color: white; 
+                border: none; 
+                padding: 12px 24px; 
+                border-radius: 8px; 
+                cursor: pointer; 
+                margin-top: 20px;
+            ">
+                Terug naar Porto
+            </button>
         </div>
     `;
+    
+    // Laad personeel data voor alleen-bekijken modus
+    laadPersoneel();
 }
 
 // Setup event listeners
@@ -159,6 +185,15 @@ function renderPersoneel() {
 
 // Maak personeel rij element
 function createPersoneelRij(personeel) {
+    const user = getUser();
+    const discordRoles = Array.isArray(user.discordRoles) ? user.discordRoles : [];
+    const rolNamen = discordRoles.map(r => r.name || '');
+    const heeftAdministratie = rolNamen.some(rol => 
+        rol.toLowerCase().includes('administratie') || 
+        rol.toLowerCase().includes('admin') ||
+        rol.toLowerCase().includes('beheer')
+    );
+    
     const div = document.createElement('div');
     div.className = 'personeel-rij';
     div.draggable = true;
@@ -176,6 +211,15 @@ function createPersoneelRij(personeel) {
     
     const avatarInitialen = personeel.naam.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
     
+    // Admin knoppen alleen tonen voor gebruikers met Administratie rol
+    const adminKnoppen = heeftAdministratie ? `
+        <div class="personeel-acties">
+            <button class="btn-small btn-demotion" onclick="demoteerPersoneel('${personeel.id}')" title="Demoteren"> </button>
+            <button class="btn-small btn-promoveer" onclick="promoveerPersoneelKnop('${personeel.id}')" title="Promoveren"> </button>
+            <button class="btn-small btn-ontsla" onclick="ontslaPersoneel('${personeel.id}')" title="Ontslaan"> </button>
+        </div>
+    ` : '';
+    
     div.innerHTML = `
         <div class="personeel-info">
             <div class="personeel-avatar">${avatarInitialen}</div>
@@ -185,11 +229,7 @@ function createPersoneelRij(personeel) {
             </div>
         </div>
         <div class="personeel-roepnummer">${personeel.roepnummer || 'Nog niet toegewezen'}</div>
-        <div class="personeel-acties">
-            <button class="btn-small btn-demotion" onclick="demoteerPersoneel('${personeel.id}')" title="Demoteren"> </button>
-            <button class="btn-small btn-promoveer" onclick="promoveerPersoneelKnop('${personeel.id}')" title="Promoveren"> </button>
-            <button class="btn-small btn-ontsla" onclick="ontslaPersoneel('${personeel.id}')" title="Ontslaan"> </button>
-        </div>
+        ${adminKnoppen}
     `;
     
     return div;
