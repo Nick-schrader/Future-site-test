@@ -488,6 +488,7 @@ function promoveerPersoneel(personeelId) {
     const currentIndex = rangHiërarchie.indexOf(personeel.rang);
     if (currentIndex < rangHiërarchie.length - 1) {
         const nieuweRang = rangHiërarchie[currentIndex + 1];
+        const oudeRang = personeel.rang;
         personeel.rang = nieuweRang;
         
         // Wijs automatisch nieuw roepnummer toe voor de nieuwe rang
@@ -498,6 +499,12 @@ function promoveerPersoneel(personeelId) {
         
         localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
         renderPersoneel();
+        
+        // Stuur bericht naar gebruiker over promotie
+        if (personeel.discordId) {
+            const berichtTekst = `Gefeliciteerd! Je bent gepromoveerd van ${oudeRang} naar ${nieuweRang} met nieuw roepnummer ${personeel.roepnummer}.`;
+            BerichtenSysteem.stuurBericht(personeel.discordId, 'promotie', berichtTekst);
+        }
         
         toonNotificatie(`${personeel.naam} is gepromoveerd naar ${nieuweRang} met roepnummer ${personeel.roepnummer}`);
     }
@@ -522,6 +529,12 @@ function demoteerPersoneel(personeelId) {
         localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
         renderPersoneel();
         
+        // Stuur bericht naar gebruiker over demotie
+        if (personeel.discordId) {
+            const berichtTekst = `Je bent gedemoteerd van ${oudeRang} naar ${nieuweRang} met nieuw roepnummer ${personeel.roepnummer}.`;
+            BerichtenSysteem.stuurBericht(personeel.discordId, 'demotie', berichtTekst);
+        }
+        
         toonNotificatie(`${personeel.naam} is gedemoteerd naar ${nieuweRang} met roepnummer ${personeel.roepnummer}`);
     }
 }
@@ -535,6 +548,13 @@ function ontslaPersoneel(personeelId) {
         personeelData = personeelData.filter(p => p.id !== personeelId);
         localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
         renderPersoneel();
+        
+        // Stuur bericht naar gebruiker over ontslag
+        if (personeel.discordId) {
+            const berichtTekst = `Je bent ontslagen uit de dienst. Bedankt voor je inzet.`;
+            BerichtenSysteem.stuurBericht(personeel.discordId, 'ontslag', berichtTekst);
+        }
+        
         toonNotificatie(`${personeel.naam} is ontslagen`);
     }
 }
@@ -599,6 +619,13 @@ function slaRoepnummerOp(personeelId, buttonElement) {
     personeel.roepnummer = nieuwRoepnummer;
     localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
     renderPersoneel();
+    
+    // Stuur bericht naar gebruiker over roepnummer wijziging
+    if (personeel.discordId) {
+        const berichtTekst = `Je roepnummer is gewijzigd naar ${personeel.roepnummer}.`;
+        BerichtenSysteem.stuurBericht(personeel.discordId, 'roepnummer', berichtTekst);
+    }
+    
     toonNotificatie(`Roepnummer van ${personeel.naam} is gewijzigd naar ${personeel.roepnummer}`);
     
     sluitRoepnummerModal(buttonElement);
