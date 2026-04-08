@@ -46,7 +46,7 @@ class BerichtenSysteem {
   async loadBerichten() {
     try {
       // Haal berichten op voor deze gebruiker via Discord ID
-      const response = await fetch(`${API_URL}/api/berichten/${this.user.id}`);
+      const response = await fetch(`${window.CONFIG.API_URL}/api/berichten/${this.user.id}`);
       if (response.ok) {
         this.berichten = await response.json();
       } else {
@@ -154,7 +154,7 @@ class BerichtenSysteem {
       
       // Probeer te syncen met API
       try {
-        await fetch(`${API_URL}/api/berichten/${berichtId}/gelezen`, {
+        await fetch(`${window.CONFIG.API_URL}/api/berichten/${berichtId}/gelezen`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -186,7 +186,7 @@ class BerichtenSysteem {
 
     try {
       // Probeer naar API te sturen
-      const response = await fetch(`${API_URL}/api/berichten`, {
+      const response = await fetch(`${window.CONFIG.API_URL}/api/berichten`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
