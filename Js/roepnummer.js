@@ -465,23 +465,27 @@ function renderPersoneel() {
         }
     });
     
-    // Toon altijd alle mogelijke roepnummers als placeholders
-    toonAlleRoepnummers();
+    // Toon placeholders voor lege rangen
+    toonPlaceholdersVoorLegeRangen();
 }
 
-// Toon alle mogelijke roepnummers als placeholders
-function toonAlleRoepnummers() {
+// Toon placeholders alleen voor rangen zonder personeel
+function toonPlaceholdersVoorLegeRangen() {
     document.querySelectorAll('.personeel-lijst').forEach(lijst => {
         const rang = lijst.dataset.rang;
         const rangDef = rangDefinities[rang];
         
         if (rangDef && lijst.children.length === 0) {
-            // Genereer alle roepnummers voor deze rang
+            // Genereer beperkte aantal placeholders (performance)
             const minNum = parseInt(rangDef.min.split('-')[1]);
             const maxNum = parseInt(rangDef.max.split('-')[1]);
             const prefix = rangDef.min.split('-')[0];
             
-            for (let num = minNum; num <= maxNum; num++) {
+            // Toon maximaal 5 placeholders per rang
+            const maxPlaceholders = Math.min(5, maxNum - minNum + 1);
+            
+            for (let i = 0; i < maxPlaceholders; i++) {
+                const num = minNum + i;
                 const roepnummer = prefix + '-' + num.toString().padStart(2, '0');
                 
                 // Check of dit roepnummer al in gebruik is
@@ -506,6 +510,28 @@ function toonAlleRoepnummers() {
                     `;
                     lijst.appendChild(placeholder);
                 }
+            }
+            
+            // Voeg "meer beschikbaar" bericht toe als er meer zijn
+            if (maxPlaceholders < (maxNum - minNum + 1)) {
+                const meerBericht = document.createElement('div');
+                meerBericht.className = 'personeel-rij meer-bericht';
+                meerBericht.innerHTML = `
+                    <div class="personeel-info">
+                        <div class="personeel-avatar">⋯</div>
+                        <div class="personeel-details">
+                            <div class="personeel-naam">En ${maxNum - minNum + 1 - maxPlaceholders} meer beschikbaar</div>
+                            <div class="personeel-discord">Alle roepnummers vrij</div>
+                        </div>
+                    </div>
+                    <div class="personeel-roepnummer">${rangDef.min} - ${rangDef.max}</div>
+                `;
+                meerBericht.style.cssText = `
+                    opacity: 0.7;
+                    border-style: dashed;
+                    background: rgba(74, 222, 128, 0.05);
+                `;
+                lijst.appendChild(meerBericht);
             }
         }
     });
@@ -592,7 +618,16 @@ async function voegPersoneelToe() {
     
     // Voeg lokaal toe (API werkt niet)
     personeelData.push(nieuwPersoneel);
-    renderPersoneel();
+    
+    // Update alleen de specifieke rang sectie (performance)
+    const rangSectie = document.querySelector(`.personeel-lijst[data-rang="${rang}"]`);
+    if (rangSectie) {
+        rangSectie.innerHTML = '';
+        personeelData.filter(p => p.rang === rang).forEach(personeel => {
+            rangSectie.appendChild(createPersoneelRij(personeel));
+        });
+    }
+    
     sluitModal();
     showToast('Personeel succesvol toegevoegd');
     
