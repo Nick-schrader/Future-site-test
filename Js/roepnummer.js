@@ -53,7 +53,7 @@ function setupEventListeners() {
     const nieuwePersoneelBtn = document.getElementById('nieuwePersoneelBtn');
     if (nieuwePersoneelBtn) {
         const user = getUser();
-        const isAdmin = user.rollen && user.rollen.includes('Administratie');
+        const isAdmin = user.rollen && user.rollen.some(rol => rol.naam === 'Administratie');
         
         if (isAdmin) {
             nieuwePersoneelBtn.style.display = 'inline-block';
@@ -208,7 +208,7 @@ function createPersoneelRij(personeel) {
     
     // Check of gebruiker Administratie rol heeft voor admin functionaliteit
     const user = getUser();
-    const isAdmin = user.rollen && user.rollen.includes('Administratie');
+    const isAdmin = user.rollen && user.rollen.some(rol => rol.naam === 'Administratie');
     
     // Drag and drop alleen voor admin
     div.draggable = isAdmin;
@@ -249,12 +249,12 @@ function createPersoneelRij(personeel) {
         const user = getUser();
         console.log('User rollen:', user.rollen);
         const isAdmin = user.rollen && (
-            user.rollen.includes('Administratie') || 
-            user.rollen.includes('admin') || 
-            user.rollen.includes('beheer') ||
-            user.rollen.includes('Beheer') ||
-            user.rollen.includes('Commandant') ||
-            user.rollen.includes('Hoofdcommissaris')
+            user.rollen.some(rol => rol.naam === 'Administratie') || 
+            user.rollen.some(rol => rol.naam === 'admin') || 
+            user.rollen.some(rol => rol.naam === 'beheer') ||
+            user.rollen.some(rol => rol.naam === 'Beheer') ||
+            user.rollen.some(rol => rol.naam === 'Commandant') ||
+            user.rollen.some(rol => rol.naam === 'Hoofdcommissaris')
         );
         console.log('Is admin:', isAdmin);
         
@@ -274,7 +274,7 @@ function createPersoneelRij(personeel) {
     // Drag and drop - alleen voor Administratie rol
     div.addEventListener('dragstart', function(e) {
         const user = getUser();
-        const isAdmin = user.rollen && user.rollen.includes('Administratie');
+        const isAdmin = user.rollen && user.rollen.some(rol => rol.naam === 'Administratie');
         
         if (isAdmin) {
             e.dataTransfer.setData('personeelId', personeel.id);
@@ -286,7 +286,7 @@ function createPersoneelRij(personeel) {
     
     div.addEventListener('dragend', function() {
         const user = getUser();
-        const isAdmin = user.rollen && user.rollen.includes('Administratie');
+        const isAdmin = user.rollen && user.rollen.some(rol => rol.naam === 'Administratie');
         
         if (isAdmin) {
             this.classList.remove('dragging');
