@@ -130,20 +130,9 @@ async function laadPersoneel() {
         renderPersoneel();
     } catch (error) {
         console.error('Fout bij laden personeel:', error);
-        // Toon error message - geen fallback data
-        const container = document.querySelector('.roepnummer-container');
-        if (container) {
-            container.innerHTML = `
-                <div style="text-align: center; padding: 50px; color: #ef4444;">
-                    <h2>⚠️ API Error</h2>
-                    <p>Kon geen personeelsdata laden van de server.</p>
-                    <p><small>Error: ${error.message}</small></p>
-                    <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #8b5cf6; color: white; border: none; border-radius: 6px; cursor: pointer;">
-                        Opnieuw proberen
-                    </button>
-                </div>
-            `;
-        }
+        // Toon lege maar mooie pagina - geen personeel beschikbaar
+        personeelData = [];
+        renderPersoneel();
     }
 }
 
