@@ -147,8 +147,10 @@
     
     // Initialiseer navigatie
     document.addEventListener('DOMContentLoaded', function() {
-      // Wacht even op DOM dan update navigatie
-      setTimeout(updateActiveNavigation, 100);
+      // Wacht langer op DOM dan update navigatie
+      setTimeout(updateActiveNavigation, 300);
+      // Fallback - probeer nog een keer
+      setTimeout(updateActiveNavigation, 500);
     });
   </script>
   
