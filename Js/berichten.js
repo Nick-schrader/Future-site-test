@@ -23,24 +23,6 @@ class BerichtenSysteem {
     
     if (this.user && this.user.id) {
       await this.loadBerichten();
-      
-      // Voeg test bericht toe voor debugging
-      if (this.berichten.length === 0) {
-        const testBericht = {
-          id: 'test-' + Date.now(),
-          discordId: this.user.id,
-          type: 'test',
-          bericht: 'Dit is een test bericht om het systeem te controleren.',
-          tijd: new Date().toISOString(),
-          gelezen: false
-        };
-        this.berichten.push(testBericht);
-        
-        // Sla test bericht op in localStorage
-        localStorage.setItem(`berichten_${this.user.id}`, JSON.stringify(this.berichten));
-        console.log('[BERICHTEN] Test bericht toegevoegd:', testBericht);
-      }
-      
       this.updateBerichtenMenu();
     }
   }
@@ -213,3 +195,19 @@ const berichtenSysteem = new BerichtenSysteem();
 
 // Export voor gebruik in andere files
 window.BerichtenSysteem = BerichtenSysteem;
+
+// Reload berichten bij pagina focus/wissel
+document.addEventListener('visibilitychange', async () => {
+  if (!document.hidden && berichtenSysteem.user) {
+    await berichtenSysteem.loadBerichten();
+    berichtenSysteem.updateBerichtenMenu();
+  }
+});
+
+// Periodieke refresh (elke 30 seconden)
+setInterval(async () => {
+  if (berichtenSysteem.user) {
+    await berichtenSysteem.loadBerichten();
+    berichtenSysteem.updateBerichtenMenu();
+  }
+}, 30000);
