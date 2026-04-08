@@ -727,13 +727,10 @@ input:checked + .slider:before { transform: translateX(16px); }
 }
 
 .rang-categorie-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  display: block;
   gap: 20px;
   margin: 0 40px 20px 40px;
-  align-items: start;
   width: calc(100% - 80px);
-  justify-content: center;
 }
 
 .rang-categorie {
