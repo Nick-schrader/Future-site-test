@@ -685,9 +685,9 @@ function createPersoneelRij(personeel) {
     // Admin knoppen - tonen voor iedereen (demo mode)
     const adminKnoppen = `
         <div class="personeel-acties">
-            <button class="btn-small btn-demotion" onclick="demoteerPersoneel('${personeel.id}')" title="Demoteren"> </button>
-            <button class="btn-small btn-promoveer" onclick="promoveerPersoneelKnop('${personeel.id}')" title="Promoveren"> </button>
-            <button class="btn-small btn-ontsla" onclick="ontslaPersoneel('${personeel.id}')" title="Ontslaan"> </button>
+            <button class="btn-small btn-demotion" onclick="toonAdminMenu(event, '${personeel.id}', 'demote')" title="Demoteren">Demoteren</button>
+            <button class="btn-small btn-promoveer" onclick="toonAdminMenu(event, '${personeel.id}', 'promote')" title="Promoveren">Promoveren</button>
+            <button class="btn-small btn-ontsla" onclick="toonAdminMenu(event, '${personeel.id}', 'dismiss')" title="Ontslaan">Ontslaan</button>
         </div>
     `;
     
@@ -817,6 +817,105 @@ async function demoteerPersoneel(personeelId) {
     }
 }
 
+// Toon admin menu context menu
+function toonAdminMenu(event, personeelId, actie) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    // Verwijder bestaande menu
+    const bestaandMenu = document.querySelector('.admin-context-menu');
+    if (bestaandMenu) {
+        bestaandMenu.remove();
+    }
+    
+    // Maak nieuw menu
+    const menu = document.createElement('div');
+    menu.className = 'admin-context-menu';
+    
+    const personeel = personeelData.find(p => p.id === personeelId);
+    if (!personeel) return;
+    
+    // Genereer menu items op basis van actie
+    let menuItems = '';
+    
+    if (actie === 'promote') {
+        const volgendeRang = getVolgendeRang(personeel.rang);
+        if (volgendeRang) {
+            menuItems = `
+                <div class="admin-context-menu-item promote" onclick="promoveerPersoneel('${personeelId}', '${volgendeRang}')">
+                    <span>+</span> Promoveer naar ${volgendeRang}
+                </div>
+            `;
+        } else {
+            menuItems = `
+                <div class="admin-context-menu-item promote" onclick="showToast('${personeel.naam} heeft al de hoogste rang')">
+                    <span>!</span> Hoogste rang bereikt
+                </div>
+            `;
+        }
+    } else if (actie === 'demote') {
+        const vorigeRang = getVorigeRang(personeel.rang);
+        if (vorigeRang) {
+            menuItems = `
+                <div class="admin-context-menu-item demote" onclick="demoteerPersoneel('${personeelId}', '${vorigeRang}')">
+                    <span>-</span> Demoteer naar ${vorigeRang}
+                </div>
+            `;
+        } else {
+            menuItems = `
+                <div class="admin-context-menu-item demote" onclick="showToast('${personeel.naam} heeft al de laagste rang')">
+                    <span>!</span> Laagste rang bereikt
+                </div>
+            `;
+        }
+    } else if (actie === 'dismiss') {
+        menuItems = `
+            <div class="admin-context-menu-item dismiss" onclick="ontslaPersoneel('${personeelId}')">
+                <span>×</span> Ontsla ${personeel.naam}
+            </div>
+        `;
+    }
+    
+    menu.innerHTML = menuItems;
+    
+    // Positioneer menu
+    const rect = event.target.getBoundingClientRect();
+    menu.style.left = rect.left + 'px';
+    menu.style.top = (rect.bottom + window.scrollY) + 'px';
+    
+    // Voeg toe aan body
+    document.body.appendChild(menu);
+    
+    // Toon menu
+    setTimeout(() => menu.classList.add('show'), 10);
+    
+    // Sluit menu bij click buiten
+    setTimeout(() => {
+        document.addEventListener('click', sluitAdminMenu);
+    }, 100);
+}
+
+// Sluit admin menu
+function sluitAdminMenu() {
+    const menu = document.querySelector('.admin-context-menu');
+    if (menu) {
+        menu.remove();
+        document.removeEventListener('click', sluitAdminMenu);
+    }
+}
+
+// Get volgende rang
+function getVolgendeRang(huidigeRang) {
+    const index = rangHiërarchie.indexOf(huidigeRang);
+    return index < rangHiërarchie.length - 1 ? rangHiërarchie[index + 1] : null;
+}
+
+// Get vorige rang
+function getVorigeRang(huidigeRang) {
+    const index = rangHiërarchie.indexOf(huidigeRang);
+    return index > 0 ? rangHiërarchie[index - 1] : null;
+}
+
 // Ontsla personeel
 async function ontslaPersoneel(personeelId) {
     const personeel = personeelData.find(p => p.id === personeelId);
@@ -837,6 +936,8 @@ async function ontslaPersoneel(personeelId) {
     } catch (error) {
         console.log('API delete gefaald, data is lokaal verwijderd:', error);
     }
+    
+    sluitAdminMenu();
 }
 
 // Get volgende beschikbare roepnummer voor een rang
