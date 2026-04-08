@@ -322,11 +322,14 @@ window.onload = async () => {
         } else {
           u.ingedeeld = false;
           saveUser(u);
+          const aanmeldSection = document.querySelector('.porto-aanmeld-section');
+          if (aanmeldSection) aanmeldSection.classList.remove('hidden');
           document.getElementById('porto-wacht').classList.remove('hidden');
           startIndienstTimer('oc-tijd');
         }
       }).catch(() => {
-        document.querySelector('.porto-aanmeld-section').classList.remove('hidden');
+        const aanmeldSection = document.querySelector('.porto-aanmeld-section');
+        if (aanmeldSection) aanmeldSection.classList.remove('hidden');
       });
   }
 };

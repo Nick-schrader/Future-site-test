@@ -64,8 +64,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Toon de pagina - geen permissie check nodig
 function toonRoepnummerPagina() {
-    document.querySelector('.roepnummer-container').style.display = 'block';
-    document.querySelector('.geen-toegang').style.display = 'none';
+    const container = document.querySelector('.roepnummer-container');
+    const geenToegang = document.querySelector('.geen-toegang');
+    
+    if (container) container.style.display = 'block';
+    if (geenToegang) geenToegang.style.display = 'none';
 }
 
 // Setup event listeners
