@@ -57,73 +57,16 @@ function getUser() {
 
 // Initialiseer de pagina
 document.addEventListener('DOMContentLoaded', function() {
-    checkPermissies();
+    // Permissie check verwijderd - pagina altijd zichtbaar
+    toonRoepnummerPagina();
     laadPersoneel();
     setupEventListeners();
 });
 
-// Controleer of gebruiker Administratie rol heeft
-function checkPermissies() {
-    const user = getUser();
-    if (!user || !user.discordRoles) {
-        toonGeenToegang();
-        return;
-    }
-    
-    const discordRoles = Array.isArray(user.discordRoles) ? user.discordRoles : [];
-    const rolNamen = discordRoles.map(r => r.name || '');
-    
-    const heeftAdministratie = rolNamen.some(rol => 
-        rol.toLowerCase().includes('administratie') || 
-        rol.toLowerCase().includes('admin') ||
-        rol.toLowerCase().includes('beheer')
-    );
-    
-    if (!heeftAdministratie) {
-        // Toon alleen de personeel lijsten, zonder admin knoppen
-        document.getElementById('nieuwePersoneelBtn').style.display = 'none';
-        console.log('Gebruiker heeft geen Administratie rol - alleen bekijken modus');
-    } else {
-        // Toon admin knoppen
-        document.getElementById('nieuwePersoneelBtn').style.display = 'block';
-        console.log(' Administratie permissie bevestigd voor:', user.displayName);
-    }
-}
-
-// Toon geen toegang bericht
-function toonGeenToegang() {
-    const user = getUser();
-    const discordRoles = Array.isArray(user.discordRoles) ? user.discordRoles : [];
-    const rolNamen = discordRoles.map(r => r.name || '');
-    
-    // Toon personeel lijsten voor iedereen, maar zonder admin knoppen
-    const container = document.querySelector('.roepnummer-container');
-    container.innerHTML = `
-        <div class="geen-toegang">
-            <h2> Alleen Bekijken Modus</h2>
-            <p>Je hebt geen <strong>Administratie</strong> Discord rol nodig om aanpassingen te doen.</p>
-            <p style="color: #888; margin-top: 10px;">
-                Huidige rollen: ${rolNamen.join(', ') || 'Geen rollen gevonden'}
-            </p>
-            <p style="color: #4ade80; margin-top: 15px;">
-                Je kunt het roepnummer bestand wel bekijken, maar niet aanpassen.
-            </p>
-            <button onclick="window.location.href='porto.html'" style="
-                background: #8b5cf6; 
-                color: white; 
-                border: none; 
-                padding: 12px 24px; 
-                border-radius: 8px; 
-                cursor: pointer; 
-                margin-top: 20px;
-            ">
-                Terug naar Porto
-            </button>
-        </div>
-    `;
-    
-    // Laad personeel data voor alleen-bekijken modus
-    laadPersoneel();
+// Toon de pagina - geen permissie check nodig
+function toonRoepnummerPagina() {
+    document.querySelector('.roepnummer-container').style.display = 'block';
+    document.querySelector('.geen-toegang').style.display = 'none';
 }
 
 // Setup event listeners
@@ -176,10 +119,19 @@ function setupDragAndDrop(lijst) {
 async function laadPersoneel() {
     try {
         const response = await fetch(`${API_URL}/api/roepnummer-bestand`);
-        personeelData = await response.json();
+        if (!response.ok) {
+            console.warn('API endpoint niet beschikbaar, gebruik fallback data');
+            personeelData = [];
+            renderPersoneel();
+            return;
+        }
+        
+        const data = await response.json();
+        personeelData = data;
         renderPersoneel();
     } catch (error) {
-        console.error('Fout bij laden personeel:', error);
+        console.error('Fout bij laden personeel, gebruik fallback data:', error);
+        // Fallback data als API niet beschikbaar is
         personeelData = [];
         renderPersoneel();
     }
