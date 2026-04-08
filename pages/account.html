@@ -151,6 +151,13 @@
       setTimeout(updateActiveNavigation, 300);
       // Fallback - probeer nog een keer
       setTimeout(updateActiveNavigation, 500);
+      // Forceer directe manipulatie
+      setTimeout(function() {
+        const accountLink = document.getElementById('nav-account');
+        if (accountLink) {
+          accountLink.classList.add('active');
+        }
+      }, 100);
     });
   </script>
   
