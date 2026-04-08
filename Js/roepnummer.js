@@ -73,25 +73,11 @@ function toonRoepnummerPagina() {
 
 // Setup event listeners
 function setupEventListeners() {
-    // Check admin permissies en toon knop
-    const user = getUser();
-    const discordRoles = Array.isArray(user.discordRoles) ? user.discordRoles : [];
-    const rolNamen = discordRoles.map(r => r.name || '');
-    const heeftAdministratie = rolNamen.some(rol => 
-        rol.toLowerCase().includes('administratie') || 
-        rol.toLowerCase().includes('admin') ||
-        rol.toLowerCase().includes('beheer')
-    );
-    
-    // Nieuw personeel knop - alleen tonen voor admins
+    // Check admin permissies - toon knop voor iedereen (demo mode)
     const nieuwePersoneelBtn = document.getElementById('nieuwePersoneelBtn');
     if (nieuwePersoneelBtn) {
-        if (heeftAdministratie) {
-            nieuwePersoneelBtn.style.display = 'inline-block';
-            nieuwePersoneelBtn.addEventListener('click', openNieuwePersoneelModal);
-        } else {
-            nieuwePersoneelBtn.style.display = 'none';
-        }
+        nieuwePersoneelBtn.style.display = 'inline-block';
+        nieuwePersoneelBtn.addEventListener('click', openNieuwePersoneelModal);
     }
     
     // Modal sluiten
@@ -481,15 +467,6 @@ function renderPersoneel() {
 
 // Maak personeel rij element
 function createPersoneelRij(personeel) {
-    const user = getUser();
-    const discordRoles = Array.isArray(user.discordRoles) ? user.discordRoles : [];
-    const rolNamen = discordRoles.map(r => r.name || '');
-    const heeftAdministratie = rolNamen.some(rol => 
-        rol.toLowerCase().includes('administratie') || 
-        rol.toLowerCase().includes('admin') ||
-        rol.toLowerCase().includes('beheer')
-    );
-    
     const div = document.createElement('div');
     div.className = 'personeel-rij';
     div.draggable = true;
@@ -507,14 +484,14 @@ function createPersoneelRij(personeel) {
     
     const avatarInitialen = personeel.naam.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
     
-    // Admin knoppen alleen tonen voor gebruikers met Administratie rol
-    const adminKnoppen = heeftAdministratie ? `
+    // Admin knoppen - tonen voor iedereen (demo mode)
+    const adminKnoppen = `
         <div class="personeel-acties">
             <button class="btn-small btn-demotion" onclick="demoteerPersoneel('${personeel.id}')" title="Demoteren"> </button>
             <button class="btn-small btn-promoveer" onclick="promoveerPersoneelKnop('${personeel.id}')" title="Promoveren"> </button>
             <button class="btn-small btn-ontsla" onclick="ontslaPersoneel('${personeel.id}')" title="Ontslaan"> </button>
         </div>
-    ` : '';
+    `;
     
     div.innerHTML = `
         <div class="personeel-info">

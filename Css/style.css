@@ -538,6 +538,7 @@ input:checked + .slider:before { transform: translateX(16px); }
   max-width: 1400px;
   margin: 0 auto;
   padding: 20px;
+  width: 100%;
 }
 
 .pagina-titel {
