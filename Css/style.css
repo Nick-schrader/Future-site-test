@@ -62,7 +62,21 @@ body {
 }
 
 /* LAYOUT */
-.layout { display: flex; min-height: calc(100vh - 52px); }
+.layout {
+  display: flex;
+  flex: 1;
+  height: calc(100vh - 70px);
+  overflow: hidden;
+}
+
+main.main {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px;
+  overflow-y: auto;
+}
 
 .sidebar {
   width: 64px;
@@ -136,6 +150,33 @@ body {
   z-index: 10000;
 }
 .modal-card h2 { text-align: center; color: #cdd6f4; }
+
+/* Form styling voor modals */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  color: #888;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.form-group input[readonly] {
+  background: #1a1d2e;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
 
 /* INPUTS */
 .input-field {
@@ -542,6 +583,7 @@ input:checked + .slider:before { transform: translateX(16px); }
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
 }
 
 .pagina-titel {

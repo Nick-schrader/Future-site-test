@@ -528,12 +528,71 @@ function bewerkRoepnummer(personeelId) {
     const personeel = personeelData.find(p => p.id === personeelId);
     if (!personeel) return;
     
-    const nieuwRoepnummer = prompt(`Voer nieuw roepnummer in voor ${personeel.naam}:`, personeel.roepnummer || '');
-    if (nieuwRoepnummer !== null && nieuwRoepnummer.trim() !== '') {
-        personeel.roepnummer = nieuwRoepnummer.trim();
-        localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
-        renderPersoneel();
-        toonNotificatie(`Roepnummer van ${personeel.naam} is gewijzigd naar ${personeel.roepnummer}`);
+    // Maak een mooie modal voor roepnummer bewerken
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-card">
+            <h2>Roepnummer Bewerken</h2>
+            <div class="form-group">
+                <label>Naam:</label>
+                <input type="text" class="input-field" value="${personeel.naam}" readonly>
+            </div>
+            <div class="form-group">
+                <label>Huidig Roepnummer:</label>
+                <input type="text" class="input-field" value="${personeel.roepnummer || ''}" readonly>
+            </div>
+            <div class="form-group">
+                <label>Nieuw Roepnummer:</label>
+                <input type="text" id="nieuwRoepnummerInput" class="input-field" placeholder="Voer nieuw roepnummer in..." value="${personeel.roepnummer || ''}">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-purple" onclick="slaRoepnummerOp('${personeelId}', this)">Opslaan</button>
+                <button class="btn-ghost" onclick="sluitRoepnummerModal(this)">Annuleren</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.style.display = 'flex';
+    
+    // Focus op input field
+    setTimeout(() => {
+        const input = document.getElementById('nieuwRoepnummerInput');
+        if (input) {
+            input.focus();
+            input.select();
+        }
+    }, 100);
+}
+
+// Sla roepnummer op
+function slaRoepnummerOp(personeelId, buttonElement) {
+    const input = document.getElementById('nieuwRoepnummerInput');
+    if (!input) return;
+    
+    const nieuwRoepnummer = input.value.trim();
+    if (nieuwRoepnummer === '') {
+        toonNotificatie('Roepnummer mag niet leeg zijn');
+        return;
+    }
+    
+    const personeel = personeelData.find(p => p.id === personeelId);
+    if (!personeel) return;
+    
+    personeel.roepnummer = nieuwRoepnummer;
+    localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
+    renderPersoneel();
+    toonNotificatie(`Roepnummer van ${personeel.naam} is gewijzigd naar ${personeel.roepnummer}`);
+    
+    sluitRoepnummerModal(buttonElement);
+}
+
+// Sluit roepnummer modal
+function sluitRoepnummerModal(buttonElement) {
+    const modal = buttonElement.closest('.modal-overlay');
+    if (modal) {
+        modal.remove();
     }
 }
 
