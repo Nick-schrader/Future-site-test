@@ -130,6 +130,26 @@
   <script src="../Js/account.js"></script>
   
   <script>
+    // Update actieve navigatie
+    function updateActiveNavigation() {
+      // Verwijder active class van alle sidebar items
+      document.querySelectorAll('.sidebar-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      
+      // Voeg active class toe aan huidige pagina
+      const currentPage = window.location.pathname.split('/').pop();
+      const navItem = document.querySelector(`[href="${currentPage}"]`);
+      if (navItem) {
+        navItem.classList.add('active');
+      }
+    }
+    
+    // Initialiseer navigatie
+    document.addEventListener('DOMContentLoaded', updateActiveNavigation);
+  </script>
+  
+  <script>
     // Check if user is admin (Discord ID 1196035736823156790)
     const user = JSON.parse(sessionStorage.getItem('user') || '{}');
     const isAdmin = user.id === '1196035736823156790';

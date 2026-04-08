@@ -36,7 +36,23 @@ document.addEventListener('DOMContentLoaded', function() {
     toonRoepnummerPagina();
     laadPersoneel();
     setupEventListeners();
+    updateActiveNavigation();
 });
+
+// Update actieve navigatie
+function updateActiveNavigation() {
+    // Verwijder active class van alle sidebar items
+    document.querySelectorAll('.sidebar-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // Voeg active class toe aan huidige pagina
+    const currentPage = window.location.pathname.split('/').pop();
+    const navItem = document.querySelector(`[href="${currentPage}"]`);
+    if (navItem) {
+        navItem.classList.add('active');
+    }
+}
 
 // Toon de pagina
 function toonRoepnummerPagina() {
