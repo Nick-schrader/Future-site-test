@@ -501,7 +501,7 @@ function promoveerPersoneel(personeelId) {
         renderPersoneel();
         
         // Stuur bericht naar gebruiker over promotie
-        if (personeel.discordId) {
+        if (personeel.discordId && typeof BerichtenSysteem !== 'undefined') {
             const berichtTekst = `Gefeliciteerd! Je bent gepromoveerd van ${oudeRang} naar ${nieuweRang} met nieuw roepnummer ${personeel.roepnummer}.`;
             BerichtenSysteem.stuurBericht(personeel.discordId, 'promotie', berichtTekst);
         }
@@ -531,7 +531,7 @@ function demoteerPersoneel(personeelId) {
         renderPersoneel();
         
         // Stuur bericht naar gebruiker over demotie
-        if (personeel.discordId) {
+        if (personeel.discordId && typeof BerichtenSysteem !== 'undefined') {
             const berichtTekst = `Je bent gedemoteerd van ${oudeRang} naar ${nieuweRang} met nieuw roepnummer ${personeel.roepnummer}.`;
             BerichtenSysteem.stuurBericht(personeel.discordId, 'demotie', berichtTekst);
         }
@@ -551,7 +551,7 @@ function ontslaPersoneel(personeelId) {
         renderPersoneel();
         
         // Stuur bericht naar gebruiker over ontslag
-        if (personeel.discordId) {
+        if (personeel.discordId && typeof BerichtenSysteem !== 'undefined') {
             const berichtTekst = `Je bent ontslagen uit de dienst. Bedankt voor je inzet.`;
             BerichtenSysteem.stuurBericht(personeel.discordId, 'ontslag', berichtTekst);
         }
@@ -622,7 +622,7 @@ function slaRoepnummerOp(personeelId, buttonElement) {
     renderPersoneel();
     
     // Stuur bericht naar gebruiker over roepnummer wijziging
-    if (personeel.discordId) {
+    if (personeel.discordId && typeof BerichtenSysteem !== 'undefined') {
         const berichtTekst = `Je roepnummer is gewijzigd naar ${personeel.roepnummer}.`;
         BerichtenSysteem.stuurBericht(personeel.discordId, 'roepnummer', berichtTekst);
     }

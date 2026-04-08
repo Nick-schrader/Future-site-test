@@ -106,6 +106,12 @@ class BerichtenSysteem {
       if (berichtenBadge) {
         berichtenBadge.style.display = 'none';
       }
+      
+      // Verberg ook de hele dropdown als er geen berichten zijn
+      const berichtenDropdown = document.querySelector('.berichten-dropdown');
+      if (berichtenDropdown) {
+        berichtenDropdown.style.display = 'none';
+      }
     }
   }
 
