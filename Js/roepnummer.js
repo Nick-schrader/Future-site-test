@@ -1,5 +1,4 @@
 // Roepnummer Bestand - JavaScript Functionaliteit
-const API_URL = 'https://future-site-test-production.up.railway.app';
 let personeelData = [];
 let currentUser = null;
 
@@ -121,7 +120,7 @@ async function laadPersoneel() {
         const response = await fetch(`${API_URL}/api/roepnummer-bestand`);
         if (!response.ok) {
             console.warn('API endpoint niet beschikbaar, gebruik fallback data');
-            personeelData = [];
+            personeelData = getFallbackPersoneelData();
             renderPersoneel();
             return;
         }
@@ -132,9 +131,200 @@ async function laadPersoneel() {
     } catch (error) {
         console.error('Fout bij laden personeel, gebruik fallback data:', error);
         // Fallback data als API niet beschikbaar is
-        personeelData = [];
+        personeelData = getFallbackPersoneelData();
         renderPersoneel();
     }
+}
+
+// Fallback personeel data met alle roepnummers
+function getFallbackPersoneelData() {
+    const data = [];
+    
+    // Manschappen
+    for (let i = 81; i <= 140; i++) {
+        data.push({
+            id: `pers-4e-${i}`,
+            naam: `Personeel 4e Klasse ${i}`,
+            discord: `user${i}`,
+            roepnummer: `56-${i}`,
+            rang: '4e klasse'
+        });
+    }
+    
+    for (let i = 41; i <= 80; i++) {
+        data.push({
+            id: `pers-3e-${i}`,
+            naam: `Personeel 3e Klasse ${i}`,
+            discord: `user${i}`,
+            roepnummer: `56-${i}`,
+            rang: '3e klasse'
+        });
+    }
+    
+    for (let i = 21; i <= 40; i++) {
+        data.push({
+            id: `pers-2e-${i}`,
+            naam: `Personeel 2e Klasse ${i}`,
+            discord: `user${i}`,
+            roepnummer: `56-${i}`,
+            rang: '2e klasse'
+        });
+    }
+    
+    for (let i = 1; i <= 20; i++) {
+        data.push({
+            id: `pers-1e-${i}`,
+            naam: `Personeel 1e Klasse ${i}`,
+            discord: `user${i}`,
+            roepnummer: `56-${String(i).padStart(2, '0')}`,
+            rang: '1e klasse'
+        });
+    }
+    
+    // Korporaals
+    for (let i = 41; i <= 60; i++) {
+        data.push({
+            id: `pers-wm-${i}`,
+            naam: `Wachtmeester ${i}`,
+            discord: `wm${i}`,
+            roepnummer: `55-${i}`,
+            rang: 'wachtmeester'
+        });
+    }
+    
+    for (let i = 25; i <= 48; i++) {
+        data.push({
+            id: `pers-wm1-${i}`,
+            naam: `Wachtmeester 1e Klasse ${i}`,
+            discord: `wm1${i}`,
+            roepnummer: `55-${i}`,
+            rang: 'wachtmeester 1e klasse'
+        });
+    }
+    
+    for (let i = 1; i <= 24; i++) {
+        data.push({
+            id: `pers-ow-${i}`,
+            naam: `Opperwachtmeester ${i}`,
+            discord: `ow${i}`,
+            roepnummer: `55-${String(i).padStart(2, '0')}`,
+            rang: 'opperwachtmeester'
+        });
+    }
+    
+    // Onderofficieren
+    for (let i = 9; i <= 23; i++) {
+        data.push({
+            id: `pers-adj-${i}`,
+            naam: `Adjudant-Onderofficier ${i}`,
+            discord: `adj${i}`,
+            roepnummer: `54-${i}`,
+            rang: 'adjudant-onderofficier'
+        });
+    }
+    
+    for (let i = 1; i <= 8; i++) {
+        data.push({
+            id: `pers-kornet-${i}`,
+            naam: `Kornet ${i}`,
+            discord: `kornet${i}`,
+            roepnummer: `54-0${i}`,
+            rang: 'kornet'
+        });
+    }
+    
+    // Officieren
+    for (let i = 6; i <= 12; i++) {
+        data.push({
+            id: `pers-2lt-${i}`,
+            naam: `Tweede Luitenant ${i}`,
+            discord: `2lt${i}`,
+            roepnummer: `53-${i}`,
+            rang: 'tweede luitenant'
+        });
+    }
+    
+    for (let i = 4; i <= 5; i++) {
+        data.push({
+            id: `pers-1lt-${i}`,
+            naam: `Eerste Luitenant ${i}`,
+            discord: `1lt${i}`,
+            roepnummer: `53-0${i}`,
+            rang: 'eerste luitenant'
+        });
+    }
+    
+    for (let i = 1; i <= 3; i++) {
+        data.push({
+            id: `pers-kap-${i}`,
+            naam: `Kapitein ${i}`,
+            discord: `kap${i}`,
+            roepnummer: `53-0${i}`,
+            rang: 'kapitein'
+        });
+    }
+    
+    // Hoofdofficieren
+    for (let i = 7; i <= 9; i++) {
+        data.push({
+            id: `pers-maj-${i}`,
+            naam: `Majoor ${i}`,
+            discord: `maj${i}`,
+            roepnummer: `52-0${i}`,
+            rang: 'majoor'
+        });
+    }
+    
+    for (let i = 4; i <= 6; i++) {
+        data.push({
+            id: `pers-ltk-${i}`,
+            naam: `Luitenant-Kolonel ${i}`,
+            discord: `ltk${i}`,
+            roepnummer: `52-0${i}`,
+            rang: 'luitenant-kolonel'
+        });
+    }
+    
+    for (let i = 1; i <= 3; i++) {
+        data.push({
+            id: `pers-kol-${i}`,
+            naam: `Kolonel ${i}`,
+            discord: `kol${i}`,
+            roepnummer: `52-0${i}`,
+            rang: 'kolonel'
+        });
+    }
+    
+    // Kader
+    for (let i = 4; i <= 6; i++) {
+        data.push({
+            id: `pers-brig-${i}`,
+            naam: `Brigade-Generaal ${i}`,
+            discord: `brig${i}`,
+            roepnummer: `51-0${i}`,
+            rang: 'brigade-generaal'
+        });
+    }
+    
+    for (let i = 2; i <= 3; i++) {
+        data.push({
+            id: `pers-genmaj-${i}`,
+            naam: `Generaal-Majoor ${i}`,
+            discord: `genmaj${i}`,
+            roepnummer: `51-0${i}`,
+            rang: 'generaal-majoor'
+        });
+    }
+    
+    data.push({
+        id: `pers-ltg-1`,
+        naam: `Luitenant-Generaal`,
+        discord: `ltg`,
+        roepnummer: `51-01`,
+        rang: 'luitenant-generaal'
+    });
+    
+    return data;
 }
 
 // Render personeel in de juiste rang secties

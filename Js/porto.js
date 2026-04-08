@@ -245,8 +245,10 @@ window.onload = async () => {
         });
     }
   } else {
-    document.getElementById('user-view').classList.remove('hidden');
-    document.querySelector('.content').scrollTop = 0;
+    const userView = document.getElementById('user-view');
+    if (userView) userView.classList.remove('hidden');
+    const content = document.querySelector('.content');
+    if (content) content.scrollTop = 0;
     // Laad eenheden voor leaderboard ook in user view
     laadEenheden();
     setInterval(laadEenheden, 5000);
