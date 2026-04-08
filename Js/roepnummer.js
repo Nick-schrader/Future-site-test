@@ -45,7 +45,7 @@ const categorieData = {
 };
 
 // Huidige geselecteerde categorie
-let huidigeCategorie = 'alle';
+let huidigeCategorie = 'manschappen';
 
 // Helper functie om user data te krijgen
 function getUser() {
@@ -96,10 +96,16 @@ function setupEventListeners() {
     // Categorie selectie dropdown
     const categorieSelect = document.getElementById('categorieSelect');
     if (categorieSelect) {
+        // Zet default waarde naar manschappen
+        categorieSelect.value = 'manschappen';
+        
         categorieSelect.addEventListener('change', function() {
             huidigeCategorie = this.value;
             filterCategorie();
         });
+        
+        // Trigger initial filter
+        setTimeout(() => filterCategorie(), 100);
     }
     
     // Modal sluiten
@@ -546,8 +552,47 @@ function centreerZichtbareCategorieën() {
             zichtbareCategorie.style.display = 'grid';
             zichtbareCategorie.style.gridTemplateColumns = 'repeat(auto-fit, minmax(300px, 1fr))';
             zichtbareCategorie.style.gap = '20px';
+            
+            // Sorteer rangen in juiste volgorde
+            sorteerRangenInCategorie(zichtbareCategorie);
         }
     }
+}
+
+// Sorteer rangen in juiste volgorde binnen categorie
+function sorteerRangenInCategorie(categorie) {
+    const rangSecties = categorie.querySelectorAll('.rang-sectie');
+    const rangVolgorde = {
+        '1e klasse': 1,
+        '2e klasse': 2,
+        '3e klasse': 3,
+        '4e klasse': 4,
+        'korporaal': 5,
+        'korporaal der 1e klasse': 6,
+        'sergeant': 7,
+        'sergeant der 1e klasse': 8,
+        'adjudant-onderofficier': 9,
+        'kornet': 10,
+        'tweede luitenant': 11,
+        'eerste luitenant': 12,
+        'kapitein': 13,
+        'majoor': 14,
+        'luitenant-kolonel': 15,
+        'kolonel': 16,
+        'brigade-generaal': 17,
+        'generaal-majoor': 18,
+        'luitenant-generaal': 19
+    };
+    
+    // Converteer naar array en sorteer
+    const rangArray = Array.from(rangSecties).sort((a, b) => {
+        const rangA = a.dataset.rang;
+        const rangB = b.dataset.rang;
+        return (rangVolgorde[rangA] || 999) - (rangVolgorde[rangB] || 999);
+    });
+    
+    // Verwijder alle en voeg in juiste volgorde terug toe
+    rangArray.forEach(rang => categorie.appendChild(rang));
 }
 
 // Toon placeholders alleen voor rangen zonder personeel
