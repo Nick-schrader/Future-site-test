@@ -635,6 +635,7 @@ input:checked + .slider:before { transform: translateX(16px); }
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 15px;
   margin-bottom: 20px;
+  align-items: start;
 }
 
 .rang-categorie {
@@ -655,6 +656,7 @@ input:checked + .slider:before { transform: translateX(16px); }
   border-bottom: 2px solid #6d28d9;
   position: relative;
   overflow: hidden;
+  justify-content: space-between;
 }
 
 .categorie-header::before {
