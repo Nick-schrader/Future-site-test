@@ -86,6 +86,9 @@ function setupEventListeners() {
             if (e.target === this) sluitModal();
         });
     }
+    
+    // Setup drag and drop
+    setupDragAndDrop();
 }
 
 // Laad personeel data
@@ -106,13 +109,46 @@ async function laadPersoneel() {
                 console.log('Personeelsdata van localStorage geladen:', personeelData);
                 renderPersoneel();
             } else {
-                personeelData = [];
+                // Voeg test data toe om admin click te testen
+                personeelData = [
+                    {
+                        id: '1',
+                        naam: 'Test Personeel 1',
+                        discordId: 'test123',
+                        rang: '4e klasse',
+                        roepnummer: '57-01'
+                    },
+                    {
+                        id: '2',
+                        naam: 'Test Personeel 2',
+                        discordId: 'test456',
+                        rang: '3e klasse',
+                        roepnummer: '56-41'
+                    }
+                ];
+                console.log('Test personeelsdata geladen:', personeelData);
                 renderPersoneel();
             }
         }
     } catch (error) {
         console.error('Fout bij laden personeel:', error);
-        personeelData = [];
+        // Voeg test data toe bij error
+        personeelData = [
+            {
+                id: '1',
+                naam: 'Test Personeel 1',
+                discordId: 'test123',
+                rang: '4e klasse',
+                roepnummer: '57-01'
+            },
+            {
+                id: '2',
+                naam: 'Test Personeel 2',
+                discordId: 'test456',
+                rang: '3e klasse',
+                roepnummer: '56-41'
+            }
+        ];
         renderPersoneel();
     }
 }
@@ -202,10 +238,10 @@ function toonPlaceholdersVoorLegeRangen() {
             const placeholder = document.createElement('div');
             placeholder.className = 'personeel-placeholder';
             placeholder.innerHTML = `
-                <div class="placeholder-avatar">?</div>
+                <div class="placeholder-avatar"></div>
                 <div class="placeholder-info">
-                    <div class="placeholder-naam">Geen personeel</div>
-                    <div class="placeholder-roepnummer">-</div>
+                    <div class="placeholder-naam">Geen mensen op deze rang</div>
+                    <div class="placeholder-roepnummer"></div>
                 </div>
             `;
             lijst.appendChild(placeholder);
@@ -335,6 +371,8 @@ function toggleMiniAdmin(event, personeelId) {
     event.stopPropagation();
     
     const miniAdmin = document.getElementById(`mini-admin-${personeelId}`);
+    if (!miniAdmin) return;
+    
     const alleMiniAdmins = document.querySelectorAll('.mini-admin-gui');
     
     alleMiniAdmins.forEach(gui => {
@@ -520,6 +558,59 @@ function toonNotificatie(bericht) {
     setTimeout(() => {
         notificatie.remove();
     }, 3000);
+}
+
+// Setup drag and drop
+function setupDragAndDrop() {
+    // Voeg drop event listeners toe aan alle personeel lijsten
+    document.querySelectorAll('.personeel-lijst').forEach(lijst => {
+        lijst.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('drag-over');
+        });
+        
+        lijst.addEventListener('dragleave', function(e) {
+            if (e.target === this) {
+                this.classList.remove('drag-over');
+            }
+        });
+        
+        lijst.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            
+            const personeelId = e.dataTransfer.getData('personeelId');
+            const nieuweRang = this.dataset.rang;
+            
+            if (personeelId && nieuweRang) {
+                verplaatsPersoneelNaarRang(personeelId, nieuweRang);
+            }
+        });
+    });
+}
+
+// Verplaats personeel naar nieuwe rang
+function verplaatsPersoneelNaarRang(personeelId, nieuweRang) {
+    const personeel = personeelData.find(p => p.id === personeelId);
+    if (!personeel) return;
+    
+    const oudeRang = personeel.rang;
+    personeel.rang = nieuweRang;
+    
+    // Wijs nieuw roepnummer toe indien nodig
+    if (!personeel.roepnummer) {
+        const roepnummer = getVolgendeRoepnummer(nieuweRang);
+        personeel.roepnummer = roepnummer;
+    }
+    
+    // Sla data op
+    localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
+    
+    // Re-render
+    renderPersoneel();
+    
+    // Toon notificatie
+    toonNotificatie(`${personeel.naam} is verplaatst van ${oudeRang} naar ${nieuweRang}`);
 }
 
 // Rang hiërarchie
