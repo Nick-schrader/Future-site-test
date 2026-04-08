@@ -550,8 +550,8 @@ function centreerZichtbareCategorieën() {
         if (rangSecties.length > 1) {
             // Maak rangen horizontaal binnen de categorie
             zichtbareCategorie.style.display = 'grid';
-            zichtbareCategorie.style.gridTemplateColumns = 'repeat(auto-fit, minmax(300px, 1fr))';
-            zichtbareCategorie.style.gap = '20px';
+            zichtbareCategorie.style.gridTemplateColumns = 'repeat(auto-fit, minmax(280px, 1fr))';
+            zichtbareCategorie.style.gap = '15px';
             
             // Sorteer rangen in juiste volgorde
             sorteerRangenInCategorie(zichtbareCategorie);
