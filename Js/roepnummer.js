@@ -159,11 +159,36 @@ function renderPersoneel() {
         lijst.innerHTML = '';
     });
     
+    // Sorteer personeel per rang op roepnummer
+    const personeelPerRang = {};
     personeelData.forEach(personeel => {
-        const rangSectie = document.querySelector(`.personeel-lijst[data-rang="${personeel.rang}"]`);
-        if (rangSectie) {
-            rangSectie.appendChild(createPersoneelRij(personeel));
+        if (!personeelPerRang[personeel.rang]) {
+            personeelPerRang[personeel.rang] = [];
         }
+        personeelPerRang[personeel.rang].push(personeel);
+    });
+    
+    // Sorteer elke rang op roepnummer
+    Object.keys(personeelPerRang).forEach(rang => {
+        personeelPerRang[rang].sort((a, b) => {
+            // Als geen roepnummer, plaats aan het einde
+            if (!a.roepnummer && !b.roepnummer) return 0;
+            if (!a.roepnummer) return 1;
+            if (!b.roepnummer) return -1;
+            
+            // Vergelijk roepnummers numeriek
+            const numA = parseInt(a.roepnummer.replace(/[^0-9]/g, ''));
+            const numB = parseInt(b.roepnummer.replace(/[^0-9]/g, ''));
+            return numA - numB;
+        });
+        
+        // Voeg gesorteerd personeel toe aan de lijst
+        personeelPerRang[rang].forEach(personeel => {
+            const rangSectie = document.querySelector(`.personeel-lijst[data-rang="${personeel.rang}"]`);
+            if (rangSectie) {
+                rangSectie.appendChild(createPersoneelRij(personeel));
+            }
+        });
     });
     
     toonPlaceholdersVoorLegeRangen();
@@ -207,10 +232,12 @@ function createPersoneelRij(personeel) {
     
     // Voeg click event toe aan de hele rij (behalve admin knoppen)
     div.addEventListener('click', function(e) {
-        if (!e.target.closest('.admin-trigger') && !e.target.closest('.mini-admin-gui')) {
-            if (isAdmin) {
-                toggleMiniAdmin(e, personeel.id);
-            }
+        // Check of de gebruiker een beheerder is
+        const user = getUser();
+        const isAdmin = user.role === 'Administratie' || user.role === 'admin' || user.role === 'beheer';
+        
+        if (isAdmin && !e.target.closest('.admin-trigger') && !e.target.closest('.mini-admin-gui')) {
+            toggleMiniAdmin(e, personeel.id);
         }
     });
     
