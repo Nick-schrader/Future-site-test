@@ -48,6 +48,10 @@ try {
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Berichten API
+const berichtenRouter = require('../api/berichten');
+app.use('/api/berichten', berichtenRouter);
 app.use(express.static(path.join(__dirname, '..')));
 
 // Admin middleware - Discord ID 1196035736823156790 has full access
