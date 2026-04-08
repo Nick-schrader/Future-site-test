@@ -38,7 +38,18 @@ const rangHiërarchie = [
 // Helper functie om user data te krijgen
 function getUser() {
     try {
-        return JSON.parse(localStorage.getItem('user') || '{}');
+        // Probeer eerst localStorage, dan sessionStorage
+        const localUser = localStorage.getItem('user');
+        if (localUser) {
+            return JSON.parse(localUser);
+        }
+        
+        const sessionUser = sessionStorage.getItem('user');
+        if (sessionUser && sessionUser !== 'null' && sessionUser !== 'undefined') {
+            return JSON.parse(sessionUser);
+        }
+        
+        return {};
     } catch (e) {
         return {};
     }
