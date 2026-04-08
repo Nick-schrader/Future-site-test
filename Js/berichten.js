@@ -1,6 +1,8 @@
 // ---- Berichten Systeem ----
 // Systeem voor het tonen van promoties en roepnummer wijzigingen per Discord ID
 
+const API_URL = 'https://future-site-test-production.up.railway.app';
+
 class BerichtenSysteem {
   constructor() {
     this.berichten = [];
