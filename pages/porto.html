@@ -372,7 +372,10 @@
     }
     
     // Initialiseer navigatie
-    document.addEventListener('DOMContentLoaded', updateActiveNavigation);
+    document.addEventListener('DOMContentLoaded', function() {
+      // Wacht even op DOM dan update navigatie
+      setTimeout(updateActiveNavigation, 100);
+    });
   </script>
   
   <script>
