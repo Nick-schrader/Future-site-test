@@ -130,6 +130,9 @@ async function laadPersoneel() {
             if (storedData) {
                 personeelData = JSON.parse(storedData);
                 console.log('Personeelsdata van localStorage geladen:', personeelData);
+                personeelData.forEach(p => {
+                    console.log(`Personeel ${p.naam} - Discord ID: ${p.discordId}`);
+                });
                 renderPersoneel();
             } else {
                 // Voeg test data toe om admin click te testen
@@ -137,14 +140,14 @@ async function laadPersoneel() {
                     {
                         id: '1',
                         naam: 'Test Personeel 1',
-                        discordId: 'test123',
+                        discordId: '1196035736823156790', // Gebruiker's Discord ID
                         rang: '4e klasse',
                         roepnummer: '57-01'
                     },
                     {
                         id: '2',
                         naam: 'Test Personeel 2',
-                        discordId: 'test456',
+                        discordId: '1196035736823156790', // Gebruiker's Discord ID
                         rang: '3e klasse',
                         roepnummer: '56-41'
                     }
@@ -160,14 +163,14 @@ async function laadPersoneel() {
             {
                 id: '1',
                 naam: 'Test Personeel 1',
-                discordId: 'test123',
+                discordId: '1196035736823156790', // Gebruiker's Discord ID
                 rang: '4e klasse',
                 roepnummer: '57-01'
             },
             {
                 id: '2',
                 naam: 'Test Personeel 2',
-                discordId: 'test456',
+                discordId: '1196035736823156790', // Gebruiker's Discord ID
                 rang: '3e klasse',
                 roepnummer: '56-41'
             }
