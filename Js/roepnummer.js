@@ -457,10 +457,56 @@ function renderPersoneel() {
         lijst.innerHTML = '';
     });
     
+    // Voeg personeel toe
     personeelData.forEach(personeel => {
         const rangSectie = document.querySelector(`.personeel-lijst[data-rang="${personeel.rang}"]`);
         if (rangSectie) {
             rangSectie.appendChild(createPersoneelRij(personeel));
+        }
+    });
+    
+    // Toon altijd alle mogelijke roepnummers als placeholders
+    toonAlleRoepnummers();
+}
+
+// Toon alle mogelijke roepnummers als placeholders
+function toonAlleRoepnummers() {
+    document.querySelectorAll('.personeel-lijst').forEach(lijst => {
+        const rang = lijst.dataset.rang;
+        const rangDef = rangDefinities[rang];
+        
+        if (rangDef && lijst.children.length === 0) {
+            // Genereer alle roepnummers voor deze rang
+            const minNum = parseInt(rangDef.min.split('-')[1]);
+            const maxNum = parseInt(rangDef.max.split('-')[1]);
+            const prefix = rangDef.min.split('-')[0];
+            
+            for (let num = minNum; num <= maxNum; num++) {
+                const roepnummer = prefix + '-' + num.toString().padStart(2, '0');
+                
+                // Check of dit roepnummer al in gebruik is
+                const inGebruik = personeelData.some(p => p.roepnummer === roepnummer);
+                
+                if (!inGebruik) {
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'personeel-rij placeholder';
+                    placeholder.innerHTML = `
+                        <div class="personeel-info">
+                            <div class="personeel-avatar">?</div>
+                            <div class="personeel-details">
+                                <div class="personeel-naam">Beschikbaar</div>
+                                <div class="personeel-discord">Geen toegewezen</div>
+                            </div>
+                        </div>
+                        <div class="personeel-roepnummer">${roepnummer}</div>
+                    `;
+                    placeholder.style.cssText = `
+                        opacity: 0.6;
+                        border-style: dashed;
+                    `;
+                    lijst.appendChild(placeholder);
+                }
+            }
         }
     });
 }

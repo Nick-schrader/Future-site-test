@@ -539,6 +539,9 @@ input:checked + .slider:before { transform: translateX(16px); }
   margin: 0 auto;
   padding: 20px;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .pagina-titel {
@@ -637,6 +640,8 @@ input:checked + .slider:before { transform: translateX(16px); }
   gap: 15px;
   margin-bottom: 20px;
   align-items: start;
+  width: 100%;
+  justify-content: center;
 }
 
 .rang-categorie {
