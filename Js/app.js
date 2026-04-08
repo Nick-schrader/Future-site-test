@@ -1,7 +1,7 @@
 // ---- API URL ----
-const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+const API_URL = window.CONFIG?.API_URL || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://localhost:3001'
-  : window.location.origin;
+  : window.location.origin);
 
 // ---- GEDEELDE STATE (via sessionStorage) ----
 const defaultUser = {
