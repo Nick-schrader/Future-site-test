@@ -184,8 +184,9 @@ function createPersoneelRij(personeel) {
     const adminKnoppen = isAdmin ? `
         <div class="admin-trigger" onclick="toggleMiniAdmin(event, '${personeel.id}')" title="Admin opties">?</div>
         <div class="mini-admin-gui" id="mini-admin-${personeel.id}">
-            <button class="mini-admin-btn promote" onclick="promoveerPersoneel('${personeel.id}')" title="Promoveren">?</button>
-            <button class="mini-admin-btn demote" onclick="demoteerPersoneel('${personeel.id}')" title="Demoteren">?</button>
+            <button class="mini-admin-btn promote" onclick="promoveerPersoneel('${personeel.id}')" title="Promoveren">+</button>
+            <button class="mini-admin-btn demote" onclick="demoteerPersoneel('${personeel.id}')" title="Demoteren">-</button>
+            <button class="mini-admin-btn edit" onclick="bewerkRoepnummer('${personeel.id}')" title="Roepnummer bewerken">#</button>
             <button class="mini-admin-btn dismiss" onclick="ontslaPersoneel('${personeel.id}')" title="Ontslaan">×</button>
         </div>
     ` : '';
@@ -425,11 +426,23 @@ function ontslaPersoneel(personeelId) {
     
     if (confirm(`Weet je zeker dat je ${personeel.naam} wilt ontslaan?`)) {
         personeelData = personeelData.filter(p => p.id !== personeelId);
-        
         localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
         renderPersoneel();
-        
         toonNotificatie(`${personeel.naam} is ontslagen`);
+    }
+}
+
+// Bewerk roepnummer
+function bewerkRoepnummer(personeelId) {
+    const personeel = personeelData.find(p => p.id === personeelId);
+    if (!personeel) return;
+    
+    const nieuwRoepnummer = prompt(`Voer nieuw roepnummer in voor ${personeel.naam}:`, personeel.roepnummer || '');
+    if (nieuwRoepnummer !== null && nieuwRoepnummer.trim() !== '') {
+        personeel.roepnummer = nieuwRoepnummer.trim();
+        localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
+        renderPersoneel();
+        toonNotificatie(`Roepnummer van ${personeel.naam} is gewijzigd naar ${personeel.roepnummer}`);
     }
 }
 
@@ -597,11 +610,9 @@ function verplaatsPersoneelNaarRang(personeelId, nieuweRang) {
     const oudeRang = personeel.rang;
     personeel.rang = nieuweRang;
     
-    // Wijs nieuw roepnummer toe indien nodig
-    if (!personeel.roepnummer) {
-        const roepnummer = getVolgendeRoepnummer(nieuweRang);
-        personeel.roepnummer = roepnummer;
-    }
+    // Wijs ALTIJD nieuw roepnummer toe bij rang verandering
+    const roepnummer = getVolgendeRoepnummer(nieuweRang);
+    personeel.roepnummer = roepnummer;
     
     // Sla data op
     localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
@@ -610,7 +621,7 @@ function verplaatsPersoneelNaarRang(personeelId, nieuweRang) {
     renderPersoneel();
     
     // Toon notificatie
-    toonNotificatie(`${personeel.naam} is verplaatst van ${oudeRang} naar ${nieuweRang}`);
+    toonNotificatie(`${personeel.naam} is verplaatst van ${oudeRang} naar ${nieuweRang} met roepnummer ${roepnummer}`);
 }
 
 // Rang hiërarchie
