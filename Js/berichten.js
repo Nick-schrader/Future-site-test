@@ -1,7 +1,7 @@
 // ---- Berichten Systeem ----
 // Systeem voor het tonen van promoties en roepnummer wijzigingen per Discord ID
 
-const API_URL = window.CONFIG.API_URL;
+var API_URL = window.CONFIG.API_URL;
 
 class BerichtenSysteem {
   constructor() {
