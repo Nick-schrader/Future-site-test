@@ -31,7 +31,7 @@ class BerichtenSysteem {
           id: 'test-' + Date.now(),
           discordId: this.user.id,
           type: 'promotie',
-          bericht: 'Test bericht: Gefeliciteerd met je promotie! Dit is een test om het berichten systeem te verifiëren.',
+          bericht: 'Test bericht: Gefeliciteerd met je promotie! Je hebt nu een nieuw roepnummer. Dit is een test om het berichten systeem te verifiëren.',
           tijd: new Date().toISOString(),
           gelezen: false
         };
