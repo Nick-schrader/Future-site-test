@@ -538,12 +538,12 @@ async function voegPersoneelToe() {
 // Get volgende roepnummer
 function getVolgendeRoepnummer(rang) {
     const rangDefinities = {
-        '4e klasse': { min: '57-01', max: '57-99' },
-        '3e klasse': { min: '56-41', max: '56-99' },
+        '4e klasse': { min: '56-81', max: '56-140' },
+        '3e klasse': { min: '56-41', max: '56-80' },
         '2e klasse': { min: '56-21', max: '56-40' },
         '1e klasse': { min: '56-01', max: '56-20' },
         'wachtmeester': { min: '55-41', max: '55-60' },
-        'wachtmeester 1e klasse': { min: '55-25', max: '55-40' },
+        'wachtmeester 1e klasse': { min: '55-25', max: '55-48' },
         'opperwachtmeester': { min: '55-01', max: '55-24' },
         'adjudant-onderofficier': { min: '54-09', max: '54-23' },
         'kornet': { min: '54-01', max: '54-08' },
