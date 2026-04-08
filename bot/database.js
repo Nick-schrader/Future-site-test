@@ -57,6 +57,15 @@ db.exec(`
     start_tijd INTEGER,
     eind_tijd INTEGER
   );
+
+  CREATE TABLE IF NOT EXISTS berichten (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    discord_id VARCHAR(255) NOT NULL,
+    type ENUM('promotie', 'demotie', 'roepnummer', 'ontslag') NOT NULL,
+    bericht TEXT NOT NULL,
+    tijd DATETIME NOT NULL,
+    gelezen BOOLEAN DEFAULT FALSE
+  );
 `);
 
 // Migraties: kolommen toevoegen als ze nog niet bestaan

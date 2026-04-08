@@ -44,6 +44,7 @@ class BerichtenSysteem {
   async loadBerichten() {
     try {
       // Haal berichten op voor deze gebruiker via Discord ID
+      const API_URL = process.env.API_URL || 'https://future-site-test-production.up.railway.app';
       const response = await fetch(`${API_URL}/api/berichten/${this.user.id}`);
       if (response.ok) {
         this.berichten = await response.json();
