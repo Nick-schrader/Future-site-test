@@ -34,6 +34,19 @@ const rangHiërarchie = [
     'brigade-generaal', 'generaal-majoor', 'luitenant-generaal'
 ];
 
+// Categorie data
+const categorieData = {
+    'manschappen': ['4e klasse', '3e klasse', '2e klasse', '1e klasse'],
+    'korporaals': ['korporaal', 'korporaal der 1e klasse', 'sergeant', 'sergeant der 1e klasse'],
+    'onderofficieren': ['adjudant-onderofficier', 'kornet'],
+    'officieren': ['tweede luitenant', 'eerste luitenant', 'kapitein'],
+    'hoofdofficieren': ['majoor', 'luitenant-kolonel', 'kolonel'],
+    'kader': ['brigade-generaal', 'generaal-majoor', 'luitenant-generaal']
+};
+
+// Huidige geselecteerde categorie
+let huidigeCategorie = 'alle';
+
 // Helper functie om user data te krijgen
 function getUser() {
     try {
@@ -78,6 +91,15 @@ function setupEventListeners() {
     if (nieuwePersoneelBtn) {
         nieuwePersoneelBtn.style.display = 'inline-block';
         nieuwePersoneelBtn.addEventListener('click', openNieuwePersoneelModal);
+    }
+    
+    // Categorie selectie dropdown
+    const categorieSelect = document.getElementById('categorieSelect');
+    if (categorieSelect) {
+        categorieSelect.addEventListener('change', function() {
+            huidigeCategorie = this.value;
+            filterCategorie();
+        });
     }
     
     // Modal sluiten
@@ -467,6 +489,65 @@ function renderPersoneel() {
     
     // Toon placeholders voor lege rangen
     toonPlaceholdersVoorLegeRangen();
+}
+
+// Filter categorieën op basis van selectie
+function filterCategorie() {
+    const categorieContainer = document.querySelector('.rang-categorie-container');
+    if (!categorieContainer) return;
+    
+    // Toon/verberg categorieën op basis van selectie
+    const categorieën = categorieContainer.querySelectorAll('.rang-categorie');
+    
+    categorieën.forEach(categorie => {
+        const categorieNaam = categorie.querySelector('.categorie-titel').textContent.toLowerCase();
+        const categorieKey = getCategorieKey(categorieNaam);
+        
+        if (huidigeCategorie === 'alle') {
+            categorie.style.display = 'block';
+        } else if (categorieKey === huidigeCategorie) {
+            categorie.style.display = 'block';
+        } else {
+            categorie.style.display = 'none';
+        }
+    });
+    
+    // Centreer de zichtbare categorieën
+    centreerZichtbareCategorieën();
+}
+
+// Helper functie om categorie key te krijgen
+function getCategorieKey(categorieNaam) {
+    const mapping = {
+        'manschappen': 'manschappen',
+        'korporaals': 'korporaals',
+        'onderofficieren': 'onderofficieren',
+        'officieren': 'officieren',
+        'hoofdofficieren': 'hoofdofficieren',
+        'kader': 'kader'
+    };
+    return mapping[categorieNaam] || categorieNaam;
+}
+
+// Centreer zichtbare categorieën
+function centreerZichtbareCategorieën() {
+    const categorieContainer = document.querySelector('.rang-categorie-container');
+    if (!categorieContainer) return;
+    
+    const zichtbareCategorieën = categorieContainer.querySelectorAll('.rang-categorie[style="display: block;"]');
+    
+    if (zichtbareCategorieën.length > 0) {
+        // Pas grid layout aan voor horizontale rangen binnen categorie
+        const zichtbareCategorie = zichtbareCategorieën[0];
+        const rangSecties = zichtbareCategorie.querySelectorAll('.rang-sectie');
+        
+        if (rangSecties.length > 1) {
+            // Maak rangen horizontaal binnen de categorie
+            zichtbareCategorie.style.display = 'grid';
+            zichtbareCategorie.style.gridTemplateColumns = 'repeat(auto-fit, minmax(300px, 1fr))';
+            zichtbareCategorie.style.gap = '20px';
+        }
+    }
 }
 
 // Toon placeholders alleen voor rangen zonder personeel
