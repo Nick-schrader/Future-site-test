@@ -168,6 +168,15 @@ function createPersoneelRij(personeel) {
     
     div.setAttribute('data-personeel-id', personeel.id);
     
+    // Voeg click event toe aan de hele rij (behalve admin knoppen)
+    div.addEventListener('click', function(e) {
+        if (!e.target.closest('.admin-trigger') && !e.target.closest('.mini-admin-gui')) {
+            if (isAdmin) {
+                toggleMiniAdmin(e, personeel.id);
+            }
+        }
+    });
+    
     div.addEventListener('dragstart', function(e) {
         e.dataTransfer.setData('personeelId', personeel.id);
         this.classList.add('dragging');
