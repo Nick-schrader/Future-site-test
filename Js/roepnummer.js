@@ -369,18 +369,37 @@ function setupDragAndDrop(lijst) {
 // Laad personeel data
 async function laadPersoneel() {
     try {
-        const response = await fetch(`${API_URL}/api/roepnummer-bestand`);
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
+        // Probeer eerst API call om data op te halen
+        const response = await fetch('/api/roepnummer-bestand');
         
-        const data = await response.json();
-        personeelData = data;
-        renderPersoneel();
+        if (response.ok) {
+            const data = await response.json();
+            personeelData = data.personeel || [];
+            console.log('Personeelsdata van API geladen:', personeelData);
+            renderPersoneel();
+            
+            // Sla data op in localStorage voor persistentie
+            localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
+        } else {
+            // Fallback naar localStorage als API niet beschikbaar is
+            console.warn('API niet beschikbaar, probeer localStorage...');
+            const storedData = localStorage.getItem('roepnummerData');
+            
+            if (storedData) {
+                personeelData = JSON.parse(storedData);
+                console.log('Personeelsdata van localStorage geladen:', personeelData);
+                renderPersoneel();
+            } else {
+                // Fallback naar demo data als ook localStorage leeg is
+                console.warn('Geen data beschikbaar, gebruik demo data');
+                personeelData = getFallbackPersoneelData();
+                renderPersoneel();
+            }
+        }
     } catch (error) {
         console.error('Fout bij laden personeel:', error);
-        // Toon lege maar mooie pagina - geen personeel beschikbaar
-        personeelData = [];
+        // Fallback naar demo data
+        personeelData = getFallbackPersoneelData();
         renderPersoneel();
     }
 }
@@ -784,24 +803,19 @@ function createPersoneelRij(personeel) {
     div.draggable = true;
     div.dataset.personeelId = personeel.id;
     
-    // Drag events
-    div.addEventListener('dragstart', function(e) {
-        e.dataTransfer.setData('personeelId', personeel.id);
-        this.classList.add('dragging');
-    });
+    // Check user permissions
+    const user = getUser();
+    const isAdmin = user.role === 'Administratie' || user.role === 'admin' || user.role === 'beheer';
     
-    div.addEventListener('dragend', function() {
-        this.classList.remove('dragging');
-    });
-    
+    // Avatar initialen
     const avatarInitialen = personeel.naam.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
     
     // Admin knoppen - tonen voor iedereen (demo mode)
     const adminKnoppen = `
         <div class="personeel-acties">
-            <button class="btn-small btn-demotion" onclick="toonAdminMenu(event, '${personeel.id}', 'demote')" title="Demoteren">Demoteren</button>
-            <button class="btn-small btn-promoveer" onclick="toonAdminMenu(event, '${personeel.id}', 'promote')" title="Promoveren">Promoveren</button>
-            <button class="btn-small btn-ontsla" onclick="toonAdminMenu(event, '${personeel.id}', 'dismiss')" title="Ontslaan">Ontslaan</button>
+            <button class="btn-small btn-demotion" onclick="demoteerPersoneel('${personeel.id}')" title="Demoteren">Demoteren</button>
+            <button class="btn-small btn-promoveer" onclick="promoveerPersoneel('${personeel.id}')" title="Promoveren">Promoveren</button>
+            <button class="btn-small btn-ontsla" onclick="ontslaPersoneel('${personeel.id}')" title="Ontslaan">Ontslaan</button>
         </div>
         
         <!-- Mini admin trigger -->
@@ -830,27 +844,24 @@ function createPersoneelRij(personeel) {
     // Voeg data-personeel-id toe voor zoekfunctie
     div.setAttribute('data-personeel-id', personeel.id);
     
+    // Drag and drop events
+    div.addEventListener('dragstart', function(e) {
+        e.dataTransfer.setData('personeelId', personeel.id);
+        this.classList.add('dragging');
+    });
+    
+    div.addEventListener('dragend', function() {
+        this.classList.remove('dragging');
+    });
+    
     return div;
 }
-
-// Open modal voor nieuw personeel
-function openNieuwePersoneelModal() {
-    document.getElementById('nieuwePersoneelModal').style.display = 'block';
-}
-
-// Sluit modal
-function sluitModal() {
-    document.getElementById('nieuwePersoneelModal').style.display = 'none';
-    document.getElementById('nieuweNaam').value = '';
-    document.getElementById('nieuweDiscordId').value = '';
-    document.getElementById('nieuweRang').value = '';
-}
-
 // Voeg nieuw personeel toe
 async function voegPersoneelToe() {
     const naam = document.getElementById('nieuweNaam').value.trim();
     const discordId = document.getElementById('nieuweDiscordId').value.trim();
     const rang = document.getElementById('nieuweRang').value;
+    const roepnummerInput = document.getElementById('nieuweRoepnummer')?.value.trim();
     
     if (!naam || !discordId || !rang) {
         alert('Vul alle velden in');
@@ -862,12 +873,14 @@ async function voegPersoneelToe() {
         naam: naam,
         discordId: discordId,
         rang: rang,
-        roepnummer: null
+        roepnummer: roepnummerInput || null
     };
     
-    // Wijs roepnummer toe
-    const roepnummer = getVolgendeRoepnummer(rang);
-    nieuwPersoneel.roepnummer = roepnummer;
+    // Wijs roepnummer toe als niet ingevuld
+    if (!roepnummerInput) {
+        const roepnummer = getVolgendeRoepnummer(rang);
+        nieuwPersoneel.roepnummer = roepnummer;
+    }
     
     // Voeg lokaal toe (API werkt niet)
     personeelData.push(nieuwPersoneel);
@@ -892,29 +905,6 @@ async function voegPersoneelToe() {
     }
 }
 
-// Promoveer personeel
-async function promoveerPersoneel(personeelId, nieuweRang) {
-    const personeel = personeelData.find(p => p.id === personeelId);
-    if (!personeel) return;
-    
-    const oudeRang = personeel.rang;
-    personeel.rang = nieuweRang;
-    
-    // Wijs nieuw roepnummer toe
-    const roepnummer = getVolgendeRoepnummer(nieuweRang);
-    personeel.roepnummer = roepnummer;
-    
-    // Update lokaal
-    renderPersoneel();
-    showToast(`${personeel.naam} gepromoveerd van ${oudeRang} naar ${nieuweRang}`);
-    
-    // Probeer te save naar API (maar faal niet als het niet werkt)
-    try {
-        await savePersoneel(personeel);
-    } catch (error) {
-        console.log('API save gefaald, data is lokaal bijgewerkt:', error);
-    }
-}
 
 // Promoveer personeel via knop
 async function promoveerPersoneelKnop(personeelId) {
