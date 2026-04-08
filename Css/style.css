@@ -537,11 +537,13 @@ input:checked + .slider:before { transform: translateX(16px); }
 .roepnummer-container {
   max-width: 1800px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 20px 40px;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
+  left: 40px;
 }
 
 .pagina-titel {
@@ -564,6 +566,8 @@ input:checked + .slider:before { transform: translateX(16px); }
   gap: 15px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   flex-wrap: wrap;
+  position: relative;
+  left: 40px;
 }
 
 /* Zoekfunctie styling */

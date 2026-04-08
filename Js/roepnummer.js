@@ -474,10 +474,16 @@ function promoveerPersoneel(personeelId) {
         const nieuweRang = rangHiërarchie[currentIndex + 1];
         personeel.rang = nieuweRang;
         
+        // Wijs automatisch nieuw roepnummer toe voor de nieuwe rang
+        const nieuwRoepnummer = getVolgendeRoepnummer(nieuweRang);
+        if (nieuwRoepnummer) {
+            personeel.roepnummer = nieuwRoepnummer;
+        }
+        
         localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
         renderPersoneel();
         
-        toonNotificatie(`${personeel.naam} is gepromoveerd naar ${nieuweRang}`);
+        toonNotificatie(`${personeel.naam} is gepromoveerd naar ${nieuweRang} met roepnummer ${personeel.roepnummer}`);
     }
 }
 
@@ -491,10 +497,16 @@ function demoteerPersoneel(personeelId) {
         const nieuweRang = rangHiërarchie[currentIndex - 1];
         personeel.rang = nieuweRang;
         
+        // Wijs automatisch nieuw roepnummer toe voor de nieuwe rang
+        const nieuwRoepnummer = getVolgendeRoepnummer(nieuweRang);
+        if (nieuwRoepnummer) {
+            personeel.roepnummer = nieuwRoepnummer;
+        }
+        
         localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
         renderPersoneel();
         
-        toonNotificatie(`${personeel.naam} is gedemoteerd naar ${nieuweRang}`);
+        toonNotificatie(`${personeel.naam} is gedemoteerd naar ${nieuweRang} met roepnummer ${personeel.roepnummer}`);
     }
 }
 
