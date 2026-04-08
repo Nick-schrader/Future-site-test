@@ -1,4 +1,5 @@
-// Roepnummer Bestand Beheersysteem
+// Roepnummer Bestand - JavaScript Functionaliteit
+const API_URL = 'https://future-site-test-production.up.railway.app';
 let personeelData = [];
 let currentUser = null;
 
@@ -34,6 +35,15 @@ const rangHiërarchie = [
     'brigade-generaal', 'generaal-majoor', 'luitenant-generaal'
 ];
 
+// Helper functie om user data te krijgen
+function getUser() {
+    try {
+        return JSON.parse(localStorage.getItem('user') || '{}');
+    } catch (e) {
+        return {};
+    }
+}
+
 // Initialiseer de pagina
 document.addEventListener('DOMContentLoaded', function() {
     checkPermissies();
@@ -44,50 +54,37 @@ document.addEventListener('DOMContentLoaded', function() {
 // Controleer of gebruiker Administratie rol heeft
 function checkPermissies() {
     const user = getUser();
-    if (!user || !user.rollen) {
+    if (!user || !user.discordRoles) {
         toonGeenToegang();
         return;
     }
     
-    const rollen = Array.isArray(user.rollen) ? user.rollen : JSON.parse(user.rollen || '[]');
-    const rolNamen = rollen.map(r => typeof r === 'string' ? r : (r.naam || ''));
+    const discordRoles = Array.isArray(user.discordRoles) ? user.discordRoles : [];
+    const rolNamen = discordRoles.map(r => r.name || '');
     
     const heeftAdministratie = rolNamen.some(rol => 
         rol.toLowerCase().includes('administratie') || 
-        rol.toLowerCase().includes('admin')
+        rol.toLowerCase().includes('admin') ||
+        rol.toLowerCase().includes('beheer')
     );
     
     if (!heeftAdministratie) {
         toonGeenToegang();
     } else {
         currentUser = user;
-        console.log('✅ Administratie permissie bevestigd voor:', user.displayName);
+        document.getElementById('nieuwePersoneelBtn').style.display = 'block';
+        console.log(' Administratie permissie bevestigd voor:', user.displayName);
     }
 }
 
 // Toon geen toegang bericht
 function toonGeenToegang() {
     document.querySelector('.roepnummer-container').innerHTML = `
-        <div style="text-align: center; padding: 50px; background: #1a1a2e; border-radius: 12px; margin: 50px auto; max-width: 500px;">
-            <h2 style="color: #ef4444; margin-bottom: 20px;">🚫 Geen Toegang</h2>
-            <p style="color: #888; font-size: 1.1rem; line-height: 1.6;">
-                Je hebt geen <strong>Administratie</strong> rol nodig om het roepnummer bestand te beheren.
-            </p>
-            <p style="color: #888; margin-top: 15px;">
-                Neem contact op met een beheerder als je denkt dat je toegang moet hebben.
-            </p>
-            <button onclick="window.location.href='porto.html'" style="
-                background: #8b5cf6; 
-                color: white; 
-                border: none; 
-                padding: 12px 24px; 
-                border-radius: 8px; 
-                cursor: pointer; 
-                margin-top: 20px;
-                font-size: 1rem;
-            ">
-                ← Terug naar Porto
-            </button>
+        <div class="geen-toegang">
+            <h2> Geen Toegang</h2>
+            <p>Je hebt <strong>Administratie</strong> Discord rol nodig om het roepnummer bestand te beheren.</p>
+            <p>Neem contact op met een beheerder als je denkt dat je toegang moet hebben.</p>
+            <button onclick="window.location.href='porto.html'">Terug naar Porto</button>
         </div>
     `;
 }
@@ -96,9 +93,6 @@ function toonGeenToegang() {
 function setupEventListeners() {
     // Nieuw personeel knop
     document.getElementById('nieuwePersoneelBtn').addEventListener('click', openNieuwePersoneelModal);
-    
-    // Zoekbalk
-    document.getElementById('zoekBox').addEventListener('input', filterPersoneel);
     
     // Modal sluiten
     document.getElementById('nieuwePersoneelModal').addEventListener('click', function(e) {
@@ -127,7 +121,7 @@ function setupDragAndDrop(lijst) {
         this.classList.remove('drag-over');
         
         const personeelId = e.dataTransfer.getData('personeelId');
-        const nieuweRang = this.parentElement.dataset.rang;
+        const nieuweRang = this.dataset.rang;
         
         if (personeelId && nieuweRang) {
             promoveerPersoneel(personeelId, nieuweRang);
@@ -143,7 +137,6 @@ async function laadPersoneel() {
         renderPersoneel();
     } catch (error) {
         console.error('Fout bij laden personeel:', error);
-        // Fallback lege data als API niet beschikbaar is
         personeelData = [];
         renderPersoneel();
     }
@@ -157,7 +150,7 @@ function renderPersoneel() {
     });
     
     personeelData.forEach(personeel => {
-        const rangSectie = document.querySelector(`[data-rang="${personeel.rang}"] .personeel-lijst`);
+        const rangSectie = document.querySelector(`.personeel-lijst[data-rang="${personeel.rang}"]`);
         if (rangSectie) {
             rangSectie.appendChild(createPersoneelRij(personeel));
         }
@@ -193,9 +186,9 @@ function createPersoneelRij(personeel) {
         </div>
         <div class="personeel-roepnummer">${personeel.roepnummer || 'Nog niet toegewezen'}</div>
         <div class="personeel-acties">
-            <button class="btn-small btn-demotion" onclick="demoteerPersoneel('${personeel.id}')" title="Demoteren">↓</button>
-            <button class="btn-small btn-promoveer" onclick="promoveerPersoneelKnop('${personeel.id}')" title="Promoveren">↑</button>
-            <button class="btn-small btn-ontsla" onclick="ontslaPersoneel('${personeel.id}')" title="Ontslaan">✕</button>
+            <button class="btn-small btn-demotion" onclick="demoteerPersoneel('${personeel.id}')" title="Demoteren"> </button>
+            <button class="btn-small btn-promoveer" onclick="promoveerPersoneelKnop('${personeel.id}')" title="Promoveren"> </button>
+            <button class="btn-small btn-ontsla" onclick="ontslaPersoneel('${personeel.id}')" title="Ontslaan"> </button>
         </div>
     `;
     
@@ -338,24 +331,6 @@ function getVolgendeRoepnummer(rang) {
     return rangDef.min; // Fallback als alles bezet is
 }
 
-// Filter personeel op zoekterm
-function filterPersoneel() {
-    const zoekTerm = document.getElementById('zoekBox').value.toLowerCase();
-    
-    document.querySelectorAll('.personeel-rij').forEach(rij => {
-        const personeelId = rij.dataset.personeelId;
-        const personeel = personeelData.find(p => p.id === personeelId);
-        
-        if (personeel) {
-            const matchNaam = personeel.naam.toLowerCase().includes(zoekTerm);
-            const matchRoepnummer = personeel.roepnummer && personeel.roepnummer.toLowerCase().includes(zoekTerm);
-            const matchDiscord = personeel.discordId.toLowerCase().includes(zoekTerm);
-            
-            rij.style.display = (matchNaam || matchRoepnummer || matchDiscord) ? 'flex' : 'none';
-        }
-    });
-}
-
 // Save personeel naar backend
 async function savePersoneel(personeel) {
     const response = await fetch(`${API_URL}/api/roepnummer-bestand`, {
@@ -386,29 +361,25 @@ async function deletePersoneel(personeelId) {
     return response.json();
 }
 
-// Toast notification (gebruik bestaande uit porto.js als beschikbaar)
+// Toast notification
 function showToast(message) {
-    if (typeof window.showToast === 'function') {
-        window.showToast(message);
-    } else {
-        // Fallback toast
-        const toast = document.createElement('div');
-        toast.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #4ade80;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            z-index: 10000;
-            font-weight: 500;
-        `;
-        toast.textContent = message;
-        document.body.appendChild(toast);
-        
-        setTimeout(() => {
-            document.body.removeChild(toast);
-        }, 3000);
-    }
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4ade80;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        z-index: 10000;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(74, 222, 128, 0.3);
+    `;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        document.body.removeChild(toast);
+    }, 3000);
 }
