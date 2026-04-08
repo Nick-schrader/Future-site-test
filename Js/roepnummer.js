@@ -87,9 +87,170 @@ function setupEventListeners() {
         });
     }
     
+    // Rang navigatie knoppen
+    document.querySelectorAll('.rang-nav-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const categorie = this.dataset.categorie;
+            filterRangCategorie(categorie);
+        });
+    });
+    
+    // Setup dropdowns en zoekfuncties per rang categorie
+    setupRangCategorieInteractie();
+    
     // Setup drag and drop voor alle personeel lijsten
     document.querySelectorAll('.personeel-lijst').forEach(lijst => {
         setupDragAndDrop(lijst);
+    });
+}
+
+// Filter rang categorieen op basis van navigatie
+function filterRangCategorie(categorie) {
+    // Verwijder active class van alle items
+    document.querySelectorAll('.rang-nav-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // Voeg active class toe aan geklikt item
+    document.querySelector(`[data-categorie="${categorie}"]`).classList.add('active');
+    
+    // Toon/verberg rang categorieen
+    document.querySelectorAll('.rang-categorie').forEach(cat => {
+        if (categorie === 'alle') {
+            cat.style.display = 'block';
+        } else {
+            const titel = cat.querySelector('.categorie-titel').textContent.toLowerCase();
+            const categorieMap = {
+                'manschappen': 'manschappen',
+                'korporaals': 'korporaals',
+                'onderofficieren': 'onderofficieren',
+                'officieren': 'officieren',
+                'hoofdofficieren': 'hoofdofficieren',
+                'kader': 'kader'
+            };
+            
+            if (categorieMap[categorie] && titel.includes(categorieMap[categorie])) {
+                cat.style.display = 'block';
+            } else {
+                cat.style.display = 'none';
+            }
+        }
+    });
+}
+
+// Setup dropdowns en zoekfuncties per rang categorie
+function setupRangCategorieInteractie() {
+    document.querySelectorAll('.rang-categorie').forEach(categorie => {
+        const titel = categorie.querySelector('.categorie-titel');
+        const secties = categorie.querySelectorAll('.rang-sectie');
+        
+        // Maak dropdown toggle
+        const dropdownToggle = document.createElement('div');
+        dropdownToggle.className = 'dropdown-toggle';
+        dropdownToggle.innerHTML = '<span class="material-icons">expand_more</span>';
+        dropdownToggle.style.cssText = `
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            color: white;
+            font-size: 1.5rem;
+        `;
+        
+        titel.parentElement.appendChild(dropdownToggle);
+        
+        // Voeg zoekfunctie toe
+        const zoekContainer = document.createElement('div');
+        zoekContainer.className = 'zoek-container';
+        zoekContainer.innerHTML = `
+            <input type="text" class="zoek-input" placeholder="Zoek personeel...">
+            <span class="material-icons zoek-icon">search</span>
+        `;
+        zoekContainer.style.cssText = `
+            margin: 15px 20px;
+            position: relative;
+        `;
+        
+        const zoekInput = zoekContainer.querySelector('.zoek-input');
+        zoekInput.style.cssText = `
+            width: 100%;
+            padding: 10px 40px 10px 15px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            color: white;
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.3s ease;
+        `;
+        
+        const zoekIcon = zoekContainer.querySelector('.zoek-icon');
+        zoekIcon.style.cssText = `
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.6);
+            font-size: 1.2rem;
+        `;
+        
+        categorie.insertBefore(zoekContainer, categorie.querySelector('.rang-sectie'));
+        
+        // Dropdown toggle functionaliteit
+        let isExpanded = true;
+        dropdownToggle.addEventListener('click', function() {
+            isExpanded = !isExpanded;
+            this.style.transform = isExpanded ? 'translateY(-50%)' : 'translateY(-50%) rotate(180deg)';
+            
+            secties.forEach(sectie => {
+                sectie.style.display = isExpanded ? 'block' : 'none';
+            });
+        });
+        
+        // Zoekfunctionaliteit
+        zoekInput.addEventListener('input', function() {
+            const zoekTerm = this.value.toLowerCase();
+            
+            secties.forEach(sectie => {
+                const personeelLijst = sectie.querySelector('.personeel-lijst');
+                const personeelRijen = personeelLijst.querySelectorAll('.personeel-rij');
+                
+                let hasVisibleRijen = false;
+                
+                personeelRijen.forEach(rij => {
+                    const naam = rij.querySelector('.personeel-naam')?.textContent.toLowerCase() || '';
+                    const discord = rij.querySelector('.personeel-discord')?.textContent.toLowerCase() || '';
+                    const roepnummer = rij.querySelector('.personeel-roepnummer')?.textContent.toLowerCase() || '';
+                    
+                    if (naam.includes(zoekTerm) || discord.includes(zoekTerm) || roepnummer.includes(zoekTerm)) {
+                        rij.style.display = 'flex';
+                        hasVisibleRijen = true;
+                    } else {
+                        rij.style.display = 'none';
+                    }
+                });
+                
+                // Toon/verberg sectie op basis van zoekresultaten
+                if (zoekTerm === '') {
+                    sectie.style.display = isExpanded ? 'block' : 'none';
+                } else {
+                    sectie.style.display = hasVisibleRijen ? 'block' : 'none';
+                }
+            });
+        });
+        
+        // Focus styles voor zoekinput
+        zoekInput.addEventListener('focus', function() {
+            this.style.background = 'rgba(255,255,255,0.15)';
+            this.style.borderColor = 'rgba(255,255,255,0.4)';
+        });
+        
+        zoekInput.addEventListener('blur', function() {
+            this.style.background = 'rgba(255,255,255,0.1)';
+            this.style.borderColor = 'rgba(255,255,255,0.2)';
+        });
     });
 }
 
