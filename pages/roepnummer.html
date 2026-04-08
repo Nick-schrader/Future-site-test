@@ -63,12 +63,18 @@
             <label for="categorieSelect">Selecteer Categorie:</label>
             <select id="categorieSelect" class="categorie-dropdown">
               <option value="manschappen">Manschappen</option>
+              <option value="alle">Alle Categorieën</option>
               <option value="korporaals">Korporaals</option>
               <option value="onderofficieren">Onderofficieren</option>
               <option value="officieren">Officieren</option>
               <option value="hoofdofficieren">Hoofdofficieren</option>
               <option value="kader">Kader</option>
             </select>
+            
+            <div class="zoek-container">
+              <input type="text" id="zoekInput" class="zoek-input" placeholder="Zoek op roepnummer of naam...">
+              <button id="zoekBtn" class="zoek-btn">🔍</button>
+            </div>
           </div>
           
           <!-- Admin knop - alleen zichtbaar voor Administratie -->
@@ -81,36 +87,38 @@
                 <div class="categorie-titel">MANSCHAPPEN</div>
             </div>
             
-            <div class="rang-sectie" data-rang="4e klasse" data-min="56-81" data-max="56-140">
-                <div class="rang-header">
-                    <div class="rang-naam">4e Klasse</div>
-                    <div class="roepnummer-range">56-81 tot 56-140</div>
+            <div class="rang-secties-container">
+                <div class="rang-sectie" data-rang="4e klasse" data-min="57-01" data-max="57-99">
+                    <div class="rang-header">
+                        <div class="rang-naam">4e Klasse</div>
+                        <div class="roepnummer-range">57-01 tot 57-99</div>
+                    </div>
+                    <div class="personeel-lijst" data-rang="4e klasse"></div>
                 </div>
-                <div class="personeel-lijst" data-rang="4e klasse"></div>
-            </div>
-            
-            <div class="rang-sectie" data-rang="3e klasse" data-min="56-41" data-max="56-80">
-                <div class="rang-header">
-                    <div class="rang-naam">3e Klasse</div>
-                    <div class="roepnummer-range">56-41 tot 56-80</div>
+                
+                <div class="rang-sectie" data-rang="3e klasse" data-min="56-41" data-max="56-99">
+                    <div class="rang-header">
+                        <div class="rang-naam">3e Klasse</div>
+                        <div class="roepnummer-range">56-41 tot 56-99</div>
+                    </div>
+                    <div class="personeel-lijst" data-rang="3e klasse"></div>
                 </div>
-                <div class="personeel-lijst" data-rang="3e klasse"></div>
-            </div>
-            
-            <div class="rang-sectie" data-rang="2e klasse" data-min="56-21" data-max="56-40">
-                <div class="rang-header">
-                    <div class="rang-naam">2e Klasse</div>
-                    <div class="roepnummer-range">56-21 tot 56-40</div>
+                
+                <div class="rang-sectie" data-rang="2e klasse" data-min="56-21" data-max="56-40">
+                    <div class="rang-header">
+                        <div class="rang-naam">2e Klasse</div>
+                        <div class="roepnummer-range">56-21 tot 56-40</div>
+                    </div>
+                    <div class="personeel-lijst" data-rang="2e klasse"></div>
                 </div>
-                <div class="personeel-lijst" data-rang="2e klasse"></div>
-            </div>
-            
-            <div class="rang-sectie" data-rang="1e klasse" data-min="56-01" data-max="56-20">
-                <div class="rang-header">
-                    <div class="rang-naam">1e Klasse</div>
-                    <div class="roepnummer-range">56-01 tot 56-20</div>
+                
+                <div class="rang-sectie" data-rang="1e klasse" data-min="56-01" data-max="56-20">
+                    <div class="rang-header">
+                        <div class="rang-naam">1e Klasse</div>
+                        <div class="roepnummer-range">56-01 tot 56-20</div>
+                    </div>
+                    <div class="personeel-lijst" data-rang="1e klasse"></div>
                 </div>
-                <div class="personeel-lijst" data-rang="1e klasse"></div>
             </div>
         </div>
         
@@ -120,28 +128,30 @@
                 <div class="categorie-titel">KORPORAALS</div>
             </div>
             
-            <div class="rang-sectie" data-rang="wachtmeester" data-min="55-41" data-max="55-60">
-                <div class="rang-header">
-                    <div class="rang-naam">Wachtmeester</div>
-                    <div class="roepnummer-range">55-41 tot 55-60</div>
+            <div class="rang-secties-container">
+                <div class="rang-sectie" data-rang="wachtmeester" data-min="55-41" data-max="55-60">
+                    <div class="rang-header">
+                        <div class="rang-naam">Wachtmeester</div>
+                        <div class="roepnummer-range">55-41 tot 55-60</div>
+                    </div>
+                    <div class="personeel-lijst" data-rang="wachtmeester"></div>
                 </div>
-                <div class="personeel-lijst" data-rang="wachtmeester"></div>
-            </div>
-            
-            <div class="rang-sectie" data-rang="wachtmeester 1e klasse" data-min="55-25" data-max="55-48">
-                <div class="rang-header">
-                    <div class="rang-naam">Wachtmeester 1e Klasse</div>
-                    <div class="roepnummer-range">55-25 tot 55-48</div>
+                
+                <div class="rang-sectie" data-rang="wachtmeester 1e klasse" data-min="55-25" data-max="55-48">
+                    <div class="rang-header">
+                        <div class="rang-naam">Wachtmeester 1e Klasse</div>
+                        <div class="roepnummer-range">55-25 tot 55-48</div>
+                    </div>
+                    <div class="personeel-lijst" data-rang="wachtmeester 1e klasse"></div>
                 </div>
-                <div class="personeel-lijst" data-rang="wachtmeester 1e klasse"></div>
-            </div>
-            
-            <div class="rang-sectie" data-rang="opperwachtmeester" data-min="55-01" data-max="55-24">
-                <div class="rang-header">
-                    <div class="rang-naam">Opperwachtmeester</div>
-                    <div class="roepnummer-range">55-01 tot 55-24</div>
+                
+                <div class="rang-sectie" data-rang="opperwachtmeester" data-min="55-01" data-max="55-24">
+                    <div class="rang-header">
+                        <div class="rang-naam">Opperwachtmeester</div>
+                        <div class="roepnummer-range">55-01 tot 55-24</div>
+                    </div>
+                    <div class="personeel-lijst" data-rang="opperwachtmeester"></div>
                 </div>
-                <div class="personeel-lijst" data-rang="opperwachtmeester"></div>
             </div>
         </div>
         
@@ -151,20 +161,22 @@
                 <div class="categorie-titel">ONDEROFFICIEREN</div>
             </div>
             
-            <div class="rang-sectie" data-rang="adjudant-onderofficier" data-min="54-09" data-max="54-23">
-                <div class="rang-header">
-                    <div class="rang-naam">Adjudant-Onderofficier</div>
-                    <div class="roepnummer-range">54-09 tot 54-23</div>
+            <div class="rang-secties-container">
+                <div class="rang-sectie" data-rang="adjudant-onderofficier" data-min="54-09" data-max="54-23">
+                    <div class="rang-header">
+                        <div class="rang-naam">Adjudant-Onderofficier</div>
+                        <div class="roepnummer-range">54-09 tot 54-23</div>
+                    </div>
+                    <div class="personeel-lijst" data-rang="adjudant-onderofficier"></div>
                 </div>
-                <div class="personeel-lijst" data-rang="adjudant-onderofficier"></div>
-            </div>
-            
-            <div class="rang-sectie" data-rang="kornet" data-min="54-01" data-max="54-08">
-                <div class="rang-header">
-                    <div class="rang-naam">Kornet</div>
-                    <div class="roepnummer-range">54-01 tot 54-08</div>
+                
+                <div class="rang-sectie" data-rang="kornet" data-min="54-01" data-max="54-08">
+                    <div class="rang-header">
+                        <div class="rang-naam">Kornet</div>
+                        <div class="roepnummer-range">54-01 tot 54-08</div>
+                    </div>
+                    <div class="personeel-lijst" data-rang="kornet"></div>
                 </div>
-                <div class="personeel-lijst" data-rang="kornet"></div>
             </div>
         </div>
         
@@ -174,28 +186,30 @@
                 <div class="categorie-titel">OFFICIEREN</div>
             </div>
             
-            <div class="rang-sectie" data-rang="tweede luitenant" data-min="53-06" data-max="53-12">
-                <div class="rang-header">
-                    <div class="rang-naam">Tweede Luitenant</div>
-                    <div class="roepnummer-range">53-06 tot 53-12</div>
+            <div class="rang-secties-container">
+                <div class="rang-sectie" data-rang="tweede luitenant" data-min="53-06" data-max="53-12">
+                    <div class="rang-header">
+                        <div class="rang-naam">Tweede Luitenant</div>
+                        <div class="roepnummer-range">53-06 tot 53-12</div>
+                    </div>
+                    <div class="personeel-lijst" data-rang="tweede luitenant"></div>
                 </div>
-                <div class="personeel-lijst" data-rang="tweede luitenant"></div>
-            </div>
-            
-            <div class="rang-sectie" data-rang="eerste luitenant" data-min="53-04" data-max="53-05">
-                <div class="rang-header">
-                    <div class="rang-naam">Eerste Luitenant</div>
-                    <div class="roepnummer-range">53-04 tot 53-05</div>
+                
+                <div class="rang-sectie" data-rang="eerste luitenant" data-min="53-04" data-max="53-05">
+                    <div class="rang-header">
+                        <div class="rang-naam">Eerste Luitenant</div>
+                        <div class="roepnummer-range">53-04 tot 53-05</div>
+                    </div>
+                    <div class="personeel-lijst" data-rang="eerste luitenant"></div>
                 </div>
-                <div class="personeel-lijst" data-rang="eerste luitenant"></div>
-            </div>
-            
-            <div class="rang-sectie" data-rang="kapitein" data-min="53-01" data-max="53-03">
-                <div class="rang-header">
-                    <div class="rang-naam">Kapitein</div>
-                    <div class="roepnummer-range">53-01 tot 53-03</div>
+                
+                <div class="rang-sectie" data-rang="kapitein" data-min="53-01" data-max="53-03">
+                    <div class="rang-header">
+                        <div class="rang-naam">Kapitein</div>
+                        <div class="roepnummer-range">53-01 tot 53-03</div>
+                    </div>
+                    <div class="personeel-lijst" data-rang="kapitein"></div>
                 </div>
-                <div class="personeel-lijst" data-rang="kapitein"></div>
             </div>
         </div>
         
@@ -205,28 +219,30 @@
                 <div class="categorie-titel">HOOFDOFFICIEREN</div>
             </div>
             
-            <div class="rang-sectie" data-rang="majoor" data-min="52-07" data-max="52-09">
-                <div class="rang-header">
-                    <div class="rang-naam">Majoor</div>
-                    <div class="roepnummer-range">52-07 tot 52-09</div>
+            <div class="rang-secties-container">
+                <div class="rang-sectie" data-rang="majoor" data-min="52-07" data-max="52-09">
+                    <div class="rang-header">
+                        <div class="rang-naam">Majoor</div>
+                        <div class="roepnummer-range">52-07 tot 52-09</div>
+                    </div>
+                    <div class="personeel-lijst" data-rang="majoor"></div>
                 </div>
-                <div class="personeel-lijst" data-rang="majoor"></div>
-            </div>
-            
-            <div class="rang-sectie" data-rang="luitenant-kolonel" data-min="52-04" data-max="52-06">
-                <div class="rang-header">
-                    <div class="rang-naam">Luitenant-Kolonel</div>
-                    <div class="roepnummer-range">52-04 tot 52-06</div>
+                
+                <div class="rang-sectie" data-rang="luitenant-kolonel" data-min="52-04" data-max="52-06">
+                    <div class="rang-header">
+                        <div class="rang-naam">Luitenant-Kolonel</div>
+                        <div class="roepnummer-range">52-04 tot 52-06</div>
+                    </div>
+                    <div class="personeel-lijst" data-rang="luitenant-kolonel"></div>
                 </div>
-                <div class="personeel-lijst" data-rang="luitenant-kolonel"></div>
-            </div>
-            
-            <div class="rang-sectie" data-rang="kolonel" data-min="52-01" data-max="52-03">
-                <div class="rang-header">
-                    <div class="rang-naam">Kolonel</div>
-                    <div class="roepnummer-range">52-01 tot 52-03</div>
+                
+                <div class="rang-sectie" data-rang="kolonel" data-min="52-01" data-max="52-03">
+                    <div class="rang-header">
+                        <div class="rang-naam">Kolonel</div>
+                        <div class="roepnummer-range">52-01 tot 52-03</div>
+                    </div>
+                    <div class="personeel-lijst" data-rang="kolonel"></div>
                 </div>
-                <div class="personeel-lijst" data-rang="kolonel"></div>
             </div>
         </div>
         
@@ -236,28 +252,30 @@
                 <div class="categorie-titel">KADER</div>
             </div>
             
-            <div class="rang-sectie" data-rang="brigade-generaal" data-min="51-04" data-max="51-06">
-                <div class="rang-header">
-                    <div class="rang-naam">Brigade-Generaal</div>
-                    <div class="roepnummer-range">51-04 tot 51-06</div>
+            <div class="rang-secties-container">
+                <div class="rang-sectie" data-rang="brigade-generaal" data-min="51-04" data-max="51-06">
+                    <div class="rang-header">
+                        <div class="rang-naam">Brigade-Generaal</div>
+                        <div class="roepnummer-range">51-04 tot 51-06</div>
+                    </div>
+                    <div class="personeel-lijst" data-rang="brigade-generaal"></div>
                 </div>
-                <div class="personeel-lijst" data-rang="brigade-generaal"></div>
-            </div>
-            
-            <div class="rang-sectie" data-rang="generaal-majoor" data-min="51-02" data-max="51-03">
-                <div class="rang-header">
-                    <div class="rang-naam">Generaal-Majoor</div>
-                    <div class="roepnummer-range">51-02 tot 51-03</div>
+                
+                <div class="rang-sectie" data-rang="generaal-majoor" data-min="51-02" data-max="51-03">
+                    <div class="rang-header">
+                        <div class="rang-naam">Generaal-Majoor</div>
+                        <div class="roepnummer-range">51-02 tot 51-03</div>
+                    </div>
+                    <div class="personeel-lijst" data-rang="generaal-majoor"></div>
                 </div>
-                <div class="personeel-lijst" data-rang="generaal-majoor"></div>
-            </div>
-            
-            <div class="rang-sectie" data-rang="luitenant-generaal" data-min="51-01" data-max="51-01">
-                <div class="rang-header">
-                    <div class="rang-naam">Luitenant-Generaal</div>
-                    <div class="roepnummer-range">51-01</div>
+                
+                <div class="rang-sectie" data-rang="luitenant-generaal" data-min="51-01" data-max="51-01">
+                    <div class="rang-header">
+                        <div class="rang-naam">Luitenant-Generaal</div>
+                        <div class="roepnummer-range">51-01</div>
+                    </div>
+                    <div class="personeel-lijst" data-rang="luitenant-generaal"></div>
                 </div>
-                <div class="personeel-lijst" data-rang="luitenant-generaal"></div>
             </div>
         </div>
     </div>

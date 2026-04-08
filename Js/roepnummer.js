@@ -108,6 +108,104 @@ function setupEventListeners() {
         setTimeout(() => filterCategorie(), 100);
     }
     
+    // Zoekfunctie
+    const zoekInput = document.getElementById('zoekInput');
+    const zoekBtn = document.getElementById('zoekBtn');
+    
+    if (zoekInput && zoekBtn) {
+        // Real-time zoeken
+        zoekInput.addEventListener('input', function() {
+            zoekPersoneel();
+        });
+        
+        // Zoek op enter
+        zoekInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                zoekPersoneel();
+            }
+        });
+        
+        // Zoek op knop klik
+        zoekBtn.addEventListener('click', function() {
+            zoekPersoneel();
+        });
+    }
+    
+    // Zoek personeel functie
+    function zoekPersoneel() {
+        const zoekTerm = zoekInput.value.toLowerCase().trim();
+        
+        if (!zoekTerm) {
+            // Toon alles als zoekterm leeg is
+            document.querySelectorAll('.personeel-rij').forEach(rij => {
+                rij.style.display = 'flex';
+                // Reset highlighting
+                resetHighlighting(rij);
+            });
+            return;
+        }
+        
+        // Zoek in alle personeels
+        personeelData.forEach(personeel => {
+            const rij = document.querySelector(`[data-personeel-id="${personeel.id}"]`);
+            if (rij) {
+                const naamMatch = personeel.naam.toLowerCase().includes(zoekTerm);
+                const roepnummerMatch = personeel.roepnummer && personeel.roepnummer.toLowerCase().includes(zoekTerm);
+                const discordMatch = personeel.discordId && personeel.discordId.toLowerCase().includes(zoekTerm);
+                
+                if (naamMatch || roepnummerMatch || discordMatch) {
+                    rij.style.display = 'flex';
+                    // Highlight de gevonden tekst
+                    highlightZoekTerm(rij, zoekTerm);
+                } else {
+                    rij.style.display = 'none';
+                    // Reset highlighting als niet gevonden
+                    resetHighlighting(rij);
+                }
+            }
+        });
+    }
+    
+    // Highlight zoekterm in tekst
+    function highlightZoekTerm(element, zoekTerm) {
+        const naamElement = element.querySelector('.personeel-naam');
+        const discordElement = element.querySelector('.personeel-discord');
+        
+        if (naamElement) {
+            const naamTekst = naamElement.textContent;
+            const highlightedNaam = highlightTekst(naamTekst, zoekTerm);
+            naamElement.innerHTML = highlightedNaam;
+        }
+        
+        if (discordElement) {
+            const discordTekst = discordElement.textContent;
+            const highlightedDiscord = highlightTekst(discordTekst, zoekTerm);
+            discordElement.innerHTML = highlightedDiscord;
+        }
+    }
+    
+    // Highlight tekst functie
+    function highlightTekst(tekst, zoekTerm) {
+        const regex = new RegExp(`(${zoekTerm})`, 'gi');
+        return tekst.replace(regex, '<mark style="background: #fbbf24; color: #1f2937; padding: 2px; border-radius: 2px;">$1</mark>');
+    }
+    
+    // Reset highlighting functie
+    function resetHighlighting(element) {
+        const naamElement = element.querySelector('.personeel-naam');
+        const discordElement = element.querySelector('.personeel-discord');
+        
+        if (naamElement) {
+            // Reset naar originele tekst zonder highlighting
+            naamElement.innerHTML = naamElement.textContent;
+        }
+        
+        if (discordElement) {
+            // Reset naar originele tekst zonder highlighting
+            discordElement.innerHTML = discordElement.textContent;
+        }
+    }
+    
     // Modal sluiten
     const nieuwePersoneelModal = document.getElementById('nieuwePersoneelModal');
     if (nieuwePersoneelModal) {
@@ -705,6 +803,16 @@ function createPersoneelRij(personeel) {
             <button class="btn-small btn-promoveer" onclick="toonAdminMenu(event, '${personeel.id}', 'promote')" title="Promoveren">Promoveren</button>
             <button class="btn-small btn-ontsla" onclick="toonAdminMenu(event, '${personeel.id}', 'dismiss')" title="Ontslaan">Ontslaan</button>
         </div>
+        
+        <!-- Mini admin trigger -->
+        <div class="admin-trigger" onclick="toggleMiniAdmin(event, '${personeel.id}')" title="Admin opties">⚙</div>
+        
+        <!-- Mini admin GUI -->
+        <div class="mini-admin-gui" id="mini-admin-${personeel.id}">
+            <button class="mini-admin-btn promote" onclick="promoveerPersoneel('${personeel.id}')" title="Promoveren">↑</button>
+            <button class="mini-admin-btn demote" onclick="demoteerPersoneel('${personeel.id}')" title="Demoteren">↓</button>
+            <button class="mini-admin-btn dismiss" onclick="ontslaPersoneel('${personeel.id}')" title="Ontslaan">×</button>
+        </div>
     `;
     
     div.innerHTML = `
@@ -718,6 +826,9 @@ function createPersoneelRij(personeel) {
         <div class="personeel-roepnummer">${personeel.roepnummer || 'Nog niet toegewezen'}</div>
         ${adminKnoppen}
     `;
+    
+    // Voeg data-personeel-id toe voor zoekfunctie
+    div.setAttribute('data-personeel-id', personeel.id);
     
     return div;
 }
@@ -918,6 +1029,33 @@ function sluitAdminMenu() {
         menu.remove();
         document.removeEventListener('click', sluitAdminMenu);
     }
+}
+
+// Toggle mini admin GUI
+function toggleMiniAdmin(event, personeelId) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    // Sluit alle andere mini GUI's
+    document.querySelectorAll('.mini-admin-gui').forEach(gui => {
+        gui.classList.remove('show');
+    });
+    
+    // Toggle deze GUI
+    const gui = document.getElementById(`mini-admin-${personeelId}`);
+    if (gui) {
+        gui.classList.toggle('show');
+    }
+    
+    // Sluit context menu als die open is
+    sluitAdminMenu();
+}
+
+// Sluit alle mini GUI's
+function sluitAlleMiniGUIs() {
+    document.querySelectorAll('.mini-admin-gui').forEach(gui => {
+        gui.classList.remove('show');
+    });
 }
 
 // Get volgende rang
