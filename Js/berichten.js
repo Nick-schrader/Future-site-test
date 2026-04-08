@@ -24,24 +24,7 @@ class BerichtenSysteem {
     if (this.user && this.user.id) {
       await this.loadBerichten();
       
-      // Voeg test bericht toe als er geen ongelezen berichten zijn
-      const ongelezenBerichten = this.berichten.filter(b => !b.gelezen);
-      if (ongelezenBerichten.length === 0) {
-        const testBericht = {
-          id: 'test-' + Date.now(),
-          discordId: this.user.id,
-          type: 'promotie',
-          bericht: 'Test bericht: Gefeliciteerd met je promotie! Je hebt nu een nieuw roepnummer. Dit is een test om het berichten systeem te verifiëren.',
-          tijd: new Date().toISOString(),
-          gelezen: false
-        };
-        this.berichten.push(testBericht);
-        
-        // Sla test bericht op in localStorage
-        localStorage.setItem(`berichten_${this.user.id}`, JSON.stringify(this.berichten));
-        console.log('[BERICHTEN] Test bericht toegevoegd:', testBericht);
-      }
-      
+            
       this.updateBerichtenMenu();
     }
   }
