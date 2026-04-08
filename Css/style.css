@@ -49,6 +49,24 @@ body {
 .profile-menu-item:hover { background: #3a3d4e; }
 
 /* BERICHTEN MENU */
+.berichten-menu-summary {
+  cursor: pointer; color: #cdd6f4; font-size: 0.9rem;
+  padding: 8px 12px; border-radius: 6px; transition: background 0.15s;
+}
+.berichten-menu-summary:hover { background: #3a3d4e; }
+
+.berichten-badge {
+  position: absolute; top: -4px; right: -4px;
+  background: #f38ba8; color: #fff; border-radius: 50%;
+  font-size: 0.65rem; width: 16px; height: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: bold;
+}
+
+.berichten-dropdown {
+  position: relative;
+}
+
 .berichten-menu {
   position: absolute; top: 48px; right: 0;
   background: #2a2d3e; border: 1px solid #3a3d4e;
