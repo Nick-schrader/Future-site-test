@@ -100,18 +100,18 @@ class BerichtenSysteem {
       return;
     }
 
-    // Filter ongelezen berichten
-    const ongelezenBerichten = this.berichten.filter(b => !b.gelezen);
-    console.log('[BERICHTEN] Ongelezen berichten:', ongelezenBerichten.length);
-    console.log('[BERICHTEN] Alle berichten:', this.berichten.map(b => ({
+    // Toon alle berichten (zowel gelezen als ongelezen)
+    console.log('[BERICHTEN] Alle berichten:', this.berichten.length);
+    console.log('[BERICHTEN] Alle berichten details:', this.berichten.map(b => ({
       id: b.id,
       type: b.type,
       gelezen: b.gelezen,
       bericht: b.bericht
     })));
     
-    if (ongelezenBerichten.length > 0) {
-      // Toon aantal ongelezen berichten
+    if (this.berichten.length > 0) {
+      // Bereen ongelezen berichten voor badge
+      const ongelezenBerichten = this.berichten.filter(b => !b.gelezen);
       berichtenMenuName.textContent = `${ongelezenBerichten.length} nieuwe berichten`;
       console.log('[BERICHTEN] Menu name updated:', berichtenMenuName.textContent);
       
