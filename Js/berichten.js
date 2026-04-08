@@ -65,6 +65,7 @@ class BerichtenSysteem {
   updateBerichtenMenu() {
     const berichtenMenu = document.querySelector('.berichten-menu');
     const berichtenMenuName = document.querySelector('.berichten-menu-name');
+    const berichtenBadge = document.querySelector('.berichten-badge');
     
     if (!berichtenMenu || !berichtenMenuName) return;
 
@@ -74,6 +75,12 @@ class BerichtenSysteem {
     if (ongelezenBerichten.length > 0) {
       // Toon aantal ongelezen berichten
       berichtenMenuName.textContent = `${ongelezenBerichten.length} nieuwe berichten`;
+      
+      // Update badge
+      if (berichtenBadge) {
+        berichtenBadge.textContent = ongelezenBerichten.length;
+        berichtenBadge.style.display = 'flex';
+      }
       
       // Maak berichten items aan
       const bestaandeItems = berichtenMenu.querySelectorAll('.berichten-menu-item');
@@ -94,8 +101,11 @@ class BerichtenSysteem {
       // Toon berichten menu
       berichtenMenu.style.display = 'block';
     } else {
-      // Geen nieuwe berichten, verberg menu
+      // Geen nieuwe berichten, verberg menu en badge
       berichtenMenu.style.display = 'none';
+      if (berichtenBadge) {
+        berichtenBadge.style.display = 'none';
+      }
     }
   }
 

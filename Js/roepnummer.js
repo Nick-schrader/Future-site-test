@@ -518,6 +518,7 @@ function demoteerPersoneel(personeelId) {
     const currentIndex = rangHiërarchie.indexOf(personeel.rang);
     if (currentIndex > 0) {
         const nieuweRang = rangHiërarchie[currentIndex - 1];
+        const oudeRang = personeel.rang;
         personeel.rang = nieuweRang;
         
         // Wijs automatisch nieuw roepnummer toe voor de nieuwe rang
