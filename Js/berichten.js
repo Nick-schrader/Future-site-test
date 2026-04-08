@@ -173,6 +173,10 @@ class BerichtenSysteem {
       gelezen: false
     };
 
+    console.log('[BERICHTEN] Bericht versturen naar:', discordId);
+    console.log('[BERICHTEN] Bericht type:', type);
+    console.log('[BERICHTEN] Bericht tekst:', bericht);
+
     try {
       // Probeer naar API te sturen
       const response = await fetch(`${API_URL}/api/berichten`, {
