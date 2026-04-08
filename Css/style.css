@@ -694,9 +694,6 @@ input:checked + .slider:before { transform: translateX(16px); }
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   height: fit-content;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 15px;
 }
 
 .categorie-header {
@@ -709,7 +706,14 @@ input:checked + .slider:before { transform: translateX(16px); }
   position: relative;
   overflow: hidden;
   justify-content: space-between;
-  grid-column: 1 / -1;
+}
+
+/* Rangen binnen categorie horizontaal */
+.rang-categorie .rang-secties-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 15px;
+  padding: 15px;
 }
 
 .categorie-header::before {

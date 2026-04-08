@@ -543,19 +543,35 @@ function centreerZichtbareCategorieën() {
     const zichtbareCategorieën = categorieContainer.querySelectorAll('.rang-categorie[style="display: block;"]');
     
     if (zichtbareCategorieën.length > 0) {
-        // Pas grid layout aan voor horizontale rangen binnen categorie
-        const zichtbareCategorie = zichtbareCategorieën[0];
-        const rangSecties = zichtbareCategorie.querySelectorAll('.rang-sectie');
-        
-        if (rangSecties.length > 1) {
-            // Maak rangen horizontaal binnen de categorie
-            zichtbareCategorie.style.display = 'grid';
-            zichtbareCategorie.style.gridTemplateColumns = 'repeat(auto-fit, minmax(280px, 1fr))';
-            zichtbareCategorie.style.gap = '15px';
+        // Voor elke zichtbare categorie: rangen horizontaal maken
+        zichtbareCategorieën.forEach(categorie => {
+            const rangSecties = categorie.querySelectorAll('.rang-sectie');
             
-            // Sorteer rangen in juiste volgorde
-            sorteerRangenInCategorie(zichtbareCategorie);
-        }
+            if (rangSecties.length > 1) {
+                // Maak container voor rangen als die niet bestaat
+                let rangenContainer = categorie.querySelector('.rang-secties-container');
+                if (!rangenContainer) {
+                    rangenContainer = document.createElement('div');
+                    rangenContainer.className = 'rang-secties-container';
+                    
+                    // Verplaats alle rang secties naar container
+                    rangSecties.forEach(rang => {
+                        rangenContainer.appendChild(rang);
+                    });
+                    
+                    // Voeg container toe na header
+                    const header = categorie.querySelector('.categorie-header');
+                    if (header) {
+                        header.insertAdjacentElement('afterend', rangenContainer);
+                    } else {
+                        categorie.appendChild(rangenContainer);
+                    }
+                }
+                
+                // Sorteer rangen in juiste volgorde
+                sorteerRangenInCategorie(rangenContainer);
+            }
+        });
     }
 }
 
