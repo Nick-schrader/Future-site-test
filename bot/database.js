@@ -40,6 +40,7 @@ db.exec(`
   );
 
   CREATE TABLE IF NOT EXISTS indelingen (
+  
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id TEXT,
     roepnummer TEXT,
@@ -60,11 +61,11 @@ db.exec(`
 
   CREATE TABLE IF NOT EXISTS berichten (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    discord_id VARCHAR(255) NOT NULL,
-    type ENUM('promotie', 'demotie', 'roepnummer', 'ontslag') NOT NULL,
+    discord_id TEXT NOT NULL,
+    type TEXT NOT NULL CHECK(type IN ('promotie', 'demotie', 'roepnummer', 'ontslag')),
     bericht TEXT NOT NULL,
-    tijd DATETIME NOT NULL,
-    gelezen BOOLEAN DEFAULT FALSE
+    tijd TEXT NOT NULL,
+    gelezen INTEGER DEFAULT 0
   );
 `);
 
