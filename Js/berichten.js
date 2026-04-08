@@ -109,7 +109,9 @@ class BerichtenSysteem {
       const bestaandeItems = berichtenMenu.querySelectorAll('.berichten-menu-item');
       bestaandeItems.forEach(item => item.remove());
       
-      ongelezenBerichten.forEach((bericht, index) => {
+      console.log('[BERICHTEN] Creating berichten items, total:', this.berichten.length);
+      
+      this.berichten.forEach((bericht, index) => {
         console.log('[BERICHTEN] Creating item for bericht:', bericht);
         const berichtItem = document.createElement('div');
         berichtItem.className = 'berichten-menu-item';
@@ -122,6 +124,9 @@ class BerichtenSysteem {
         berichtenMenu.appendChild(berichtItem);
         console.log('[BERICHTEN] Bericht item added:', index + 1);
       });
+      
+      console.log('[BERICHTEN] Total items added:', this.berichten.length);
+      console.log('[BERICHTEN] Menu children count:', berichtenMenu.children.length);
       
       // Toon berichten menu
       berichtenMenu.style.display = 'block';
@@ -198,6 +203,11 @@ class BerichtenSysteem {
       const berichten = saved ? JSON.parse(saved) : [];
       berichten.push(nieuwBericht);
       localStorage.setItem(`berichten_${discordId}`, JSON.stringify(berichten));
+      
+      // Forceer directe update van berichten menu
+      setTimeout(() => {
+        berichtenSysteem.updateBerichtenMenu();
+      }, 100);
     }
   }
 }
