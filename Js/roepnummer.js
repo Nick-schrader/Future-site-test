@@ -232,12 +232,24 @@ function createPersoneelRij(personeel) {
     
     // Voeg click event toe aan de hele rij (behalve admin knoppen)
     div.addEventListener('click', function(e) {
+        console.log('Click detected on personeel:', personeel.naam, 'Target:', e.target);
+        
         // Check of de gebruiker een beheerder is
         const user = getUser();
+        console.log('User role:', user.role);
         const isAdmin = user.role === 'Administratie' || user.role === 'admin' || user.role === 'beheer';
+        console.log('Is admin:', isAdmin);
         
-        if (isAdmin && !e.target.closest('.admin-trigger') && !e.target.closest('.mini-admin-gui')) {
+        // Check of we niet op admin knoppen klikken
+        const isAdminTrigger = e.target.closest('.admin-trigger');
+        const isMiniAdminGui = e.target.closest('.mini-admin-gui');
+        console.log('Is admin trigger:', isAdminTrigger, 'Is mini admin GUI:', isMiniAdminGui);
+        
+        if (isAdmin && !isAdminTrigger && !isMiniAdminGui) {
+            console.log('Calling toggleMiniAdmin for:', personeel.id);
             toggleMiniAdmin(e, personeel.id);
+        } else {
+            console.log('Not calling toggleMiniAdmin - conditions not met');
         }
     });
     
@@ -394,22 +406,31 @@ function resetHighlighting(element) {
     }
 }
 
-// Toggle mini admin
+// Toggle mini admin GUI
 function toggleMiniAdmin(event, personeelId) {
+    console.log('toggleMiniAdmin called for:', personeelId);
     event.stopPropagation();
-    
+
     const miniAdmin = document.getElementById(`mini-admin-${personeelId}`);
-    if (!miniAdmin) return;
-    
+    console.log('Mini admin element found:', !!miniAdmin);
+    if (!miniAdmin) {
+        console.log('Mini admin element not found for ID:', personeelId);
+        return;
+    }
+
     const alleMiniAdmins = document.querySelectorAll('.mini-admin-gui');
-    
+    console.log('Found mini admin GUIs:', alleMiniAdmins.length);
+
     alleMiniAdmins.forEach(gui => {
         if (gui !== miniAdmin) {
             gui.style.display = 'none';
         }
     });
-    
-    miniAdmin.style.display = miniAdmin.style.display === 'block' ? 'none' : 'block';
+
+    const currentDisplay = miniAdmin.style.display;
+    const newDisplay = currentDisplay === 'block' ? 'none' : 'block';
+    miniAdmin.style.display = newDisplay;
+    console.log('Mini admin display changed from:', currentDisplay, 'to:', newDisplay);
 }
 
 // Promoveer personeel

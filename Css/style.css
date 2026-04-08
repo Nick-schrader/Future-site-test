@@ -535,7 +535,7 @@ input:checked + .slider:before { transform: translateX(16px); }
 
 /* ROEPNUMMER PAGINA */
 .roepnummer-container {
-  max-width: 1600px;
+  max-width: 1800px;
   margin: 0 auto;
   padding: 20px;
   width: 100%;
