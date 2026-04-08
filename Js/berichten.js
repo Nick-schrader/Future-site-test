@@ -23,6 +23,24 @@ class BerichtenSysteem {
     
     if (this.user && this.user.id) {
       await this.loadBerichten();
+      
+      // Voeg test bericht toe voor debugging
+      if (this.berichten.length === 0) {
+        const testBericht = {
+          id: 'test-' + Date.now(),
+          discordId: this.user.id,
+          type: 'test',
+          bericht: 'Dit is een test bericht om het systeem te controleren.',
+          tijd: new Date().toISOString(),
+          gelezen: false
+        };
+        this.berichten.push(testBericht);
+        
+        // Sla test bericht op in localStorage
+        localStorage.setItem(`berichten_${this.user.id}`, JSON.stringify(this.berichten));
+        console.log('[BERICHTEN] Test bericht toegevoegd:', testBericht);
+      }
+      
       this.updateBerichtenMenu();
     }
   }
@@ -67,26 +85,42 @@ class BerichtenSysteem {
     const berichtenMenuName = document.querySelector('.berichten-menu-name');
     const berichtenBadge = document.querySelector('.berichten-badge');
     
-    if (!berichtenMenu || !berichtenMenuName) return;
+    console.log('[BERICHTEN] updateBerichtenMenu called');
+    console.log('[BERICHTEN] User:', this.user);
+    console.log('[BERICHTEN] Total berichten:', this.berichten.length);
+    console.log('[BERICHTEN] Elements found:', {
+      berichtenMenu: !!berichtenMenu,
+      berichtenMenuName: !!berichtenMenuName,
+      berichtenBadge: !!berichtenBadge
+    });
+    
+    if (!berichtenMenu || !berichtenMenuName) {
+      console.log('[BERICHTEN] Elements not found, returning');
+      return;
+    }
 
     // Filter ongelezen berichten
     const ongelezenBerichten = this.berichten.filter(b => !b.gelezen);
+    console.log('[BERICHTEN] Ongelezen berichten:', ongelezenBerichten.length);
     
     if (ongelezenBerichten.length > 0) {
       // Toon aantal ongelezen berichten
       berichtenMenuName.textContent = `${ongelezenBerichten.length} nieuwe berichten`;
+      console.log('[BERICHTEN] Menu name updated:', berichtenMenuName.textContent);
       
       // Update badge
       if (berichtenBadge) {
         berichtenBadge.textContent = ongelezenBerichten.length;
         berichtenBadge.style.display = 'flex';
+        console.log('[BERICHTEN] Badge updated:', berichtenBadge.textContent);
       }
       
       // Maak berichten items aan
       const bestaandeItems = berichtenMenu.querySelectorAll('.berichten-menu-item');
       bestaandeItems.forEach(item => item.remove());
       
-      ongelezenBerichten.forEach(bericht => {
+      ongelezenBerichten.forEach((bericht, index) => {
+        console.log('[BERICHTEN] Creating item for bericht:', bericht);
         const berichtItem = document.createElement('div');
         berichtItem.className = 'berichten-menu-item';
         berichtItem.innerHTML = `
@@ -96,16 +130,19 @@ class BerichtenSysteem {
         `;
         berichtItem.onclick = () => this.markeerGelezen(bericht.id);
         berichtenMenu.appendChild(berichtItem);
+        console.log('[BERICHTEN] Bericht item added:', index + 1);
       });
       
       // Toon berichten menu
       berichtenMenu.style.display = 'block';
+      console.log('[BERICHTEN] Menu displayed');
     } else {
       // Geen nieuwe berichten, verberg menu en badge
       berichtenMenu.style.display = 'none';
       if (berichtenBadge) {
         berichtenBadge.style.display = 'none';
       }
+      console.log('[BERICHTEN] No unread messages, menu hidden');
     }
   }
 
