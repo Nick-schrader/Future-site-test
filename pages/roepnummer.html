@@ -12,7 +12,7 @@
             color: #fff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 0;
         }
         
         .roepnummer-container {
@@ -483,14 +483,420 @@
                 max-width: calc(100% - 40px);
             }
         }
+        
+        /* Header en Sidebar Styling */
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #252540 100%);
+            border-bottom: 2px solid #3a3a4a;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #a78bfa;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .logo-icon {
+            font-size: 1.5rem;
+            color: #8b5cf6;
+        }
+        
+        .logo-text {
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .profile-dropdown {
+            position: relative;
+        }
+        
+        .profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(139, 92, 246, 0.1);
+            border: 2px solid #3a3a4a;
+            border-radius: 8px;
+            padding: 8px 15px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .profile-btn:hover {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: #8b5cf6;
+            transform: translateY(-1px);
+        }
+        
+        .profile-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .profile-name {
+            color: #fff;
+            font-weight: 500;
+        }
+        
+        .profile-arrow {
+            font-size: 1rem;
+            color: #8b5cf6;
+            transition: transform 0.3s ease;
+        }
+        
+        .profile-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #252540 100%);
+            border: 2px solid #3a3a4a;
+            border-radius: 8px;
+            min-width: 200px;
+            margin-top: 8px;
+            display: none;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .profile-menu.show {
+            display: block;
+        }
+        
+        .profile-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            color: #fff;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+        }
+        
+        .profile-menu-item:hover {
+            background: rgba(139, 92, 246, 0.1);
+            color: #a78bfa;
+        }
+        
+        .menu-icon {
+            font-size: 1.2rem;
+            color: #8b5cf6;
+        }
+        
+        .profile-menu-divider {
+            height: 1px;
+            background: #3a3a4a;
+            margin: 4px 0;
+        }
+        
+        .sidebar {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 250px;
+            height: calc(100vh - 60px);
+            background: linear-gradient(135deg, #1a1a2e 0%, #252540 100%);
+            border-right: 2px solid #3a3a4a;
+            overflow-y: auto;
+            z-index: 999;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.3);
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 2px solid #3a3a4a;
+        }
+        
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #a78bfa;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .sidebar-icon {
+            font-size: 1.4rem;
+            color: #8b5cf6;
+        }
+        
+        .sidebar-title {
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .sidebar-nav {
+            padding: 20px 0;
+        }
+        
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            color: #fff;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar-item:hover {
+            background: rgba(139, 92, 246, 0.1);
+            color: #a78bfa;
+            border-left-color: #8b5cf6;
+            transform: translateX(3px);
+        }
+        
+        .sidebar-item.active {
+            background: rgba(139, 92, 246, 0.2);
+            color: #a78bfa;
+            border-left-color: #a78bfa;
+        }
+        
+        .sidebar-label {
+            font-weight: 500;
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            margin-top: 60px;
+            padding: 20px;
+            min-height: calc(100vh - 60px);
+        }
+        
+        /* Rang Navigatie Balk */
+        .rang-navigatie {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #252540 100%);
+            border-radius: 12px;
+            border: 2px solid #3a3a4a;
+            overflow-x: auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .rang-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 15px 20px;
+            background: rgba(139, 92, 246, 0.1);
+            border: 2px solid #3a3a4a;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+            text-align: center;
+        }
+        
+        .rang-nav-item:hover {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: #8b5cf6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+        
+        .rang-nav-item.active {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            border-color: #a78bfa;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+        }
+        
+        .rang-nav-icon {
+            font-size: 2rem;
+            color: #8b5cf6;
+            transition: all 0.3s ease;
+        }
+        
+        .rang-nav-item:hover .rang-nav-icon,
+        .rang-nav-item.active .rang-nav-icon {
+            color: #fff;
+            transform: scale(1.1);
+        }
+        
+        .rang-nav-label {
+            color: #fff;
+            font-weight: 500;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .rang-navigatie {
+                flex-wrap: wrap;
+                gap: 10px;
+                padding: 15px;
+            }
+            
+            .rang-nav-item {
+                min-width: 100px;
+                padding: 12px 15px;
+            }
+            
+            .rang-nav-icon {
+                font-size: 1.5rem;
+            }
+            
+            .rang-nav-label {
+                font-size: 0.8rem;
+            }
+        }
     </style>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
 </head>
 <body>
-    <div class="roepnummer-container">
-        <h1 class="pagina-titel">Roepnummer Bestand</h1>
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="topbar-left">
+            <div class="logo">
+                <span class="logo-icon">shield</span>
+                <span class="logo-text">Porto Systeem</span>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <div class="profile-dropdown">
+                <button class="profile-btn" id="profileBtn">
+                    <img src="" alt="Profile" class="profile-avatar" id="profileAvatar">
+                    <span class="profile-name" id="profileName">-</span>
+                    <span class="profile-arrow">expand_more</span>
+                </button>
+                <div class="profile-menu" id="profileMenu">
+                    <a href="account.html" class="profile-menu-item">
+                        <span class="menu-icon">person</span>
+                        <span>Account</span>
+                    </a>
+                    <a href="roepnummer.html" class="profile-menu-item">
+                        <span class="menu-icon">list_alt</span>
+                        <span>Roepnummer Bestand</span>
+                    </a>
+                    <a href="settings.html" class="profile-menu-item">
+                        <span class="menu-icon">settings</span>
+                        <span>Instellingen</span>
+                    </a>
+                    <div class="profile-menu-divider"></div>
+                    <button class="profile-menu-item logout-btn" onclick="logout()">
+                        <span class="menu-icon">logout</span>
+                        <span>Uitloggen</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <span class="sidebar-icon">shield</span>
+                <span class="sidebar-title">Porto Systeem</span>
+            </div>
+        </div>
         
-        <!-- Admin knop - alleen zichtbaar voor Administratie -->
-        <button class="btn-toevoegen" id="nieuwePersoneelBtn" style="display: none;">+ Nieuw Personeel Toevoegen</button>
+        <nav class="sidebar-nav">
+            <a class="sidebar-item" href="porto.html">
+                <span class="sidebar-icon">home</span>
+                <span class="sidebar-label">Porto Systeem</span>
+            </a>
+            <a class="sidebar-item active" href="roepnummer.html">
+                <span class="sidebar-icon">list_alt</span>
+                <span class="sidebar-label">Roepnummer Bestand</span>
+            </a>
+            <a class="sidebar-item" href="account.html">
+                <span class="sidebar-icon">person</span>
+                <span class="sidebar-label">Account</span>
+            </a>
+            <a class="sidebar-item" href="ops.html">
+                <span class="sidebar-icon">directions_car</span>
+                <span class="sidebar-label">OPS Overzicht</span>
+            </a>
+            <a class="sidebar-item" href="logs.html">
+                <span class="sidebar-icon">description</span>
+                <span class="sidebar-label">Logs</span>
+            </a>
+            <a class="sidebar-item" href="settings.html">
+                <span class="sidebar-icon">settings</span>
+                <span class="sidebar-label">Instellingen</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="roepnummer-container">
+            <h1 class="pagina-titel">Roepnummer Bestand</h1>
+            
+            <!-- Admin knop - alleen zichtbaar voor Administratie -->
+            <button class="btn-toevoegen" id="nieuwePersoneelBtn" style="display: none;">+ Nieuw Personeel Toevoegen</button>
+            
+            <!-- Rang Navigatie Balk -->
+            <div class="rang-navigatie">
+                <div class="rang-nav-item" data-categorie="manschappen">
+                    <span class="rang-nav-icon">military_tech</span>
+                    <span class="rang-nav-label">Manschappen</span>
+                </div>
+                <div class="rang-nav-item" data-categorie="korporaals">
+                    <span class="rang-nav-icon">shield</span>
+                    <span class="rang-nav-label">Korporaals</span>
+                </div>
+                <div class="rang-nav-item" data-categorie="onderofficieren">
+                    <span class="rang-nav-icon">stars</span>
+                    <span class="rang-nav-label">Onderofficieren</span>
+                </div>
+                <div class="rang-nav-item" data-categorie="officieren">
+                    <span class="rang-nav-icon">workspace_premium</span>
+                    <span class="rang-nav-label">Officieren</span>
+                </div>
+                <div class="rang-nav-item" data-categorie="hoofdofficieren">
+                    <span class="rang-nav-icon">military_tech</span>
+                    <span class="rang-nav-label">Hoofdofficieren</span>
+                </div>
+                <div class="rang-nav-item" data-categorie="kader">
+                    <span class="rang-nav-icon">grade</span>
+                    <span class="rang-nav-label">Kader</span>
+                </div>
+            </div>
         
         <!-- Manschappen -->
         <div class="rang-categorie">
