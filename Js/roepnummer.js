@@ -49,11 +49,18 @@ function toonRoepnummerPagina() {
 
 // Setup event listeners
 function setupEventListeners() {
-    // Admin knop
+    // Admin knop - alleen zichtbaar voor Administratie rol
     const nieuwePersoneelBtn = document.getElementById('nieuwePersoneelBtn');
     if (nieuwePersoneelBtn) {
-        nieuwePersoneelBtn.style.display = 'inline-block';
-        nieuwePersoneelBtn.addEventListener('click', openNieuwePersoneelModal);
+        const user = getUser();
+        const isAdmin = user.rollen && user.rollen.includes('Administratie');
+        
+        if (isAdmin) {
+            nieuwePersoneelBtn.style.display = 'inline-block';
+            nieuwePersoneelBtn.addEventListener('click', openNieuwePersoneelModal);
+        } else {
+            nieuwePersoneelBtn.style.display = 'none';
+        }
     }
     
     // Categorie selectie dropdown
@@ -198,11 +205,15 @@ function renderPersoneel() {
 function createPersoneelRij(personeel) {
     const div = document.createElement('div');
     div.className = 'personeel-rij';
-    div.draggable = true;
-    div.dataset.personeelId = personeel.id;
     
+    // Check of gebruiker Administratie rol heeft voor admin functionaliteit
     const user = getUser();
-    const isAdmin = user.role === 'Administratie' || user.role === 'admin' || user.role === 'beheer';
+    const isAdmin = user.rollen && user.rollen.includes('Administratie');
+    
+    // Drag and drop alleen voor admin
+    div.draggable = isAdmin;
+    
+    div.dataset.personeelId = personeel.id;
     
     const avatarInitialen = personeel.naam.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
     
@@ -234,10 +245,17 @@ function createPersoneelRij(personeel) {
     div.addEventListener('click', function(e) {
         console.log('Click detected on personeel:', personeel.naam, 'Target:', e.target);
         
-        // Check of de gebruiker een beheerder is
+        // Check of de gebruiker een beheerder is via Discord rollen
         const user = getUser();
-        console.log('User role:', user.role);
-        const isAdmin = user.role === 'Administratie' || user.role === 'admin' || user.role === 'beheer';
+        console.log('User rollen:', user.rollen);
+        const isAdmin = user.rollen && (
+            user.rollen.includes('Administratie') || 
+            user.rollen.includes('admin') || 
+            user.rollen.includes('beheer') ||
+            user.rollen.includes('Beheer') ||
+            user.rollen.includes('Commandant') ||
+            user.rollen.includes('Hoofdcommissaris')
+        );
         console.log('Is admin:', isAdmin);
         
         // Check of we niet op admin knoppen klikken
@@ -253,13 +271,26 @@ function createPersoneelRij(personeel) {
         }
     });
     
+    // Drag and drop - alleen voor Administratie rol
     div.addEventListener('dragstart', function(e) {
-        e.dataTransfer.setData('personeelId', personeel.id);
-        this.classList.add('dragging');
+        const user = getUser();
+        const isAdmin = user.rollen && user.rollen.includes('Administratie');
+        
+        if (isAdmin) {
+            e.dataTransfer.setData('personeelId', personeel.id);
+            this.classList.add('dragging');
+        } else {
+            e.preventDefault();
+        }
     });
     
     div.addEventListener('dragend', function() {
-        this.classList.remove('dragging');
+        const user = getUser();
+        const isAdmin = user.rollen && user.rollen.includes('Administratie');
+        
+        if (isAdmin) {
+            this.classList.remove('dragging');
+        }
     });
     
     return div;
