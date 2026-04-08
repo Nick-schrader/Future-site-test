@@ -118,12 +118,18 @@ function toonGeenToegang() {
 // Setup event listeners
 function setupEventListeners() {
     // Nieuw personeel knop
-    document.getElementById('nieuwePersoneelBtn').addEventListener('click', openNieuwePersoneelModal);
+    const nieuwePersoneelBtn = document.getElementById('nieuwePersoneelBtn');
+    if (nieuwePersoneelBtn) {
+        nieuwePersoneelBtn.addEventListener('click', openNieuwePersoneelModal);
+    }
     
     // Modal sluiten
-    document.getElementById('nieuwePersoneelModal').addEventListener('click', function(e) {
-        if (e.target === this) sluitModal();
-    });
+    const nieuwePersoneelModal = document.getElementById('nieuwePersoneelModal');
+    if (nieuwePersoneelModal) {
+        nieuwePersoneelModal.addEventListener('click', function(e) {
+            if (e.target === this) sluitModal();
+        });
+    }
     
     // Setup drag and drop voor alle personeel lijsten
     document.querySelectorAll('.personeel-lijst').forEach(lijst => {
