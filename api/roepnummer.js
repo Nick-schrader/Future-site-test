@@ -128,4 +128,21 @@ router.delete('/personeel/:id', (req, res) => {
   }
 });
 
+// Verwijder alle personeel (reset)
+router.delete('/personeel', (req, res) => {
+  try {
+    console.log('[API] Alle personeel verwijderen (reset)');
+    
+    const stmt = db.prepare("DELETE FROM personeel");
+    const result = stmt.run();
+    
+    console.log('[API] Alle personeel succesvol verwijderd:', result.changes, 'rijen');
+    res.json({ success: true, deleted: result.changes });
+    
+  } catch (error) {
+    console.error('[API] Fout bij verwijderen alle personeel:', error);
+    res.status(500).json({ error: 'Database fout: ' + error.message });
+  }
+});
+
 module.exports = router;

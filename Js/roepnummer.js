@@ -65,17 +65,26 @@ function toonRoepnummerPagina() {
 
 // Setup event listeners
 function setupEventListeners() {
-    // Admin knop - alleen zichtbaar voor Administratie rol
+    // Admin knoppen - alleen zichtbaar voor Administratie rol
     const nieuwePersoneelBtn = document.getElementById('nieuwePersoneelBtn');
-    if (nieuwePersoneelBtn) {
+    const resetDatabaseBtn = document.getElementById('resetDatabaseBtn');
+    
+    if (nieuwePersoneelBtn || resetDatabaseBtn) {
         const user = getUser();
         const isAdmin = user.rollen && user.rollen.some(rol => rol.naam === 'Administratie');
         
         if (isAdmin) {
-            nieuwePersoneelBtn.style.display = 'inline-block';
-            nieuwePersoneelBtn.addEventListener('click', openNieuwePersoneelModal);
+            if (nieuwePersoneelBtn) {
+                nieuwePersoneelBtn.style.display = 'inline-block';
+                nieuwePersoneelBtn.addEventListener('click', openNieuwePersoneelModal);
+            }
+            if (resetDatabaseBtn) {
+                resetDatabaseBtn.style.display = 'inline-block';
+                resetDatabaseBtn.addEventListener('click', resetDatabase);
+            }
         } else {
-            nieuwePersoneelBtn.style.display = 'none';
+            if (nieuwePersoneelBtn) nieuwePersoneelBtn.style.display = 'none';
+            if (resetDatabaseBtn) resetDatabaseBtn.style.display = 'none';
         }
     }
     
@@ -952,6 +961,33 @@ const rangHiërarchie = [
     'brigade-generaal', 'generaal-majoor', 'luitenant-generaal'
 ];
 
+// Reset database (alle personeel verwijderen)
+async function resetDatabase() {
+    if (confirm('Weet je zeker dat je alle personeel uit de database wilt verwijderen? Dit kan niet ongedaan worden gemaakt.')) {
+        try {
+            const response = await fetch('/api/roepnummer/personeel', {
+                method: 'DELETE'
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                console.log('[ROEPNUMMER] Database gereset:', result);
+                toonNotificatie(`Database gereset: ${result.deleted} personeel verwijderd`);
+                
+                // Clear localStorage en reload
+                localStorage.removeItem('roepnummerData');
+                location.reload();
+            } else {
+                console.error('[ROEPNUMMER] Fout bij resetten database');
+                toonNotificatie('Fout bij resetten database');
+            }
+        } catch (error) {
+            console.error('[ROEPNUMMER] API fout bij reset:', error);
+            toonNotificatie('API fout bij resetten database');
+        }
+    }
+}
+
 // Make functions available globally for onclick handlers
 window.promoveerPersoneel = promoveerPersoneel;
 window.demoteerPersoneel = demoteerPersoneel;
@@ -962,3 +998,4 @@ window.voegPersoneelToe = voegPersoneelToe;
 window.openNieuwePersoneelModal = openNieuwePersoneelModal;
 window.sluitModal = sluitModal;
 window.sluitRoepnummerModal = sluitRoepnummerModal;
+window.resetDatabase = resetDatabase;
