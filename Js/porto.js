@@ -1185,11 +1185,60 @@ function setStatus(s) {
 
 function latRolVallen() {
   const u = getUser();
+  
+  // Log OVD valt actie
+  console.log('🔄 OVD VALT - Gebruiker:', u.displayName || u.username, 'Rol:', u.role);
+  console.log('🔄 OVD VALT - IndienstStart voor valt:', u.indienstStart);
+  
+  // Bereken diensturen voor logging
+  let dienstUren = 0;
+  if (u.indienstStart) {
+    const nu = Date.now();
+    const dienstMs = nu - u.indienstStart;
+    dienstUren = Math.floor(dienstMs / (1000 * 60 * 60)); // uren
+    console.log('🔄 OVD VALT - Berekende diensturen:', dienstUren, 'uren');
+  }
+  
   fetch(`${API_URL}/api/rol-laten-vallen`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId: u.id }),
   }).then(() => {
+    // Reset rol in database
+    fetch(`${API_URL}/api/reset/${u.id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        indienstStart: null, 
+        dcnaam: u.dcnaam || '', 
+        roepnummer: '',
+        dienstUren: dienstUren // Log diensturen
+      }),
+    }).then(() => {
+      console.log('🔄 OVD VALT - Database reset compleet');
+      
+      // Start noodhulp timer voor nieuwe rol (OVD/OPCO/OPS)
+      const nieuweRol = u.role; // Huidige rol voordat reset naar 'user'
+      const rolVoorNoodhulp = ['ovd', 'opco', 'ops'].includes(nieuweRol) ? nieuweRol : null;
+      
+      if (rolVoorNoodhulp) {
+        fetch(`${API_URL}/api/noodhulp-timer`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            action: 'start',
+            role: rolVoorNoodhulp,
+            dienstUren: dienstUren // Log de diensturen van de vorige rol
+          }),
+        }).then(() => {
+          console.log(`🔄 OVD VALT - Noodhulp timer gestart voor nieuwe ${rolVoorNoodhulp.toUpperCase()}`);
+          console.log(`🔄 OVD VALT - Noodhulp uren gelogd: ${dienstUren} uren`);
+        }).catch(err => {
+          console.error(`🔄 OVD VALT - Fout bij starten noodhulp timer voor ${rolVoorNoodhulp}:`, err);
+        });
+      }
+    });
+    
     u.role = 'user';
     u.ingedeeld = false; // reset zodat de indeling opnieuw gecheckt wordt na reload
     saveUser(u);
