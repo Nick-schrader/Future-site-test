@@ -59,20 +59,25 @@ async function syncUserFromDB() {
     // Als gebruiker uitdienst is, herstel geen rol/dienstnummer
     const isUitdienst = !u.indienstStart || u.status === 10;
     
-    // DB is altijd leidend voor deze velden, behalve bij uitdienst
+    // Check of gebruiker net heeft ingelogd (fresh login)
+    const isFreshLogin = !u.indienstStart && !u.status && !u.voertuig;
+    
+    // DB is altijd leidend voor deze velden, behalve bij uitdienst of fresh login
     const merged = {
       ...u,
       ...data,
-      role: isUitdienst ? u.role : (data.role || u.role || 'user'),
-      status: isUitdienst ? u.status : (data.status ?? null),
-      voertuig: isUitdienst ? u.voertuig : (data.voertuig ?? null),
-      indienstStart: isUitdienst ? u.indienstStart : (data.indienstStart ?? null),
+      role: (isUitdienst || isFreshLogin) ? 'user' : (data.role || u.role || 'user'),
+      status: (isUitdienst || isFreshLogin) ? null : (data.status ?? null),
+      voertuig: (isUitdienst || isFreshLogin) ? null : (data.voertuig ?? null),
+      indienstStart: (isUitdienst || isFreshLogin) ? null : (data.indienstStart ?? null),
       dienstnummer: '', // BELANGRIJK: Altijd leeg bij inloggen/sync
       rollen: (data.rollen && data.rollen.length > 0) ? data.rollen : (u.rollen || []),
     };
     
     if (isUitdienst) {
       console.log('🔄 SYNC - Geen rol herstel, gebruiker is uitdienst');
+    } else if (isFreshLogin) {
+      console.log('🔄 SYNC - Fresh login, forcing user role');
     }
     
     saveUser(merged);
