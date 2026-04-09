@@ -211,19 +211,23 @@ class BerichtenSysteem {
           transition: background 0.2s;
           width: 100%;
           box-sizing: border-box;
+          background: #2c3e50;
+          color: white;
         `;
         berichtItem.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <div style="font-weight: bold; color: #333; text-transform: capitalize;">${bericht.type}</div>
-            <button onclick="window.verwijderBericht('${bericht.id}', event)" 
-                    style="background: #ff4444; color: white; border: none; border-radius: 50%; 
-                           width: 20px; height: 20px; cursor: pointer; font-size: 12px; 
+            <div style="font-weight: bold; color: #ffffff; text-transform: capitalize;">${bericht.type}</div>
+            <button onclick="event.stopPropagation(); window.verwijderBericht('${bericht.id}')" 
+                    style="background: #e74c3c; color: white; border: 1px solid #c0392b; border-radius: 4px; 
+                           width: 24px; height: 24px; cursor: pointer; font-size: 14px; font-weight: bold;
                            display: flex; align-items: center; justify-content: center; 
-                           transition: background 0.2s;" 
+                           transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" 
+                    onmouseover="this.style.background='#c0392b'; this.style.transform='scale(1.1)'" 
+                    onmouseout="this.style.background='#e74c3c'; this.style.transform='scale(1)'"
                     title="Verwijder bericht">×</button>
           </div>
-          <div style="margin: 8px 0; color: #555; width: 100%; word-wrap: break-word; white-space: normal;">${bericht.bericht}</div>
-          <div style="font-size: 12px; color: #888;">${new Date(bericht.tijd).toLocaleString('nl-NL')}</div>
+          <div style="margin: 8px 0; color: #ffffff; width: 100%; word-wrap: break-word; white-space: normal; line-height: 1.4;">${bericht.bericht}</div>
+          <div style="font-size: 12px; color: #b0b0b0;">${new Date(bericht.tijd).toLocaleString('nl-NL')}</div>
         `;
         berichtItem.onclick = (e) => {
           // Don't mark as read if clicking on the delete button
