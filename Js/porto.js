@@ -261,10 +261,22 @@ window.onload = async () => {
     const heeftOvd  = rollen.some(r => r.includes('OVD') || r.includes('OvD'));
     const heeftOc   = rollen.includes('OC');
     const heeftOps  = rollen.some(r => r.includes('OPS'));
-    if (!heeftOpco && !isAdmin) { const b = document.getElementById('btn-opco'); if (b) b.remove(); }
-    if (!heeftOvd && !isAdmin)  { const b = document.getElementById('btn-ovd');  if (b) b.remove(); }
-    if (!heeftOc && !isAdmin)   { const b = document.getElementById('btn-oc');   if (b) b.remove(); }
-    if (!heeftOps && !isAdmin)  { const b = document.getElementById('btn-ops');  if (b) b.remove(); }
+    if (!heeftOpco && !isAdmin) { 
+      const b = document.getElementById('btn-opco'); 
+      if (b) b.style.display = 'none'; 
+    }
+    if (!heeftOvd && !isAdmin)  { 
+      const b = document.getElementById('btn-ovd');  
+      if (b) b.style.display = 'none'; 
+    }
+    if (!heeftOc && !isAdmin)   { 
+      const b = document.getElementById('btn-oc');   
+      if (b) b.style.display = 'none'; 
+    }
+    if (!heeftOps && !isAdmin)  { 
+      const b = document.getElementById('btn-ops');  
+      if (b) b.style.display = 'none'; 
+    }
 
     // Verberg overnemen knoppen op basis van rollen
     if (!heeftOpco) { const b = document.getElementById('btn-overname-opco'); if (b) b.remove(); }
