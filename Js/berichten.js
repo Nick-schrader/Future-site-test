@@ -204,6 +204,14 @@ class BerichtenSysteem {
         console.log('[BERICHTEN] Creating item for bericht:', bericht);
         const berichtItem = document.createElement('div');
         berichtItem.className = 'berichten-menu-item';
+        berichtItem.style.cssText = `
+          padding: 12px;
+          border-bottom: 1px solid #eee;
+          cursor: pointer;
+          transition: background 0.2s;
+          width: 100%;
+          box-sizing: border-box;
+        `;
         berichtItem.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <div style="font-weight: bold; color: #333; text-transform: capitalize;">${bericht.type}</div>
@@ -214,7 +222,7 @@ class BerichtenSysteem {
                            transition: background 0.2s;" 
                     title="Verwijder bericht">×</button>
           </div>
-          <div style="margin: 8px 0; color: #555;">${bericht.bericht}</div>
+          <div style="margin: 8px 0; color: #555; width: 100%; word-wrap: break-word; white-space: normal;">${bericht.bericht}</div>
           <div style="font-size: 12px; color: #888;">${new Date(bericht.tijd).toLocaleString('nl-NL')}</div>
         `;
         berichtItem.onclick = (e) => {
