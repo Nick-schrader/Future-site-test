@@ -385,8 +385,14 @@ window.verwijderBericht = function(berichtId, event) {
         }
     });
     
-    // Update menu
+    // Update menu and reload data
     berichtenSysteem.updateBerichtenMenu();
+    
+    // Forceer directe data refresh
+    setTimeout(async () => {
+        await berichtenSysteem.loadBerichten();
+        berichtenSysteem.updateBerichtenMenu();
+    }, 100);
 };
 
 // Test function - direct bericht sturen
