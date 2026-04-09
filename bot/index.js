@@ -52,6 +52,10 @@ app.use(express.json());
 // Berichten API
 const berichtenRouter = require('../api/berichten');
 app.use('/api/berichten', berichtenRouter);
+
+// Roepnummer API
+const roepnummerRouter = require('../api/roepnummer');
+app.use('/api/roepnummer', roepnummerRouter);
 app.use(express.static(path.join(__dirname, '..')));
 
 // Admin middleware - Discord ID 1196035736823156790 has full access

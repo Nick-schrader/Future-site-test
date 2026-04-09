@@ -51,6 +51,29 @@ router.post('/', (req, res) => {
 });
 
 // Markeer bericht als gelezen
+router.post('/:id/gelezen', (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    console.log('[API] Bericht markeren als gelezen:', id);
+    
+    const stmt = db.prepare("UPDATE berichten SET gelezen = 1 WHERE id = ?");
+    const result = stmt.run(id);
+    
+    console.log('[API] Bericht gemarkeerd:', result.changes, 'rows affected');
+    
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Bericht niet gevonden' });
+    }
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('[API] Fout bij markeren bericht:', error);
+    res.status(500).json({ error: 'Database fout: ' + error.message });
+  }
+});
+
+// Markeer bericht als gelezen (PUT for compatibility)
 router.put('/:id', (req, res) => {
   try {
     const { id } = req.params;

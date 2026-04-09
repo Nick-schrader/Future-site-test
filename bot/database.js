@@ -67,6 +67,14 @@ db.exec(`
     tijd TEXT NOT NULL,
     gelezen INTEGER DEFAULT 0
   );
+
+  CREATE TABLE IF NOT EXISTS personeel (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    naam TEXT NOT NULL,
+    discord_id TEXT NOT NULL UNIQUE,
+    rang TEXT NOT NULL,
+    roepnummer TEXT
+  );
 `);
 
 // Migraties: kolommen toevoegen als ze nog niet bestaan
