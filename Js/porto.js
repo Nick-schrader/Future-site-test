@@ -1674,12 +1674,21 @@ function inloggenDirect(type) {
     u.dienstnummer = '17-00';
   }
   if (type === 'OPCO' && u.dienstnummer !== '17-01') {
-    console.log('🔍 OPCO ROEPNUMMER CORRECTIE - Oud:', u.dienstnummer, '→ Nieuw: 17-01');
+    console.log(' OPCO ROEPNUMMER CORRECTIE - Oud:', u.dienstnummer, '→ Nieuw: 17-01');
     u.dienstnummer = '17-01';
   }
 
   u.role = type.toLowerCase();
   u.dienstnummer = roep;
+  
+  // OVD/OPCO zijn direct indienst
+  if (type === 'OVD' || type === 'OPCO') {
+    u.indienstStart = Date.now();
+    u.ingedeeld = true;
+    u.status = 1; // Actieve status
+    console.log(' OVD/OPCO direct indienst - Timestamp:', u.indienstStart);
+  }
+  
   saveUser(u);
 
   // Sync naar DB met rol-toewijzen om max 1 OVD/OPCO te garanderen
@@ -1690,10 +1699,13 @@ function inloggenDirect(type) {
       userId: u.id, 
       nieuweRol: u.role, 
       oudeRol: u.role,  // Reset vorige persoon met dezelfde rol
-      roepnummer: roep
+      roepnummer: roep,
+      indienstStart: u.indienstStart || null,
+      status: u.status || null
     }),
   }).then(r => r.json()).then(data => {
     if (data.indienstStart) { u.indienstStart = data.indienstStart; saveUser(u); }
+    if (data.status) { u.status = data.status; saveUser(u); }
   });
 
   showToast('Ingelogd als ' + type + ' (' + roep + ')');
