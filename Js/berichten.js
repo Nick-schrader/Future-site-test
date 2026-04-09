@@ -205,17 +205,24 @@ class BerichtenSysteem {
         const berichtItem = document.createElement('div');
         berichtItem.className = 'berichten-menu-item';
         berichtItem.innerHTML = `
-          <div class="bericht-header">
-            <div class="bericht-type">${bericht.type}</div>
-            <button class="bericht-verwijder" onclick="window.verwijderBericht('${bericht.id}', event)" title="Verwijder bericht">×</button>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="font-weight: bold; color: #333; text-transform: capitalize;">${bericht.type}</div>
+            <button onclick="window.verwijderBericht('${bericht.id}', event)" 
+                    style="background: #ff4444; color: white; border: none; border-radius: 50%; 
+                           width: 20px; height: 20px; cursor: pointer; font-size: 12px; 
+                           display: flex; align-items: center; justify-content: center; 
+                           transition: background 0.2s;" 
+                    title="Verwijder bericht">×</button>
           </div>
-          <div class="bericht-tekst">${bericht.bericht}</div>
-          <div class="bericht-tijd">${new Date(bericht.tijd).toLocaleString('nl-NL')}</div>
+          <div style="margin: 8px 0; color: #555;">${bericht.bericht}</div>
+          <div style="font-size: 12px; color: #888;">${new Date(bericht.tijd).toLocaleString('nl-NL')}</div>
         `;
         berichtItem.onclick = (e) => {
-          if (!e.target.classList.contains('bericht-verwijder')) {
-            this.markeerGelezen(bericht.id);
+          // Don't mark as read if clicking on the delete button
+          if (e.target.tagName === 'BUTTON' || e.target.onclick?.toString().includes('verwijderBericht')) {
+            return;
           }
+          this.markeerGelezen(bericht.id);
         };
         berichtenMenu.appendChild(berichtItem);
         console.log('[BERICHTEN] Bericht item added:', index + 1);
@@ -341,11 +348,27 @@ window.verwijderBericht = function(berichtId, event) {
         if (response.ok) {
             console.log('[BERICHTEN] Bericht succesvol verwijderd uit database');
         } else {
-            console.error('[BERICHTEN] Fout bij verwijderen bericht uit database');
+            console.error('[BERICHTEN] Fout bij verwijderen bericht uit database:', response.status);
+            // Remove from localStorage as fallback
+            const saved = localStorage.getItem(`berichten_${berichtenSysteem.user.id}`);
+            if (saved) {
+                const berichten = JSON.parse(saved);
+                const filtered = berichten.filter(b => b.id !== berichtId);
+                localStorage.setItem(`berichten_${berichtenSysteem.user.id}`, JSON.stringify(filtered));
+                console.log('[BERICHTEN] Bericht verwijderd uit localStorage als fallback');
+            }
         }
     })
     .catch(error => {
         console.error('[BERICHTEN] API fout bij verwijderen bericht:', error);
+        // Remove from localStorage as fallback
+        const saved = localStorage.getItem(`berichten_${berichtenSysteem.user.id}`);
+        if (saved) {
+            const berichten = JSON.parse(saved);
+            const filtered = berichten.filter(b => b.id !== berichtId);
+            localStorage.setItem(`berichten_${berichtenSysteem.user.id}`, JSON.stringify(filtered));
+            console.log('[BERICHTEN] Bericht verwijderd uit localStorage als fallback');
+        }
     });
     
     // Update menu
