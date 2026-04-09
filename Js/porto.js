@@ -1523,7 +1523,6 @@ let wachtrijInterval = null;
 async function aanmeldenDirect() {
   const u = getUser();
   
-  // EERST: Reset gebruiker naar 'user' rol om OVD/OPCO status te verwijderen
   console.log('🔄 AANMELDEN - Resetting user to "user" role first...');
   u.role = 'user';
   u.dienstnummer = '';
