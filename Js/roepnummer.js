@@ -539,15 +539,25 @@ async function promoveerPersoneel(personeelId) {
         renderPersoneel();
         
         // Stuur bericht naar gebruiker over promotie
-        if (personeel.discordId && typeof BerichtenSysteem !== 'undefined') {
+        if (personeel.discordId) {
             const berichtTekst = `Gefeliciteerd! Je bent gepromoveerd van ${oudeRang} naar ${nieuweRang} met nieuw roepnummer ${personeel.roepnummer}.`;
             console.log('[PROMOVEER] Bericht sturen naar:', personeel.discordId, 'Tekst:', berichtTekst);
-            console.log('[PROMOVEER] BerichtenSysteem beschikbaar:', typeof BerichtenSysteem);
             
-            BerichtenSysteem.stuurBericht(personeel.discordId, 'promotie', berichtTekst);
-            console.log('[PROMOVEER] Bericht verzonden');
+            // Wacht op BerichtenSysteem als het nog niet beschikbaar is
+            const stuurBerichtMetRetry = () => {
+                if (typeof BerichtenSysteem !== 'undefined') {
+                    console.log('[PROMOVEER] BerichtenSysteem beschikbaar, bericht versturen');
+                    BerichtenSysteem.stuurBericht(personeel.discordId, 'promotie', berichtTekst);
+                    console.log('[PROMOVEER] Bericht verzonden');
+                } else {
+                    console.log('[PROMOVEER] BerichtenSysteem nog niet beschikbaar, retry in 100ms...');
+                    setTimeout(stuurBerichtMetRetry, 100);
+                }
+            };
+            
+            stuurBerichtMetRetry();
         } else {
-            console.log('[PROMOVEER] Geen bericht gestuurd - discordId:', personeel.discordId, 'BerichtenSysteem:', typeof BerichtenSysteem);
+            console.log('[PROMOVEER] Geen discordId, geen bericht gestuurd');
         }
         
         toonNotificatie(`${personeel.naam} is gepromoveerd naar ${nieuweRang} met roepnummer ${personeel.roepnummer}`);
@@ -599,9 +609,19 @@ async function demoteerPersoneel(personeelId) {
         renderPersoneel();
         
         // Stuur bericht naar gebruiker over demotie
-        if (personeel.discordId && typeof BerichtenSysteem !== 'undefined') {
+        if (personeel.discordId) {
             const berichtTekst = `Je bent gedemoteerd van ${oudeRang} naar ${nieuweRang} met nieuw roepnummer ${personeel.roepnummer}.`;
-            BerichtenSysteem.stuurBericht(personeel.discordId, 'demotie', berichtTekst);
+            
+            // Wacht op BerichtenSysteem als het nog niet beschikbaar is
+            const stuurBerichtMetRetry = () => {
+                if (typeof BerichtenSysteem !== 'undefined') {
+                    BerichtenSysteem.stuurBericht(personeel.discordId, 'demotie', berichtTekst);
+                } else {
+                    setTimeout(stuurBerichtMetRetry, 100);
+                }
+            };
+            
+            stuurBerichtMetRetry();
         }
         
         toonNotificatie(`${personeel.naam} is gedemoteerd naar ${nieuweRang} met roepnummer ${personeel.roepnummer}`);
