@@ -509,7 +509,9 @@ async function promoveerPersoneel(personeelId) {
                 },
                 body: JSON.stringify({
                     rang: nieuweRang,
-                    roepnummer: personeel.roepnummer
+                    roepnummer: personeel.roepnummer,
+                    naam: personeel.naam,
+                    discordId: personeel.discordId
                 })
             });
             
@@ -561,7 +563,9 @@ async function demoteerPersoneel(personeelId) {
                 },
                 body: JSON.stringify({
                     rang: nieuweRang,
-                    roepnummer: personeel.roepnummer
+                    roepnummer: personeel.roepnummer,
+                    naam: personeel.naam,
+                    discordId: personeel.discordId
                 })
             });
             

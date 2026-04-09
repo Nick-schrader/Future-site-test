@@ -49,15 +49,28 @@ router.get('/bestand', (req, res) => {
 router.put('/personeel/:id', (req, res) => {
   try {
     const { id } = req.params;
-    const { rang, roepnummer } = req.body;
+    const { rang, roepnummer, naam, discordId } = req.body;
     
-    console.log('[API] Personeel update:', { id, rang, roepnummer });
+    console.log('[API] Personeel update:', { id, rang, roepnummer, naam, discordId });
     
-    const stmt = db.prepare("UPDATE personeel SET rang = ?, roepnummer = ? WHERE id = ?");
-    const result = stmt.run(rang, roepnummer, id);
+    // First try to update
+    const updateStmt = db.prepare("UPDATE personeel SET rang = ?, roepnummer = ? WHERE id = ?");
+    const result = updateStmt.run(rang, roepnummer, id);
     
     if (result.changes === 0) {
-      return res.status(404).json({ error: 'Personeel niet gevonden' });
+      // If not found, try to create if we have naam and discordId
+      if (naam && discordId) {
+        console.log('[API] Personeel niet gevonden, proberen aan te maken...');
+        const insertStmt = db.prepare("INSERT INTO personeel (id, naam, discord_id, rang, roepnummer) VALUES (?, ?, ?, ?, ?)");
+        const insertResult = insertStmt.run(parseInt(id), naam, discordId, rang, roepnummer);
+        
+        if (insertResult.lastInsertRowid) {
+          console.log('[API] Personeel succesvol aangemaakt:', insertResult.lastInsertRowid);
+          return res.json({ success: true, created: true });
+        }
+      }
+      
+      return res.status(404).json({ error: 'Personeel niet gevonden en kon niet worden aangemaakt' });
     }
     
     console.log('[API] Personeel succesvol bijgewerkt');
