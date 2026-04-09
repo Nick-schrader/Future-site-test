@@ -12,8 +12,7 @@
   <!-- Security measures to prevent copying -->
   <meta name="robots" content="noindex, nofollow" />
   <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-  <meta http-equiv="X-Frame-Options" content="DENY" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' http://localhost:3000 http://127.0.0.1:3000; frame-ancestors 'none';" />
+  <!-- Security headers are set via server-side HTTP headers, not meta tags -->
 </head>
 <body>
   <div id="app">
