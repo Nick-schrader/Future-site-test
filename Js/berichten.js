@@ -100,6 +100,58 @@ class BerichtenSysteem {
           z-index: 1000;
           display: none;
         `;
+        
+        // Add CSS for berichten items
+        const style = document.createElement('style');
+        style.textContent = `
+          .bericht-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+          }
+          .bericht-verwijder {
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+          }
+          .bericht-verwijder:hover {
+            background: #cc0000;
+          }
+          .berichten-menu-item {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+          }
+          .berichten-menu-item:hover {
+            background: #f5f5f5;
+          }
+          .bericht-type {
+            font-weight: bold;
+            color: #333;
+            text-transform: capitalize;
+          }
+          .bericht-tekst {
+            margin: 8px 0;
+            color: #555;
+          }
+          .bericht-tijd {
+            font-size: 12px;
+            color: #888;
+          }
+        `;
+        document.head.appendChild(style);
+        
         document.body.appendChild(newMenu);
         berichtenMenu = newMenu;
       }
@@ -123,9 +175,12 @@ class BerichtenSysteem {
     })));
     
     if (this.berichten.length > 0) {
-      // Bereen ongelezen berichten voor badge
+      // Bereken ongelezen berichten voor badge (alle berichten, niet alleen laatste 3)
       const ongelezenBerichten = this.berichten.filter(b => !b.gelezen);
-      berichtenMenuName.textContent = `${ongelezenBerichten.length} nieuwe berichten`;
+      const totaalAantal = this.berichten.length;
+      const aantalGetoond = Math.min(3, totaalAantal);
+      
+      berichtenMenuName.textContent = `${ongelezenBerichten.length} nieuwe berichten (toon ${aantalGetoond}/${totaalAantal})`;
       console.log('[BERICHTEN] Menu name updated:', berichtenMenuName.textContent);
       
       // Update badge
@@ -141,16 +196,27 @@ class BerichtenSysteem {
       
       console.log('[BERICHTEN] Creating berichten items, total:', this.berichten.length);
       
-      this.berichten.forEach((bericht, index) => {
+      // Laat alleen laatste 3 berichten zien
+      const laatsteBerichten = this.berichten.slice(-3);
+      console.log('[BERICHTEN] Laatste 3 berichten:', laatsteBerichten.length);
+      
+      laatsteBerichten.forEach((bericht, index) => {
         console.log('[BERICHTEN] Creating item for bericht:', bericht);
         const berichtItem = document.createElement('div');
         berichtItem.className = 'berichten-menu-item';
         berichtItem.innerHTML = `
-          <div class="bericht-type">${bericht.type}</div>
+          <div class="bericht-header">
+            <div class="bericht-type">${bericht.type}</div>
+            <button class="bericht-verwijder" onclick="window.verwijderBericht('${bericht.id}', event)" title="Verwijder bericht">×</button>
+          </div>
           <div class="bericht-tekst">${bericht.bericht}</div>
           <div class="bericht-tijd">${new Date(bericht.tijd).toLocaleString('nl-NL')}</div>
         `;
-        berichtItem.onclick = () => this.markeerGelezen(bericht.id);
+        berichtItem.onclick = (e) => {
+          if (!e.target.classList.contains('bericht-verwijder')) {
+            this.markeerGelezen(bericht.id);
+          }
+        };
         berichtenMenu.appendChild(berichtItem);
         console.log('[BERICHTEN] Bericht item added:', index + 1);
       });
@@ -253,6 +319,38 @@ const berichtenSysteem = new BerichtenSysteem();
 
 // Export voor gebruik in andere files
 window.BerichtenSysteem = BerichtenSysteem;
+
+// Verwijder bericht functie
+window.verwijderBericht = function(berichtId, event) {
+    event.stopPropagation();
+    
+    console.log('[BERICHTEN] Bericht verwijderen:', berichtId);
+    
+    // Verwijder uit frontend
+    const index = berichtenSysteem.berichten.findIndex(b => b.id === berichtId);
+    if (index > -1) {
+        berichtenSysteem.berichten.splice(index, 1);
+        console.log('[BERICHTEN] Bericht verwijderd uit frontend');
+    }
+    
+    // Verwijder uit database via API
+    fetch(`${window.CONFIG.API_URL}/api/berichten/${berichtId}`, {
+        method: 'DELETE'
+    })
+    .then(response => {
+        if (response.ok) {
+            console.log('[BERICHTEN] Bericht succesvol verwijderd uit database');
+        } else {
+            console.error('[BERICHTEN] Fout bij verwijderen bericht uit database');
+        }
+    })
+    .catch(error => {
+        console.error('[BERICHTEN] API fout bij verwijderen bericht:', error);
+    });
+    
+    // Update menu
+    berichtenSysteem.updateBerichtenMenu();
+};
 
 // Test function - direct bericht sturen
 window.testBericht = function() {

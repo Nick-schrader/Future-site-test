@@ -971,7 +971,7 @@ function setupDragAndDrop() {
 }
 
 // Verplaats personeel naar nieuwe rang
-function verplaatsPersoneelNaarRang(personeelId, nieuweRang) {
+async function verplaatsPersoneelNaarRang(personeelId, nieuweRang) {
     const personeel = personeelData.find(p => p.id === personeelId);
     if (!personeel) return;
     
@@ -982,11 +982,51 @@ function verplaatsPersoneelNaarRang(personeelId, nieuweRang) {
     const roepnummer = getVolgendeRoepnummer(nieuweRang);
     personeel.roepnummer = roepnummer;
     
+    // Save to API first
+    try {
+        const response = await fetch(`/api/roepnummer/personeel/${personeelId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                rang: nieuweRang,
+                roepnummer: roepnummer,
+                naam: personeel.naam,
+                discordId: personeel.discordId
+            })
+        });
+        
+        if (response.ok) {
+            console.log('[ROEPNUMMER] Rang verandering succesvol opgeslagen in database');
+        } else {
+            console.error('[ROEPNUMMER] Fout bij opslaan rang verandering:', response.statusText);
+        }
+    } catch (error) {
+        console.error('[ROEPNUMMER] API fout bij rang verandering:', error);
+    }
+    
     // Sla data op
     localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
     
     // Re-render
     renderPersoneel();
+    
+    // Stuur bericht naar gebruiker over rang verandering
+    if (personeel.discordId) {
+        const berichtTekst = `Je rang is gewijzigd van ${oudeRang} naar ${nieuweRang} met nieuw roepnummer ${personeel.roepnummer}.`;
+        
+        // Wacht op BerichtenSysteem als het nog niet beschikbaar is
+        const stuurBerichtMetRetry = () => {
+            if (typeof BerichtenSysteem !== 'undefined') {
+                BerichtenSysteem.stuurBericht(personeel.discordId, 'roepnummer', berichtTekst);
+            } else {
+                setTimeout(stuurBerichtMetRetry, 100);
+            }
+        };
+        
+        stuurBerichtMetRetry();
+    }
     
     // Toon notificatie
     toonNotificatie(`${personeel.naam} is verplaatst van ${oudeRang} naar ${nieuweRang} met roepnummer ${roepnummer}`);

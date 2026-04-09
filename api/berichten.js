@@ -96,4 +96,27 @@ router.put('/:id', (req, res) => {
   }
 });
 
+// Verwijder bericht
+router.delete('/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    console.log('[API] Bericht verwijderen:', id);
+    
+    const stmt = db.prepare("DELETE FROM berichten WHERE id = ?");
+    const result = stmt.run(id);
+    
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Bericht niet gevonden' });
+    }
+    
+    console.log('[API] Bericht succesvol verwijderd');
+    res.json({ success: true });
+    
+  } catch (error) {
+    console.error('[API] Fout bij verwijderen bericht:', error);
+    res.status(500).json({ error: 'Database fout: ' + error.message });
+  }
+});
+
 module.exports = router;
