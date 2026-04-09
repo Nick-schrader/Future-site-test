@@ -117,7 +117,7 @@ function setupEventListeners() {
 // Laad personeel data
 async function laadPersoneel() {
     try {
-        const response = await fetch('/api/roepnummer-bestand');
+        const response = await fetch('/api/roepnummer/bestand');
         
         if (response.ok) {
             const data = await response.json();
@@ -484,7 +484,7 @@ function toggleMiniAdmin(event, personeelId) {
 }
 
 // Promoveer personeel
-function promoveerPersoneel(personeelId) {
+async function promoveerPersoneel(personeelId) {
     const personeel = personeelData.find(p => p.id === personeelId);
     if (!personeel) return;
     
@@ -498,6 +498,28 @@ function promoveerPersoneel(personeelId) {
         const nieuwRoepnummer = getVolgendeRoepnummer(nieuweRang);
         if (nieuwRoepnummer) {
             personeel.roepnummer = nieuwRoepnummer;
+        }
+        
+        // Save to API first
+        try {
+            const response = await fetch(`/api/roepnummer/personeel/${personeel.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    rang: nieuweRang,
+                    roepnummer: personeel.roepnummer
+                })
+            });
+            
+            if (response.ok) {
+                console.log('[ROEPNUMMER] Promotie succesvol opgeslagen in database');
+            } else {
+                console.error('[ROEPNUMMER] Fout bij opslaan promotie:', response.statusText);
+            }
+        } catch (error) {
+            console.error('[ROEPNUMMER] API fout bij promotie:', error);
         }
         
         localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
@@ -514,7 +536,7 @@ function promoveerPersoneel(personeelId) {
 }
 
 // Demoteer personeel
-function demoteerPersoneel(personeelId) {
+async function demoteerPersoneel(personeelId) {
     const personeel = personeelData.find(p => p.id === personeelId);
     if (!personeel) return;
     
@@ -528,6 +550,28 @@ function demoteerPersoneel(personeelId) {
         const nieuwRoepnummer = getVolgendeRoepnummer(nieuweRang);
         if (nieuwRoepnummer) {
             personeel.roepnummer = nieuwRoepnummer;
+        }
+        
+        // Save to API first
+        try {
+            const response = await fetch(`/api/roepnummer/personeel/${personeel.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    rang: nieuweRang,
+                    roepnummer: personeel.roepnummer
+                })
+            });
+            
+            if (response.ok) {
+                console.log('[ROEPNUMMER] Demotie succesvol opgeslagen in database');
+            } else {
+                console.error('[ROEPNUMMER] Fout bij opslaan demotie:', response.statusText);
+            }
+        } catch (error) {
+            console.error('[ROEPNUMMER] API fout bij demotie:', error);
         }
         
         localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
