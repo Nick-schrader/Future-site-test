@@ -606,7 +606,34 @@ app.post('/api/rol', async (req, res) => {
   const nu = indienstStart || Date.now();
   // Zet altijd de nieuwe rol (overschrijft vorige)
   db.prepare('UPDATE gebruikers SET role = ?, indienst_start = COALESCE(indienst_start, ?) WHERE id = ?').run(role, nu, userId);
-  if (rangicoon !== undefined) db.prepare('UPDATE gebruikers SET rangicoon = ? WHERE id = ?').run(rangicoon, userId);
+  if (rangicoon !== undefined) {
+    const oudeRangicoon = db.prepare('SELECT rangicoon FROM gebruikers WHERE id = ?').get(userId)?.rangicoon || 'geen';
+    db.prepare('UPDATE gebruikers SET rangicoon = ? WHERE id = ?').run(rangicoon, userId);
+    
+    // Stuur DM bij rang wijziging
+    addDiscordOperation('rank_change', { userId, oudeRangicoon, nieuweRang: rangicoon }, async (data) => {
+      try {
+        const guild = await client.guilds.fetch(process.env.GUILD_ID);
+        const member = await guild.members.fetch(data.userId);
+        const g = db.prepare('SELECT shortname, display_name FROM gebruikers WHERE id = ?').get(data.userId);
+        const gebruikerNaam = g.shortname || g.display_name || member.displayName;
+        
+        if (data.oudeRangicoon !== data.nieuweRang) {
+          const dmEmbed = {
+            title: `🎖️ Rang Aangepast`,
+            description: `Beste ${gebruikerNaam},\n\nJe rang is gewijzigd van **${data.oudeRangicoon}** naar **${data.nieuweRang}**.\n\nJe nieuwe rang is actief in het systeem.`,
+            color: 0x9933ff,
+            timestamp: new Date().toISOString()
+          };
+          
+          await member.send({ embeds: [dmEmbed] });
+          console.log(`📧 DM verstuurd - Rang: ${gebruikerNaam} ${data.oudeRangicoon} -> ${data.nieuweRang}`);
+        }
+      } catch (dmError) {
+        console.error('Fout bij sturen DM voor rang:', dmError);
+      }
+    });
+  }
   if (roepnummer) {
     db.prepare('UPDATE gebruikers SET dienstnummer = ? WHERE id = ?').run(roepnummer, userId);
     db.prepare(`
@@ -618,8 +645,29 @@ app.post('/api/rol', async (req, res) => {
     addDiscordOperation('role_nickname', { userId, roepnummer }, async (data) => {
       const guild = await client.guilds.fetch(process.env.GUILD_ID);
       const member = await guild.members.fetch(data.userId);
-      const g = db.prepare('SELECT shortname, display_name, rangicoon, role FROM gebruikers WHERE id = ?').get(data.userId);
+      const g = db.prepare('SELECT shortname, display_name, rangicoon, role, dienstnummer FROM gebruikers WHERE id = ?').get(data.userId);
       await member.setNickname(maakDienstNaam(data.roepnummer, g, g?.role));
+      
+      // Stuur DM bij roepnummer wijziging
+      try {
+        const oudeRoepnummer = g?.dienstnummer || 'geen';
+        const gebruikerNaam = g.shortname || g.display_name || member.displayName;
+        
+        if (data.roepnummer !== oudeRoepnummer) {
+          const dmEmbed = {
+            title: `📟 Roepnummer Aangepast`,
+            description: `Beste ${gebruikerNaam},\n\nJe roepnummer is gewijzigd van **${oudeRoepnummer}** naar **${data.roepnummer}**.\n\nJe nieuwe roepnummer is actief in het systeem.`,
+            color: 0x0099ff,
+            timestamp: new Date().toISOString()
+          };
+          
+          await member.send({ embeds: [dmEmbed] });
+          console.log(`📧 DM verstuurd - Roepnummer: ${gebruikerNaam} ${oudeRoepnummer} -> ${data.roepnummer}`);
+        }
+      } catch (dmError) {
+        console.error('Fout bij sturen DM:', dmError);
+      }
+      
       return { success: true };
     }).catch(err => {
       console.error('Queue operation failed:', err);
