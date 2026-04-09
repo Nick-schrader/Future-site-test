@@ -175,12 +175,10 @@ class BerichtenSysteem {
     })));
     
     if (this.berichten.length > 0) {
-      // Bereken ongelezen berichten voor badge (alle berichten, niet alleen laatste 3)
+      // Bereken ongelezen berichten voor badge
       const ongelezenBerichten = this.berichten.filter(b => !b.gelezen);
-      const totaalAantal = this.berichten.length;
-      const aantalGetoond = Math.min(3, totaalAantal);
       
-      berichtenMenuName.textContent = `${ongelezenBerichten.length} nieuwe berichten (toon ${aantalGetoond}/${totaalAantal})`;
+      berichtenMenuName.textContent = `${ongelezenBerichten.length} nieuwe berichten`;
       console.log('[BERICHTEN] Menu name updated:', berichtenMenuName.textContent);
       
       // Update badge
