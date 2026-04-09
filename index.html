@@ -63,27 +63,76 @@
           return;
         }
 
-        // Sla gebruiker op in sessionStorage
-        sessionStorage.setItem('loggedIn', '1');
-        sessionStorage.setItem('user', JSON.stringify({
-          username: data.user.username,
-          id: data.user.id,
-          displayName: data.user.displayName,
-          avatar: data.user.avatar,
-          dienst: data.user.dienst,
-          role: data.user.role,
-          rollen: data.user.rollen,
-          fullname: data.user.displayName,
-          shortname: '',
-          dsi: '',
-          dienstnummer: '',
-          phone: '',
-          refresh: 200,
-          streamer: false,
-          naamLock: false,
-        }));
+        // Reset database state bij Discord login
+        fetch(API + '/api/reset/' + data.user.id, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            indienstStart: null, 
+            dcnaam: '', 
+            roepnummer: '' 
+          }),
+        }).then(() => {
+          // Reset rol in database
+          return fetch(API + '/api/rol', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              userId: data.user.id, 
+              role: 'user', 
+              indienstStart: null, 
+              roepnummer: '', 
+              rangicoon: '' 
+            }),
+          });
+        }).then(() => {
+          // Sla gebruiker op in sessionStorage
+          sessionStorage.setItem('loggedIn', '1');
+          sessionStorage.setItem('user', JSON.stringify({
+            username: data.user.username,
+            id: data.user.id,
+            displayName: data.user.displayName,
+            avatar: data.user.avatar,
+            dienst: data.user.dienst,
+            role: 'user', // Forceer naar user na reset
+            rollen: data.user.rollen,
+            fullname: data.user.displayName,
+            shortname: '',
+            dsi: '',
+            dienstnummer: '',
+            phone: '',
+            refresh: 200,
+            streamer: false,
+            naamLock: false,
+            indienstStart: null,
+            status: null,
+            voertuig: null,
+          }));
 
-        window.location.href = 'pages/porto.html';
+          window.location.href = 'pages/porto.html';
+        }).catch(err => {
+          console.error('Database reset failed:', err);
+          // Fallback: sla toch op zonder reset
+          sessionStorage.setItem('loggedIn', '1');
+          sessionStorage.setItem('user', JSON.stringify({
+            username: data.user.username,
+            id: data.user.id,
+            displayName: data.user.displayName,
+            avatar: data.user.avatar,
+            dienst: data.user.dienst,
+            role: 'user',
+            rollen: data.user.rollen,
+            fullname: data.user.displayName,
+            shortname: '',
+            dsi: '',
+            dienstnummer: '',
+            phone: '',
+            refresh: 200,
+            streamer: false,
+            naamLock: false,
+          }));
+          window.location.href = 'pages/porto.html';
+        });
 
       } catch (e) {
         error.innerHTML = '<span>&#9888;</span> Kan geen verbinding maken met de bot. Is die online?';
