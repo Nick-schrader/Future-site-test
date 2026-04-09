@@ -1219,7 +1219,21 @@ function latRolVallen() {
       
       // Start noodhulp timer voor nieuwe rol (OVD/OPCO/OPS)
       const nieuweRol = u.role; // Huidige rol voordat reset naar 'user'
-      const rolVoorNoodhulp = ['ovd', 'opco', 'ops'].includes(nieuweRol) ? nieuweRol : null;
+      
+      // Bepaal bij welke rol de noodhulp uren moeten worden gelogd
+      let rolVoorNoodhulp = null;
+      let logMessage = '';
+      
+      if (nieuweRol === 'ovd') {
+        rolVoorNoodhulp = 'ovd';
+        logMessage = 'Noodhulp OVD';
+      } else if (nieuweRol === 'opco') {
+        rolVoorNoodhulp = 'opco';
+        logMessage = 'Noodhulp OPCO';
+      } else if (nieuweRol === 'ops') {
+        rolVoorNoodhulp = 'ops';
+        logMessage = 'Noodhulp OPS';
+      }
       
       if (rolVoorNoodhulp) {
         fetch(`${API_URL}/api/noodhulp-timer`, {
@@ -1231,10 +1245,10 @@ function latRolVallen() {
             dienstUren: dienstUren // Log de diensturen van de vorige rol
           }),
         }).then(() => {
-          console.log(`🔄 OVD VALT - Noodhulp timer gestart voor nieuwe ${rolVoorNoodhulp.toUpperCase()}`);
-          console.log(`🔄 OVD VALT - Noodhulp uren gelogd: ${dienstUren} uren`);
+          console.log(`🔄 OVD VALT - ${logMessage} timer gestart`);
+          console.log(`🔄 OVD VALT - ${logMessage} uren gelogd: ${dienstUren} uren`);
         }).catch(err => {
-          console.error(`🔄 OVD VALT - Fout bij starten noodhulp timer voor ${rolVoorNoodhulp}:`, err);
+          console.error(`🔄 OVD VALT - Fout bij starten ${logMessage} timer:`, err);
         });
       }
     });
