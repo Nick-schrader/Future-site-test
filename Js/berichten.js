@@ -84,9 +84,9 @@ class BerichtenSysteem {
       
       // Create fallback berichten menu if it doesn't exist
       if (!berichtenMenu) {
-        berichtenMenu = document.createElement('div');
-        berichtenMenu.className = 'berichten-menu';
-        berichtenMenu.style.cssText = `
+        const newMenu = document.createElement('div');
+        newMenu.className = 'berichten-menu';
+        newMenu.style.cssText = `
           position: fixed;
           top: 60px;
           right: 20px;
@@ -100,7 +100,8 @@ class BerichtenSysteem {
           z-index: 1000;
           display: none;
         `;
-        document.body.appendChild(berichtenMenu);
+        document.body.appendChild(newMenu);
+        berichtenMenu = newMenu;
       }
       
       if (!berichtenMenuName) {
@@ -200,7 +201,7 @@ class BerichtenSysteem {
   static async stuurBericht(discordId, type, bericht) {
     const nieuwBericht = {
       id: Date.now().toString(),
-      discordId: discordId,
+      discord_id: discordId, // Use discord_id for backend compatibility
       type: type, // 'promotie', 'roepnummer', 'demotie', 'ontslag'
       bericht: bericht,
       tijd: new Date().toISOString(),
