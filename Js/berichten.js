@@ -206,12 +206,12 @@ class BerichtenSysteem {
         berichtItem.className = 'berichten-menu-item';
         berichtItem.style.cssText = `
           padding: 12px;
-          border-bottom: 1px solid #eee;
+          border-bottom: 1px solid #444;
           cursor: pointer;
           transition: background 0.2s;
           width: 100%;
           box-sizing: border-box;
-          background: #2c3e50;
+          background: #1a1a2e;
           color: white;
         `;
         berichtItem.innerHTML = `
