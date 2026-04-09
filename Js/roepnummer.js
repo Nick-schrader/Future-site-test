@@ -951,3 +951,14 @@ const rangHiërarchie = [
     'majoor', 'luitenant-kolonel', 'kolonel',
     'brigade-generaal', 'generaal-majoor', 'luitenant-generaal'
 ];
+
+// Make functions available globally for onclick handlers
+window.promoveerPersoneel = promoveerPersoneel;
+window.demoteerPersoneel = demoteerPersoneel;
+window.ontslaPersoneel = ontslaPersoneel;
+window.bewerkRoepnummer = bewerkRoepnummer;
+window.slaRoepnummerOp = slaRoepnummerOp;
+window.voegPersoneelToe = voegPersoneelToe;
+window.openNieuwePersoneelModal = openNieuwePersoneelModal;
+window.sluitModal = sluitModal;
+window.sluitRoepnummerModal = sluitRoepnummerModal;
