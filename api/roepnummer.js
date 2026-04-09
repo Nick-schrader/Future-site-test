@@ -105,4 +105,27 @@ router.post('/personeel', (req, res) => {
   }
 });
 
+// Verwijder personeel
+router.delete('/personeel/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    console.log('[API] Personeel verwijderen:', id);
+    
+    const stmt = db.prepare("DELETE FROM personeel WHERE id = ?");
+    const result = stmt.run(id);
+    
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Personeel niet gevonden' });
+    }
+    
+    console.log('[API] Personeel succesvol verwijderd');
+    res.json({ success: true });
+    
+  } catch (error) {
+    console.error('[API] Fout bij verwijderen personeel:', error);
+    res.status(500).json({ error: 'Database fout: ' + error.message });
+  }
+});
+
 module.exports = router;

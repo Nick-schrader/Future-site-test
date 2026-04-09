@@ -592,11 +592,28 @@ async function demoteerPersoneel(personeelId) {
 }
 
 // Ontsla personeel
-function ontslaPersoneel(personeelId) {
+async function ontslaPersoneel(personeelId) {
     const personeel = personeelData.find(p => p.id === personeelId);
     if (!personeel) return;
     
     if (confirm(`Weet je zeker dat je ${personeel.naam} wilt ontslaan?`)) {
+        // Delete from API first
+        try {
+            const response = await fetch(`/api/roepnummer/personeel/${personeelId}`, {
+                method: 'DELETE'
+            });
+            
+            if (response.ok) {
+                console.log('[ROEPNUMMER] Personeel succesvol verwijderd uit database');
+            } else {
+                console.error('[ROEPNUMMER] Fout bij verwijderen personeel:', response.statusText);
+                // Continue with localStorage as fallback
+            }
+        } catch (error) {
+            console.error('[ROEPNUMMER] API fout bij ontslaan personeel:', error);
+            // Continue with localStorage as fallback
+        }
+        
         personeelData = personeelData.filter(p => p.id !== personeelId);
         localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
         renderPersoneel();
@@ -655,7 +672,7 @@ function bewerkRoepnummer(personeelId) {
 }
 
 // Sla roepnummer op
-function slaRoepnummerOp(personeelId, buttonElement) {
+async function slaRoepnummerOp(personeelId, buttonElement) {
     const input = document.getElementById('nieuwRoepnummerInput');
     if (!input) return;
     
@@ -667,6 +684,32 @@ function slaRoepnummerOp(personeelId, buttonElement) {
     
     const personeel = personeelData.find(p => p.id === personeelId);
     if (!personeel) return;
+    
+    // Save to API first
+    try {
+        const response = await fetch(`/api/roepnummer/personeel/${personeelId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                rang: personeel.rang,
+                roepnummer: nieuwRoepnummer,
+                naam: personeel.naam,
+                discordId: personeel.discordId
+            })
+        });
+        
+        if (response.ok) {
+            console.log('[ROEPNUMMER] Roepnummer succesvol opgeslagen in database');
+        } else {
+            console.error('[ROEPNUMMER] Fout bij opslaan roepnummer:', response.statusText);
+            // Continue with localStorage as fallback
+        }
+    } catch (error) {
+        console.error('[ROEPNUMMER] API fout bij opslaan roepnummer:', error);
+        // Continue with localStorage as fallback
+    }
     
     personeel.roepnummer = nieuwRoepnummer;
     localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
@@ -735,6 +778,34 @@ async function voegPersoneelToe() {
     if (!roepnummerInput) {
         const roepnummer = getVolgendeRoepnummer(rang);
         nieuwPersoneel.roepnummer = roepnummer;
+    }
+    
+    // Save to API first
+    try {
+        const response = await fetch('/api/roepnummer/personeel', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                naam: naam,
+                discordId: discordId,
+                rang: rang,
+                roepnummer: nieuwPersoneel.roepnummer
+            })
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            nieuwPersoneel.id = result.id.toString(); // Use database ID
+            console.log('[ROEPNUMMER] Personeel succesvol opgeslagen in database');
+        } else {
+            console.error('[ROEPNUMMER] Fout bij opslaan personeel:', response.statusText);
+            // Continue with localStorage as fallback
+        }
+    } catch (error) {
+        console.error('[ROEPNUMMER] API fout bij toevoegen personeel:', error);
+        // Continue with localStorage as fallback
     }
     
     personeelData.push(nieuwPersoneel);
