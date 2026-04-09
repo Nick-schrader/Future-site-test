@@ -226,7 +226,7 @@ class BerichtenSysteem {
                     onmouseout="this.style.background='#e74c3c'; this.style.transform='scale(1)'"
                     title="Verwijder bericht">×</button>
           </div>
-          <div style="margin: 8px 0; color: #ffffff; width: 100%; word-wrap: break-word; white-space: normal; line-height: 1.4;">${bericht.bericht}</div>
+          <div style="margin: 8px 0; color: #ffffffb2; width: 100%; word-wrap: break-word; white-space: normal; line-height: 1.4;">${bericht.bericht}</div>
           <div style="font-size: 12px; color: #b0b0b0;">${new Date(bericht.tijd).toLocaleString('nl-NL')}</div>
         `;
         berichtItem.onclick = (e) => {
