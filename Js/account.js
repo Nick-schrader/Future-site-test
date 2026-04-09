@@ -8,6 +8,25 @@ window.onload = async () => {
   document.getElementById('info-username').textContent = u.username || '-';
   document.getElementById('info-id').textContent = u.id || '-';
   document.getElementById('info-dienst').textContent = 'Defensie';
+  
+  // Roepnummer ophalen uit personeel data
+  if (u.id) {
+    fetch('/api/roepnummer/bestand')
+      .then(response => response.json())
+      .then(data => {
+        const personeel = data.personeel?.find(p => p.discord_id === u.id);
+        if (personeel && personeel.roepnummer) {
+          const roepnummerElement = document.getElementById('info-roepnummer-val');
+          const roepnummerField = document.getElementById('info-roepnummer');
+          
+          if (roepnummerElement && roepnummerField) {
+            roepnummerElement.textContent = personeel.roepnummer;
+            roepnummerField.setAttribute('data-roepnummer', personeel.roepnummer);
+          }
+        }
+      })
+      .catch(error => console.error('Fout bij ophalen roepnummer:', error));
+  }
 
   // Avatar
   if (u.avatar) {
