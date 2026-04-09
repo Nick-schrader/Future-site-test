@@ -111,6 +111,13 @@ window.onload = async () => {
   console.log('role:', u.role);
   console.log('status:', u.status);
   
+  // Check if view was already manually updated (to prevent override)
+  const manuallyUpdated = window._viewManuallyUpdated;
+  if (manuallyUpdated) {
+    console.log('🔍 View was manually updated, skipping automatic view selection');
+    return;
+  }
+  
   // Clear any existing timers when page loads
   clearPingTimers();
   
@@ -2542,6 +2549,9 @@ window.addEventListener('beforeunload', () => {
 function updateViewForRole(role) {
   console.log('🔄 updateViewForRole called with role:', role);
   
+  // Markeer dat view handmatig is bijgewerkt
+  window._viewManuallyUpdated = true;
+  
   // Verberg alle views
   document.getElementById('user-view')?.classList.add('hidden');
   document.getElementById('ovd-view')?.classList.add('hidden');
@@ -2556,6 +2566,15 @@ function updateViewForRole(role) {
       ovdView.classList.remove('hidden');
       ovdView.style.display = '';
     }
+    
+    // Start OVD specifieke functies
+    laadEenheden();
+    renderMeldingen();
+    setInterval(() => { laadEenheden(); renderMeldingen(); }, 3000);
+    setInterval(() => { ovdUpdateInfo(); }, 10000);
+    setInterval(renderLeaderboard, 1000);
+    setInterval(updateSpecialisatiesLive, 10000);
+    
   } else {
     console.log('🔄 Showing user view for role:', role);
     const userView = document.getElementById('user-view');
@@ -2563,5 +2582,11 @@ function updateViewForRole(role) {
       userView.classList.remove('hidden');
       userView.style.display = '';
     }
+    
+    // Start user specifieke functies
+    laadEenheden();
+    setInterval(laadEenheden, 5000);
+    setInterval(updateOCInfo, 3000);
+    setInterval(renderLeaderboard, 1000);
   }
 }
