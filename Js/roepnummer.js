@@ -132,6 +132,21 @@ async function laadPersoneel() {
             const data = await response.json();
             personeelData = data.personeel || [];
             console.log('Personeelsdata van API geladen:', personeelData);
+            
+            // Map database fields to frontend structure
+            personeelData = personeelData.map(p => ({
+                id: p.id.toString(),
+                naam: p.naam,
+                discordId: p.discord_id, // Map discord_id to discordId
+                rang: p.rang,
+                roepnummer: p.roepnummer
+            }));
+            
+            console.log('Gemappeerde personeelsdata:', personeelData);
+            personeelData.forEach(p => {
+                console.log(`Personeel ${p.naam} - ID: ${p.id} - Discord ID: ${p.discordId} - Rang: ${p.rang}`);
+            });
+            
             renderPersoneel();
             localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
         } else {
