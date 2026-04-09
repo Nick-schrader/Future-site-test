@@ -613,10 +613,14 @@ app.post('/api/rol', async (req, res) => {
     // Stuur DM bij rang wijziging
     addDiscordOperation('rank_change', { userId, oudeRangicoon, nieuweRang: rangicoon }, async (data) => {
       try {
+        console.log(`[DM RANG] Start - userId: ${data.userId}, oude: ${data.oudeRangicoon}, nieuwe: ${data.nieuweRang}`);
+        
         const guild = await client.guilds.fetch(process.env.GUILD_ID);
         const member = await guild.members.fetch(data.userId);
         const g = db.prepare('SELECT shortname, display_name FROM gebruikers WHERE id = ?').get(data.userId);
         const gebruikerNaam = g.shortname || g.display_name || member.displayName;
+        
+        console.log(`[DM RANG] Gebruiker gevonden: ${gebruikerNaam}`);
         
         if (data.oudeRangicoon !== data.nieuweRang) {
           const dmEmbed = {
@@ -628,6 +632,8 @@ app.post('/api/rol', async (req, res) => {
           
           await member.send({ embeds: [dmEmbed] });
           console.log(`📧 DM verstuurd - Rang: ${gebruikerNaam} ${data.oudeRangicoon} -> ${data.nieuweRang}`);
+        } else {
+          console.log(`[DM RANG] Geen wijziging - zelfde rang: ${data.oudeRangicoon}`);
         }
       } catch (dmError) {
         console.error('Fout bij sturen DM voor rang:', dmError);
@@ -650,8 +656,12 @@ app.post('/api/rol', async (req, res) => {
       
       // Stuur DM bij roepnummer wijziging
       try {
+        console.log(`[DM ROEP] Start - userId: ${data.userId}, roepnummer: ${data.roepnummer}`);
+        
         const oudeRoepnummer = g?.dienstnummer || 'geen';
         const gebruikerNaam = g.shortname || g.display_name || member.displayName;
+        
+        console.log(`[DM ROEP] Gebruiker: ${gebruikerNaam}, oude: ${oudeRoepnummer}, nieuwe: ${data.roepnummer}`);
         
         if (data.roepnummer !== oudeRoepnummer) {
           const dmEmbed = {
@@ -661,8 +671,14 @@ app.post('/api/rol', async (req, res) => {
             timestamp: new Date().toISOString()
           };
           
-          await member.send({ embeds: [dmEmbed] });
-          console.log(`📧 DM verstuurd - Roepnummer: ${gebruikerNaam} ${oudeRoepnummer} -> ${data.roepnummer}`);
+          try {
+            await member.send({ embeds: [dmEmbed] });
+            console.log(`📧 DM verstuurd - Roepnummer: ${gebruikerNaam} ${oudeRoepnummer} -> ${data.roepnummer}`);
+          } catch (sendError) {
+            console.error(`[DM ROEP] Fout bij versturen DM:`, sendError);
+          }
+        } else {
+          console.log(`[DM ROEP] Geen wijziging - zelfde roepnummer: ${data.roepnummer}`);
         }
       } catch (dmError) {
         console.error('Fout bij sturen DM:', dmError);
