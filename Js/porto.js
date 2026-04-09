@@ -1678,6 +1678,10 @@ function inloggenDirect(type) {
   });
 
   showToast('Ingelogd als ' + type + ' (' + roep + ')');
+  
+  // Forceer view update na inloggen
+  updateViewForRole(u.role);
+  
   setTimeout(() => window.location.reload(), 800);
 }
 
@@ -2511,3 +2515,17 @@ setInterval(() => {
 window.addEventListener('beforeunload', () => {
   stopRolPolling();
 });
+
+// Update view op basis van rol
+function updateViewForRole(role) {
+  // Verberg alle views
+  document.querySelectorAll('.view').forEach(view => {
+    view.style.display = 'none';
+  });
+  
+  // Toon de juiste view
+  const targetView = document.querySelector(`.view-${role}`);
+  if (targetView) {
+    targetView.style.display = 'block';
+  }
+}
