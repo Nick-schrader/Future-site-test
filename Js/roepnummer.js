@@ -541,7 +541,13 @@ async function promoveerPersoneel(personeelId) {
         // Stuur bericht naar gebruiker over promotie
         if (personeel.discordId && typeof BerichtenSysteem !== 'undefined') {
             const berichtTekst = `Gefeliciteerd! Je bent gepromoveerd van ${oudeRang} naar ${nieuweRang} met nieuw roepnummer ${personeel.roepnummer}.`;
+            console.log('[PROMOVEER] Bericht sturen naar:', personeel.discordId, 'Tekst:', berichtTekst);
+            console.log('[PROMOVEER] BerichtenSysteem beschikbaar:', typeof BerichtenSysteem);
+            
             BerichtenSysteem.stuurBericht(personeel.discordId, 'promotie', berichtTekst);
+            console.log('[PROMOVEER] Bericht verzonden');
+        } else {
+            console.log('[PROMOVEER] Geen bericht gestuurd - discordId:', personeel.discordId, 'BerichtenSysteem:', typeof BerichtenSysteem);
         }
         
         toonNotificatie(`${personeel.naam} is gepromoveerd naar ${nieuweRang} met roepnummer ${personeel.roepnummer}`);

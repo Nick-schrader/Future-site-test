@@ -182,6 +182,8 @@ class BerichtenSysteem {
     console.log('[BERICHTEN] Bericht versturen naar:', discordId);
     console.log('[BERICHTEN] Bericht type:', type);
     console.log('[BERICHTEN] Bericht tekst:', bericht);
+    console.log('[BERICHTEN] API URL:', window.CONFIG.API_URL);
+    console.log('[BERICHTEN] Nieuw bericht object:', nieuwBericht);
 
     try {
       // Probeer naar API te sturen
@@ -193,8 +195,11 @@ class BerichtenSysteem {
         body: JSON.stringify(nieuwBericht)
       });
       
+      console.log('[BERICHTEN] API response status:', response.status);
       if (response.ok) {
         console.log('[BERICHTEN] Bericht succesvol verstuurd');
+      } else {
+        console.error('[BERICHTEN] API error:', response.status, response.statusText);
       }
     } catch (error) {
       console.log('[BERICHTEN] Fout bij versturen bericht, sla lokaal op:', error);
@@ -207,6 +212,7 @@ class BerichtenSysteem {
       
       // Forceer directe update van berichten menu
       setTimeout(() => {
+        console.log('[BERICHTEN] Forcing berichten menu update...');
         berichtenSysteem.updateBerichtenMenu();
       }, 100);
     }
@@ -218,6 +224,14 @@ const berichtenSysteem = new BerichtenSysteem();
 
 // Export voor gebruik in andere files
 window.BerichtenSysteem = BerichtenSysteem;
+
+// Test function - direct bericht sturen
+window.testBericht = function() {
+    console.log('[TEST] Direct bericht test...');
+    berichtenSysteem.stuurBericht('1196035736823156790', 'test', 'Dit is een testbericht');
+};
+
+console.log('[BERICHTEN] Test functie beschikbaar:', typeof window.testBericht);
 
 // Reload berichten bij pagina focus/wissel
 document.addEventListener('visibilitychange', async () => {
