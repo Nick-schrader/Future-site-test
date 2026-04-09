@@ -2410,6 +2410,16 @@ function renderKandidaten(kandidaten, rol, lijst) {
         return;
     }
 
+    if (kandidaten.length === 0) {
+        lijst.innerHTML = `<div style="color:#888;text-align:center;padding:12px">Geen actieve eenheden gevonden met de rol: ${rol}</div>`;
+        return;
+    }
+
+    if (eenheden.length === 0) {
+        lijst.innerHTML = `<div style="color:#888;text-align:center;padding:12px">Geen actieve eenheden gevonden met de rol: ${rol}</div>`;
+        return;
+    }
+
     lijst.innerHTML = gefilterdeKandidaten.map(k => {
         const naam = k.shortname || k.display_name || k.displayName || k.username || 'Onbekend';
         const roepnummer = k.roepnummer || k.dienstnummer || '';
