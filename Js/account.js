@@ -11,11 +11,16 @@ window.onload = async () => {
   
   // Roepnummer ophalen uit personeel data
   if (u.id) {
+    console.log('[ACCOUNT] Zoek roepnummer voor Discord ID:', u.id);
     fetch('/api/roepnummer/bestand')
       .then(response => response.json())
       .then(data => {
-        const personeel = data.personeel?.find(p => p.discord_id === u.id);
+        console.log('[ACCOUNT] Personeel data ontvangen:', data.personeel);
+        const personeel = data.personeel?.find(p => p.discord_id === u.id || p.discordId === u.id);
+        console.log('[ACCOUNT] Gevonden personeel:', personeel);
+        
         if (personeel && personeel.roepnummer) {
+          console.log('[ACCOUNT] Roepnummer gevonden:', personeel.roepnummer);
           const roepnummerElement = document.getElementById('info-roepnummer-val');
           const roepnummerField = document.getElementById('info-roepnummer');
           
@@ -23,6 +28,8 @@ window.onload = async () => {
             roepnummerElement.textContent = personeel.roepnummer;
             roepnummerField.setAttribute('data-roepnummer', personeel.roepnummer);
           }
+        } else {
+          console.log('[ACCOUNT] Geen roepnummer gevonden voor deze gebruiker');
         }
       })
       .catch(error => console.error('Fout bij ophalen roepnummer:', error));
