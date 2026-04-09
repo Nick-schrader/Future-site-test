@@ -277,12 +277,14 @@ function createPersoneelRij(personeel) {
         );
         console.log('Is admin:', isAdmin);
         
-        // Check of we niet op admin knoppen klikken
+        // Check of we niet op admin knoppen of mini admin GUI klikken
         const isAdminTrigger = e.target.closest('.admin-trigger');
+        const isMiniAdminButton = e.target.closest('.mini-admin-btn');
         const isMiniAdminGui = e.target.closest('.mini-admin-gui');
-        console.log('Is admin trigger:', isAdminTrigger, 'Is mini admin GUI:', isMiniAdminGui);
+        console.log('Is admin trigger:', isAdminTrigger, 'Is mini admin button:', isMiniAdminButton, 'Is mini admin GUI:', isMiniAdminGui);
         
-        if (isAdmin && !isAdminTrigger && !isMiniAdminGui) {
+        // Alleen toggleMiniAdmin als we op de personeel rij klikken, niet op knoppen
+        if (isAdmin && !isAdminTrigger && !isMiniAdminButton && !isMiniAdminGui) {
             console.log('Calling toggleMiniAdmin for:', personeel.id);
             toggleMiniAdmin(e, personeel.id);
         } else {
