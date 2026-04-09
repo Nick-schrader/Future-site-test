@@ -2540,14 +2540,28 @@ window.addEventListener('beforeunload', () => {
 
 // Update view op basis van rol
 function updateViewForRole(role) {
-  // Verberg alle views
-  document.querySelectorAll('.view').forEach(view => {
-    view.style.display = 'none';
-  });
+  console.log('🔄 updateViewForRole called with role:', role);
   
-  // Toon de juiste view
-  const targetView = document.querySelector(`.view-${role}`);
-  if (targetView) {
-    targetView.style.display = 'block';
+  // Verberg alle views
+  document.getElementById('user-view')?.classList.add('hidden');
+  document.getElementById('ovd-view')?.classList.add('hidden');
+  document.getElementById('porto-main')?.classList.add('hidden');
+  document.getElementById('ovd-porto-main')?.classList.add('hidden');
+  
+  // Toon de juiste view op basis van rol
+  if (['ovd', 'opco', 'oc', 'ops'].includes(role)) {
+    console.log('🔄 Showing OVD view for role:', role);
+    const ovdView = document.getElementById('ovd-view');
+    if (ovdView) {
+      ovdView.classList.remove('hidden');
+      ovdView.style.display = '';
+    }
+  } else {
+    console.log('🔄 Showing user view for role:', role);
+    const userView = document.getElementById('user-view');
+    if (userView) {
+      userView.classList.remove('hidden');
+      userView.style.display = '';
+    }
   }
 }
