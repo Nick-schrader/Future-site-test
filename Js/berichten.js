@@ -80,8 +80,36 @@ class BerichtenSysteem {
     });
     
     if (!berichtenMenu || !berichtenMenuName) {
-      console.log('[BERICHTEN] Elements not found, returning');
-      return;
+      console.log('[BERICHTEN] Elements not found, creating fallback...');
+      
+      // Create fallback berichten menu if it doesn't exist
+      if (!berichtenMenu) {
+        berichtenMenu = document.createElement('div');
+        berichtenMenu.className = 'berichten-menu';
+        berichtenMenu.style.cssText = `
+          position: fixed;
+          top: 60px;
+          right: 20px;
+          background: white;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+          min-width: 300px;
+          max-height: 400px;
+          overflow-y: auto;
+          z-index: 1000;
+          display: none;
+        `;
+        document.body.appendChild(berichtenMenu);
+      }
+      
+      if (!berichtenMenuName) {
+        berichtenMenuName = document.createElement('div');
+        berichtenMenuName.className = 'berichten-menu-name';
+        berichtenMenu.appendChild(berichtenMenuName);
+      }
+      
+      console.log('[BERICHTEN] Fallback elements created');
     }
 
     // Toon alle berichten (zowel gelezen als ongelezen)

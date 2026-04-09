@@ -137,7 +137,7 @@ async function laadPersoneel() {
             personeelData = personeelData.map(p => ({
                 id: p.id.toString(),
                 naam: p.naam,
-                discordId: p.discord_id, // Map discord_id to discordId
+                discordId: p.discord_id || p.discordId || 'unknown', // Map discord_id to discordId with fallback
                 rang: p.rang,
                 roepnummer: p.roepnummer
             }));
