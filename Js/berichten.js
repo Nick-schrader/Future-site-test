@@ -216,7 +216,7 @@ class BerichtenSysteem {
         `;
         berichtItem.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <div style="font-weight: bold; color: #ffffff; text-transform: capitalize;">${bericht.type}</div>
+            <div style="font-weight: bold; color: #ffffffb2; text-transform: capitalize;">${bericht.type}</div>
             <button onclick="window.verwijderBericht('${bericht.id}', event)" 
                     style="background: #e74c3c; color: white; border: 1px solid #c0392b; border-radius: 4px; 
                            width: 24px; height: 24px; cursor: pointer; font-size: 14px; font-weight: bold;
