@@ -609,36 +609,6 @@ app.post('/api/rol', async (req, res) => {
   if (rangicoon !== undefined) {
     const oudeRangicoon = db.prepare('SELECT rangicoon FROM gebruikers WHERE id = ?').get(userId)?.rangicoon || 'geen';
     db.prepare('UPDATE gebruikers SET rangicoon = ? WHERE id = ?').run(rangicoon, userId);
-    
-    // Stuur DM bij rang wijziging
-    addDiscordOperation('rank_change', { userId, oudeRangicoon, nieuweRang: rangicoon }, async (data) => {
-      try {
-        console.log(`[DM RANG] Start - userId: ${data.userId}, oude: ${data.oudeRangicoon}, nieuwe: ${data.nieuweRang}`);
-        
-        const guild = await client.guilds.fetch(process.env.GUILD_ID);
-        const member = await guild.members.fetch(data.userId);
-        const g = db.prepare('SELECT shortname, display_name FROM gebruikers WHERE id = ?').get(data.userId);
-        const gebruikerNaam = g.shortname || g.display_name || member.displayName;
-        
-        console.log(`[DM RANG] Gebruiker gevonden: ${gebruikerNaam}`);
-        
-        if (data.oudeRangicoon !== data.nieuweRang) {
-          const dmEmbed = {
-            title: `🎖️ Rang Aangepast`,
-            description: `Beste ${gebruikerNaam},\n\nJe rang is gewijzigd van **${data.oudeRangicoon}** naar **${data.nieuweRang}**.\n\nJe nieuwe rang is actief in het systeem.`,
-            color: 0x9933ff,
-            timestamp: new Date().toISOString()
-          };
-          
-          await member.send({ embeds: [dmEmbed] });
-          console.log(`📧 DM verstuurd - Rang: ${gebruikerNaam} ${data.oudeRangicoon} -> ${data.nieuweRang}`);
-        } else {
-          console.log(`[DM RANG] Geen wijziging - zelfde rang: ${data.oudeRangicoon}`);
-        }
-      } catch (dmError) {
-        console.error('Fout bij sturen DM voor rang:', dmError);
-      }
-    });
   }
   if (roepnummer) {
     db.prepare('UPDATE gebruikers SET dienstnummer = ? WHERE id = ?').run(roepnummer, userId);
@@ -653,36 +623,6 @@ app.post('/api/rol', async (req, res) => {
       const member = await guild.members.fetch(data.userId);
       const g = db.prepare('SELECT shortname, display_name, rangicoon, role, dienstnummer FROM gebruikers WHERE id = ?').get(data.userId);
       await member.setNickname(maakDienstNaam(data.roepnummer, g, g?.role));
-      
-      // Stuur DM bij roepnummer wijziging
-      try {
-        console.log(`[DM ROEP] Start - userId: ${data.userId}, roepnummer: ${data.roepnummer}`);
-        
-        const oudeRoepnummer = g?.dienstnummer || 'geen';
-        const gebruikerNaam = g.shortname || g.display_name || member.displayName;
-        
-        console.log(`[DM ROEP] Gebruiker: ${gebruikerNaam}, oude: ${oudeRoepnummer}, nieuwe: ${data.roepnummer}`);
-        
-        if (data.roepnummer !== oudeRoepnummer) {
-          const dmEmbed = {
-            title: `📟 Roepnummer Aangepast`,
-            description: `Beste ${gebruikerNaam},\n\nJe roepnummer is gewijzigd van **${oudeRoepnummer}** naar **${data.roepnummer}**.\n\nJe nieuwe roepnummer is actief in het systeem.`,
-            color: 0x0099ff,
-            timestamp: new Date().toISOString()
-          };
-          
-          try {
-            await member.send({ embeds: [dmEmbed] });
-            console.log(`📧 DM verstuurd - Roepnummer: ${gebruikerNaam} ${oudeRoepnummer} -> ${data.roepnummer}`);
-          } catch (sendError) {
-            console.error(`[DM ROEP] Fout bij versturen DM:`, sendError);
-          }
-        } else {
-          console.log(`[DM ROEP] Geen wijziging - zelfde roepnummer: ${data.roepnummer}`);
-        }
-      } catch (dmError) {
-        console.error('Fout bij sturen DM:', dmError);
-      }
       
       return { success: true };
     }).catch(err => {

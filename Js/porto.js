@@ -732,13 +732,16 @@ function speelAanmeldGeluid(debugInfo = '') {
     return;
   }
   
-  console.log('🔍 DEBUG - User object:', u);
-  console.log('🔍 DEBUG - User status:', u?.status);
-  console.log('🔍 DEBUG - User status type:', typeof u?.status);
+  console.log('DEBUG - User object:', u);
+  console.log('DEBUG - User status:', u?.status);
+  console.log('DEBUG - User status type:', typeof u?.status);
+  console.log('DEBUG - User status parseInt:', parseInt(u?.status));
+  console.log('DEBUG - Status 6/7 check:', [6, 7].includes(parseInt(u?.status)));
   
+  // Check for urgent status (6 or 7)
   if (u && ![6, 7].includes(parseInt(u.status))) {
-    console.log('🔇 PING GEBLOKEERD - User status not urgent:', u.status, 'Debug info:', debugInfo);
-    console.log('🔇 User is no longer in urgent status, blocking ping');
+    console.log('PING GEBLOKEERD - User status not urgent:', u.status, 'Debug info:', debugInfo);
+    console.log('User is no longer in urgent status, blocking ping');
     return;
   }
   
@@ -2504,11 +2507,6 @@ function renderKandidaten(kandidaten, rol, lijst) {
     }
 
     if (kandidaten.length === 0) {
-        lijst.innerHTML = `<div style="color:#888;text-align:center;padding:12px">Geen actieve eenheden gevonden met de rol: ${rol}</div>`;
-        return;
-    }
-
-    if (eenheden.length === 0) {
         lijst.innerHTML = `<div style="color:#888;text-align:center;padding:12px">Geen actieve eenheden gevonden met de rol: ${rol}</div>`;
         return;
     }
