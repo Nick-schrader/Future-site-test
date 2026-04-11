@@ -399,6 +399,7 @@ function laadEenheden() {
         const e = gebruikers[0];
         return {
           id: roepnummer,
+          naam: e.shortname || e.display_name || 'Onbekend',
           medewerkers: e.shortname || e.display_name,
           voertuig: e.voertuig_naam || '-',
           type: e.voertuig || '-',
@@ -418,6 +419,7 @@ function laadEenheden() {
         
         return {
           id: roepnummer,
+          naam: hoofd.shortname || hoofd.display_name || 'Onbekend',
           medewerkers: `${hoofd.shortname || hoofd.display_name} + ${gekoppelde.map(g => g.shortname || g.display_name).join(' + ')}`,
           voertuig: hoofd.voertuig_naam || '-',
           type: hoofd.voertuig || '-',

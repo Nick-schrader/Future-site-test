@@ -1024,6 +1024,30 @@ app.get('/api/logs', (_req, res) => {
   res.json(logs);
 });
 
+app.post('/api/logs', (req, res) => {
+  try {
+    const { actie, door, doelwit, details, tijd } = req.body;
+    
+    // Valideer verplichte velden
+    if (!actie || !door || !tijd) {
+      return res.status(400).json({ error: 'Missing required fields: actie, door, tijd' });
+    }
+    
+    // Insert log into database
+    const stmt = db.prepare(`
+      INSERT INTO logs (actie, door, doelwit, details, tijd)
+      VALUES (?, ?, ?, ?, ?)
+    `);
+    
+    stmt.run(actie, door, doelwit || '', details || '', tijd);
+    
+    res.json({ success: true, message: 'Log successfully saved' });
+  } catch (error) {
+    console.error('[LOGS] Error saving log:', error);
+    res.status(500).json({ error: 'Failed to save log' });
+  }
+});
+
 // ---- API: Gebruiker data ophalen ----
 app.get('/api/me/:userId', (req, res) => {
   const g = db.prepare('SELECT * FROM gebruikers WHERE id = ?').get(req.params.userId);
