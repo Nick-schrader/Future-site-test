@@ -112,8 +112,9 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     actie TEXT,
     door TEXT,
+    doelwit TEXT,
     details TEXT,
-    tijd INTEGER
+    tijd TEXT
   );
 `);
 
