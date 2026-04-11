@@ -2013,18 +2013,30 @@ function ontkoppelEenheid() {
   console.log('🔍 ONTKOPPELEN - Partner gevonden:', partner);
   
   if (!partner) {
-    console.log('🔍 ONTKOPPELEN - Partner niet gevonden, probeer direct uit database...');
-    // Probeer direct uit database als partner niet in eenheden array
-    fetch(`${API_URL}/api/gebruikers/${unit.koppelId}`)
+    console.log('Partner niet gevonden, probeer via rollen endpoint...');
+    // Probeer via rollen endpoint als partner niet in eenheden array
+    fetch(`${API_URL}/api/rollen/${unit.koppelId}`)
       .then(r => r.json())
-      .then(partnerData => {
-        console.log('🔍 ONTKOPPELEN - Partner data uit database:', partnerData);
-        if (partnerData) {
-          // Toon modal met database data
+      .then(rollenData => {
+        console.log('Partner rollen data:', rollenData);
+        if (rollenData && rollenData.length > 0) {
+          // Maak partner object van rollen data
+          const partnerData = {
+            id: unit.koppelId,
+            display_name: rollenData[0].displayName || rollenData[0].username || 'Onbekend',
+            username: rollenData[0].username || 'Onbekend',
+            dienstnummer: '', // Roepnummer niet beschikbaar via rollen endpoint
+            voertuig: '' // Voertuig niet beschikbaar via rollen endpoint
+          };
+          console.log('Partner data samengesteld:', partnerData);
+          // Toon modal met samengestelde data
           toonOntkoppelModalMetDatabaseData(unit, partnerData);
+        } else {
+          console.log('Geen rollen data gevonden voor partner');
+          showToast('Partner niet gevonden in database');
         }
       })
-      .catch(err => console.error('🔍 ONTKOPPELEN - Fout bij ophalen partner:', err));
+      .catch(err => console.error('Fout bij ophalen partner rollen:', err));
     return;
   }
   
