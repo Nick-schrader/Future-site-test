@@ -2684,6 +2684,17 @@ function stopRolPolling() {
   }
 }
 
+function closeVoertuigModal() {
+  document.getElementById('voertuig-modal').classList.add('hidden');
+}
+
+function closeOntkoppelModal() {
+  if (window._ontkoppelModal) {
+    document.body.removeChild(window._ontkoppelModal);
+    window._ontkoppelModal = null;
+  }
+}
+
 // Start de polling (alleen voor gebruikers die ervoor in aanmerking komen)
 startRolPolling();
 
