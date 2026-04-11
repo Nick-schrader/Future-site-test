@@ -198,7 +198,10 @@ window.onload = async () => {
       });
     }
     
-    document.getElementById('ovd-view').classList.remove('hidden');
+    const ovdView = document.getElementById('ovd-view');
+if (ovdView) {
+  ovdView.classList.remove('hidden');
+}
     laadEenheden();
     renderMeldingen();
     setInterval(() => { laadEenheden(); renderMeldingen(); }, 3000);
