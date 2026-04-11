@@ -28,22 +28,37 @@ window.onload = () => {
 };
 
 function laadLogs() {
+  console.log('[LOGS] Laden van logs...');
+  console.log('[LOGS] API URL:', API_URL);
+  
   fetch(`${API_URL}/api/logs`)
-    .then(r => r.json())
+    .then(r => {
+      console.log('[LOGS] Response status:', r.status);
+      return r.json();
+    })
     .then(data => {
+      console.log('[LOGS] Data ontvangen:', data);
+      console.log('[LOGS] Aantal logs:', data.length);
+      
       _alleLogs = data;
       console.log('Logs data:', data); // Debug: bekijk data structuur
       filterLogs();
     })
-    .catch(() => {
+    .catch(err => {
+      console.error('[LOGS] Fout bij laden logs:', err);
       document.getElementById('logs-tbody').innerHTML = '<tr><td colspan="5" style="color:#555;text-align:center">Kan logs niet laden</td></tr>';
     });
 }
 
 function filterLogs() {
+  console.log('[LOGS] FilterLogs aangeroepen');
+  console.log('[LOGS] _alleLogs:', _alleLogs);
+  
   const actie = document.getElementById('log-actie-filter')?.value || '';
   const zoek = document.getElementById('log-zoek-filter')?.value.toLowerCase() || '';
   const datum = document.getElementById('log-date-filter')?.value || '';
+
+  console.log('[LOGS] Filters - actie:', actie, 'zoek:', zoek, 'datum:', datum);
 
   let gefilterd = _alleLogs;
   
@@ -62,13 +77,19 @@ function filterLogs() {
     });
   }
 
+  console.log('[LOGS] Gefilterde logs:', gefilterd);
+  console.log('[LOGS] Aantal gefilterd:', gefilterd.length);
+
   const tbody = document.getElementById('logs-tbody');
   if (gefilterd.length === 0) {
+    console.log('[LOGS] Geen logs gevonden, toon "Geen logs" bericht');
     tbody.innerHTML = '<tr><td colspan="6" style="color:#555;text-align:center">Geen logs</td></tr>';
     return;
   }
   
-  tbody.innerHTML = gefilterd.map(l => {
+  const html = gefilterd.map(l => {
+    console.log('[LOGS] Rendering log:', l);
+    
     // Parse details veld voor wie, reden en uren
     let wie = '-';
     let reden = '-';
@@ -113,6 +134,10 @@ function filterLogs() {
     </tr>
   `;
   }).join('');
+  
+  console.log('[LOGS] HTML generated, length:', html.length);
+  tbody.innerHTML = html;
+  console.log('[LOGS] Tbody innerHTML set');
 }
 
 function clearFilters() {
