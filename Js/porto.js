@@ -2700,6 +2700,42 @@ function closeVoertuigModal() {
   document.getElementById('voertuig-modal').classList.add('hidden');
 }
 
+function toonOntkoppelModalMetDatabaseData(unit, partnerData) {
+  console.log('ONTKOPPELEN - Toon modal met database data:', partnerData);
+  
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal-content" style="max-width: 500px;">
+      <h3>Eenheden Ontkoppelen</h3>
+      <p>Kies welke eenheid het roepnummer behoudt:</p>
+      
+      <div style="display: flex; gap: 15px; margin: 20px 0;">
+        <div style="flex: 1; padding: 15px; border: 2px solid #4a5568; border-radius: 8px; cursor: pointer;" 
+             onclick="selectOntkoppelKeuze('${unit.userId}', '${partnerData.id}', 'unit1')">
+          <h4 style="margin: 0 0 10px 0; color: #e2e8f0;">${unit.naam}</h4>
+          <p style="margin: 0; color: #a0aec0;">Roepnummer: <strong>${unit.roepnummer || 'geen'}</strong></p>
+          <p style="margin: 5px 0 0 0; color: #a0aec0;">Voertuig: ${unit.voertuig || 'geen'}</p>
+        </div>
+        
+        <div style="flex: 1; padding: 15px; border: 2px solid #4a5568; border-radius: 8px; cursor: pointer;" 
+             onclick="selectOntkoppelKeuze('${unit.userId}', '${partnerData.id}', 'unit2')">
+          <h4 style="margin: 0 0 10px 0; color: #e2e8f0;">${partnerData.display_name || partnerData.username || 'Onbekend'}</h4>
+          <p style="margin: 0; color: #a0aec0;">Roepnummer: <strong>${partnerData.dienstnummer || 'geen'}</strong></p>
+          <p style="margin: 5px 0 0 0; color: #a0aec0;">Voertuig: ${partnerData.voertuig || 'geen'}</p>
+        </div>
+      </div>
+      
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button class="btn-ghost" onclick="closeOntkoppelModal()">Annuleren</button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  window._ontkoppelModal = modal;
+}
+
 function closeOntkoppelModal() {
   if (window._ontkoppelModal) {
     document.body.removeChild(window._ontkoppelModal);
