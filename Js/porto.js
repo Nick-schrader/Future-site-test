@@ -1991,9 +1991,19 @@ function setStatusVoorEenheid(status) {
 }
 
 function ontkoppelEenheid() {
+  console.log('🔍 ONTKOPPELEN - Functie aangeroepen');
+  
   const id = document.getElementById('edit-unit-id').value;
+  console.log('🔍 ONTKOPPELEN - Unit ID:', id);
+  
   const unit = appData.eenheden.find(e => e.id === id);
-  if (!unit || !unit.koppelId) return;
+  console.log('🔍 ONTKOPPELEN - Unit gevonden:', unit);
+  console.log('🔍 ONTKOPPELEN - Unit koppelId:', unit?.koppelId);
+  
+  if (!unit || !unit.koppelId) {
+    console.log('🔍 ONTKOPPELEN - Early return - geen unit of koppelId');
+    return;
+  }
   
   // Haal partner eenheid op
   const partner = appData.eenheden.find(e => e.userId === unit.koppelId);

@@ -589,26 +589,31 @@ app.post('/api/status', (req, res) => {
     }
   }
 
-  // Cleanup bij status 0 - maak roepnummer leeg en verwijder indelingen
+  // Cleanup bij status 0 - maak roepnummer leeg en verwijder ALLE indelingen
   if (status === 0) {
     console.log(`[STATUS 0 CLEANUP] User ${userId} going uit dienst - cleaning up data`);
     
     // Maak roepnummer leeg
     db.prepare('UPDATE gebruikers SET dienstnummer = NULL WHERE id = ?').run(userId);
     
-    // Verwijder indelingen voor deze gebruiker
-    db.prepare('DELETE FROM indelingen WHERE user_id = ?').run(userId);
+    // Reset role naar user
+    db.prepare('UPDATE gebruikers SET role = ? WHERE id = ?').run('user', userId);
+    
+    // Verwijder ALLE indelingen voor deze gebruiker (niet alleen user_id)
+    db.prepare('DELETE FROM indelingen WHERE user_id = ? OR roepnummer = (SELECT dienstnummer FROM gebruikers WHERE id = ?)').run(userId, userId);
     
     // Reset koppeling als die bestaat
     const koppelData = db.prepare('SELECT koppel_id FROM gebruikers WHERE id = ?').get(userId);
     if (koppelData?.koppel_id) {
       db.prepare('UPDATE gebruikers SET koppel_id = NULL WHERE id = ?').run(koppelData.koppel_id);
+      // Verwijder ook indelingen van koppel partner
+      db.prepare('DELETE FROM indelingen WHERE user_id = ? OR roepnummer = (SELECT dienstnummer FROM gebruikers WHERE id = ?)').run(koppelData.koppel_id, koppelData.koppel_id);
     }
     
     // Verwijder status alerts
     db.prepare('DELETE FROM status_alerts WHERE user_id = ?').run(userId);
     
-    console.log(`[STATUS 0 CLEANUP] Cleanup completed for user ${userId}`);
+    console.log(`[STATUS 0 CLEANUP] Complete cleanup completed for user ${userId} - role reset to user`);
   }
 
   // Speel geluid bij status 6 of 7
