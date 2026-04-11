@@ -459,18 +459,39 @@ function renderEenheden() {
   GROEPEN.forEach(p => groepen[p] = []);
   groepen['Wachtrij'] = [];
 
-  appData.eenheden.forEach(e => {
+  console.log('RENDER EENHEDEN - Total eenheden before grouping:', appData.eenheden.length);
+  console.log('RENDER EENHEDEN - Eenheden details:', appData.eenheden.map(e => ({id: e.id, naam: e.naam, userId: e.userId})));
+  
+  appData.eenheden.forEach((e, index) => {
+    console.log(`RENDER EENHEDEN - Processing eenheid ${index}:`, {
+      id: e.id,
+      naam: e.naam,
+      userId: e.userId,
+      hasId: !!e.id,
+      idValue: e.id
+    });
+    
     if (!e.id || e.id === '-') {
+      console.log('RENDER EENHEDEN - Adding to Wachtrij:', e.naam);
       groepen['Wachtrij'].push(e);
       return;
     }
     const prefix = e.id.trim().length >= 2 ? e.id.trim().substring(0, 2) : null;
+    console.log('RENDER EENHEDEN - Prefix for', e.id, ':', prefix);
+    
     if (prefix && groepen[prefix] !== undefined) {
+      console.log('RENDER EENHEDEN - Adding to group', prefix, ':', e.naam);
       groepen[prefix].push(e);
     } else {
+      console.log('RENDER EENHEDEN - Adding to Overig:', e.naam);
       if (!groepen['Overig']) groepen['Overig'] = [];
       groepen['Overig'].push(e);
     }
+  });
+  
+  console.log('RENDER EENHEDEN - Groups after processing:');
+  Object.keys(groepen).forEach(groep => {
+    console.log(`RENDER EENHEDEN - ${groep}:`, groepen[groep].length, 'eenheden');
   });
 
   // Sorteer elke groep oplopend op basis van roepnummer (17-00, 17-01, 17-02, ...)

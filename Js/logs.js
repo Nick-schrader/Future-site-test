@@ -13,6 +13,11 @@ const ACTIE_LABELS = {
   account_update: 'Account gewijzigd',
   koppel: 'Gekoppeld',
   ontkoppel: 'Ontkoppeld',
+  promotie: 'Promotie',
+  demotie: 'Demotie',
+  roepnummer_wijziging: 'Roepnummer wijziging',
+  ontslag: 'Ontslag',
+  rang_wijziging: 'Rang wijziging',
 };
 
 let _alleLogs = [];

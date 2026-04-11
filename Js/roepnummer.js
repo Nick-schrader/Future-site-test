@@ -31,6 +31,31 @@ function getUser() {
     }
 }
 
+// Logging functie voor personeel acties
+function logPersoneelActie(actie, doelwit, details) {
+    const user = getUser();
+    const logData = {
+        actie: actie,
+        door: user.displayName || user.username || 'Onbekend',
+        doelwit: doelwit,
+        details: details,
+        tijd: new Date().toISOString()
+    };
+    
+    console.log('[LOG] Personeel actie:', logData);
+    
+    // Stuur log naar backend
+    fetch(`${API_URL}/api/logs`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(logData)
+    }).catch(err => {
+        console.error('[LOG] Fout bij loggen:', err);
+    });
+}
+
 // Initialiseer de pagina
 document.addEventListener('DOMContentLoaded', function() {
     toonRoepnummerPagina();
@@ -576,6 +601,9 @@ async function promoveerPersoneel(personeelId) {
         }
         
         toonNotificatie(`${personeel.naam} is gepromoveerd naar ${nieuweRang} met roepnummer ${personeel.roepnummer}`);
+        
+        // Log de promotie actie
+        logPersoneelActie('promotie', personeel.naam, `${oudeRang} -> ${nieuweRang} | Roepnummer: ${personeel.roepnummer}`);
     }
 }
 
@@ -640,6 +668,9 @@ async function demoteerPersoneel(personeelId) {
         }
         
         toonNotificatie(`${personeel.naam} is gedemoteerd naar ${nieuweRang} met roepnummer ${personeel.roepnummer}`);
+        
+        // Log de demotie actie
+        logPersoneelActie('demotie', personeel.naam, `${oudeRang} -> ${nieuweRang} | Roepnummer: ${personeel.roepnummer}`);
     }
 }
 
@@ -677,6 +708,9 @@ async function ontslaPersoneel(personeelId) {
         }
         
         toonNotificatie(`${personeel.naam} is ontslagen`);
+        
+        // Log de ontslag actie
+        logPersoneelActie('ontslag', personeel.naam, `Ontslagen uit dienst | Laatste rang: ${personeel.rang}`);
     }
 }
 
@@ -737,6 +771,8 @@ async function slaRoepnummerOp(personeelId, buttonElement) {
     const personeel = personeelData.find(p => p.id === personeelId);
     if (!personeel) return;
     
+    const oudRoepnummer = personeel.roepnummer;
+    
     // Save to API first
     try {
         const response = await fetch(`/api/roepnummer/personeel/${personeelId}`, {
@@ -773,7 +809,10 @@ async function slaRoepnummerOp(personeelId, buttonElement) {
         BerichtenSysteem.stuurBericht(personeel.discordId, 'roepnummer', berichtTekst);
     }
     
-    toonNotificatie(`Roepnummer van ${personeel.naam} is gewijzigd naar ${personeel.roepnummer}`);
+    toonNotificatie(`Roepnummer voor ${personeel.naam} bijgewerkt naar ${personeel.roepnummer}`);
+        
+    // Log de roepnummer wijziging
+    logPersoneelActie('roepnummer_wijziging', personeel.naam, `Oud: ${oudRoepnummer} -> Nieuw: ${personeel.roepnummer}`);
     
     sluitRoepnummerModal(buttonElement);
 }
