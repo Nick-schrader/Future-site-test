@@ -2013,31 +2013,57 @@ function ontkoppelEenheid() {
   console.log('🔍 ONTKOPPELEN - Partner gevonden:', partner);
   
   if (!partner) {
-    console.log('Partner niet gevonden, probeer via rollen endpoint...');
-    // Probeer via rollen endpoint als partner niet in eenheden array
-    fetch(`${API_URL}/api/rollen/${unit.koppelId}`)
+    console.log('Partner niet gevonden in huidige eenheden, ververs eenheden...');
+    // Ververs eenheden array en probeer opnieuw
+    fetch(`${API_URL}/api/eenheden`)
       .then(r => r.json())
-      .then(rollenData => {
-        console.log('Partner rollen data:', rollenData);
-        if (rollenData && rollenData.length > 0) {
-          console.log('Partner rollen data details:', rollenData[0]);
-          // Maak partner object van rollen data - gebruik Discord member properties
-          const partnerData = {
-            id: unit.koppelId,
-            display_name: rollenData[0].displayName || rollenData[0].user?.globalName || rollenData[0].user?.username || 'Onbekend',
-            username: rollenData[0].user?.username || rollenData[0].username || 'Onbekend',
-            dienstnummer: '', // Roepnummer niet beschikbaar via rollen endpoint
-            voertuig: '' // Voertuig niet beschikbaar via rollen endpoint
-          };
-          console.log('Partner data samengesteld:', partnerData);
-          // Toon modal met samengestelde data
-          toonOntkoppelModalMetDatabaseData(unit, partnerData);
+      .then(eenheden => {
+        appData.eenheden = eenheden;
+        console.log('Eenheden ververst:', eenheden.length, 'eenheden');
+        
+        // Zoek opnieuw naar partner
+        const refreshedPartner = appData.eenheden.find(e => e.userId === unit.koppelId);
+        console.log('Partner na verversen:', refreshedPartner);
+        
+        if (refreshedPartner) {
+          // Toon normale modal met verfriste partner data
+          const modal = document.createElement('div');
+          modal.className = 'modal-overlay';
+          modal.innerHTML = `
+            <div class="modal-content" style="max-width: 500px;">
+              <h3>Eenheden Ontkoppelen</h3>
+              <p>Kies welke eenheid het roepnummer behoudt:</p>
+              
+              <div style="display: flex; gap: 15px; margin: 20px 0;">
+                <div style="flex: 1; padding: 15px; border: 2px solid #4a5568; border-radius: 8px; cursor: pointer;" 
+                     onclick="selectOntkoppelKeuze('${unit.userId}', '${refreshedPartner.userId}', 'unit1')">
+                  <h4 style="margin: 0 0 10px 0; color: #e2e8f0;">${unit.naam}</h4>
+                  <p style="margin: 0; color: #a0aec0;">Roepnummer: <strong>${unit.roepnummer || 'geen'}</strong></p>
+                  <p style="margin: 5px 0 0 0; color: #a0aec0;">Voertuig: ${unit.voertuig || 'geen'}</p>
+                </div>
+                
+                <div style="flex: 1; padding: 15px; border: 2px solid #4a5568; border-radius: 8px; cursor: pointer;" 
+                     onclick="selectOntkoppelKeuze('${unit.userId}', '${refreshedPartner.userId}', 'unit2')">
+                  <h4 style="margin: 0 0 10px 0; color: #e2e8f0;">${refreshedPartner.naam}</h4>
+                  <p style="margin: 0; color: #a0aec0;">Roepnummer: <strong>${refreshedPartner.roepnummer || 'geen'}</strong></p>
+                  <p style="margin: 5px 0 0 0; color: #a0aec0;">Voertuig: ${refreshedPartner.voertuig || 'geen'}</p>
+                </div>
+              </div>
+              
+              <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn-ghost" onclick="closeOntkoppelModal()">Annuleren</button>
+              </div>
+            </div>
+          `;
+          
+          document.body.appendChild(modal);
+          window._ontkoppelModal = modal;
         } else {
-          console.log('Geen rollen data gevonden voor partner');
-          showToast('Partner niet gevonden in database');
+          console.log('Partner nog steeds niet gevonden na verversen');
+          showToast('Partner niet gevonden in eenheden');
         }
       })
-      .catch(err => console.error('Fout bij ophalen partner rollen:', err));
+      .catch(err => console.error('Fout bij verversen eenheden:', err));
     return;
   }
   
