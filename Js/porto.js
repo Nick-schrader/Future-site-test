@@ -2006,8 +2006,27 @@ function ontkoppelEenheid() {
   }
   
   // Haal partner eenheid op
+  console.log('🔍 ONTKOPPELEN - Zoek partner met userId:', unit.koppelId);
+  console.log('🔍 ONTKOPPELEN - Beschikbare eenheden:', appData.eenheden.map(e => ({id: e.id, userId: e.userId, naam: e.naam})));
+  
   const partner = appData.eenheden.find(e => e.userId === unit.koppelId);
-  if (!partner) return;
+  console.log('🔍 ONTKOPPELEN - Partner gevonden:', partner);
+  
+  if (!partner) {
+    console.log('🔍 ONTKOPPELEN - Partner niet gevonden, probeer direct uit database...');
+    // Probeer direct uit database als partner niet in eenheden array
+    fetch(`${API_URL}/api/gebruikers/${unit.koppelId}`)
+      .then(r => r.json())
+      .then(partnerData => {
+        console.log('🔍 ONTKOPPELEN - Partner data uit database:', partnerData);
+        if (partnerData) {
+          // Toon modal met database data
+          toonOntkoppelModalMetDatabaseData(unit, partnerData);
+        }
+      })
+      .catch(err => console.error('🔍 ONTKOPPELEN - Fout bij ophalen partner:', err));
+    return;
+  }
   
   // Toon keuze modal
   const modal = document.createElement('div');
@@ -2063,17 +2082,6 @@ function selectOntkoppelKeuze(unit1Id, unit2Id, keuze) {
     console.error('Ontkoppelen mislukt:', err);
     showToast('Ontkoppelen mislukt');
   });
-}
-
-function closeOntkoppelModal() {
-  if (window._ontkoppelModal) {
-    document.body.removeChild(window._ontkoppelModal);
-    window._ontkoppelModal = null;
-  }
-}
-
-function closeVoertuigModal() {
-  document.getElementById('voertuig-modal').classList.add('hidden');
 }
 
 function saveEenheidEdit() {
