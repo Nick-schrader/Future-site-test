@@ -589,6 +589,28 @@ app.post('/api/status', (req, res) => {
     }
   }
 
+  // Cleanup bij status 0 - maak roepnummer leeg en verwijder indelingen
+  if (status === 0) {
+    console.log(`[STATUS 0 CLEANUP] User ${userId} going uit dienst - cleaning up data`);
+    
+    // Maak roepnummer leeg
+    db.prepare('UPDATE gebruikers SET dienstnummer = NULL WHERE id = ?').run(userId);
+    
+    // Verwijder indelingen voor deze gebruiker
+    db.prepare('DELETE FROM indelingen WHERE user_id = ?').run(userId);
+    
+    // Reset koppeling als die bestaat
+    const koppelData = db.prepare('SELECT koppel_id FROM gebruikers WHERE id = ?').get(userId);
+    if (koppelData?.koppel_id) {
+      db.prepare('UPDATE gebruikers SET koppel_id = NULL WHERE id = ?').run(koppelData.koppel_id);
+    }
+    
+    // Verwijder status alerts
+    db.prepare('DELETE FROM status_alerts WHERE user_id = ?').run(userId);
+    
+    console.log(`[STATUS 0 CLEANUP] Cleanup completed for user ${userId}`);
+  }
+
   // Speel geluid bij status 6 of 7
   if (status === 6 || status === 7) {
     db.prepare('INSERT INTO status_alerts (user_id, naam, status, tijd) VALUES (?, ?, ?, ?)').run(
@@ -1129,6 +1151,34 @@ app.post('/api/ontkoppel', async (req, res) => {
     db.prepare('DELETE FROM indelingen WHERE user_id = ? AND ingedeeld_door = "koppel"').run(g.koppel_id);
     
     console.log(`[ONTKOPPEL] ${userId} <-> ${g.koppel_id}`);
+  }
+  
+  res.json({ success: true });
+});
+
+// ---- API: Ontkoppelen met keuze ----
+app.post('/api/ontkoppel-met-keuze', async (req, res) => {
+  const { userId, verliesUserId } = req.body;
+  if (!userId || !verliesUserId) return res.status(400).json({ error: 'Ontbrekende velden' });
+  
+  // Haal koppel informatie op
+  const g = db.prepare('SELECT koppel_id, dienstnummer FROM gebruikers WHERE id = ?').get(userId);
+  if (!g) return res.status(400).json({ error: 'Gebruiker niet gevonden' });
+  
+  if (g.koppel_id === verliesUserId) {
+    // Ontkoppel beide kanten
+    db.prepare('UPDATE gebruikers SET koppel_id = NULL WHERE id = ?').run(verliesUserId);
+    db.prepare('UPDATE gebruikers SET koppel_id = NULL WHERE id = ?').run(userId);
+    
+    // Verwijder roepnummer van verliezer
+    db.prepare('UPDATE gebruikers SET dienstnummer = NULL WHERE id = ?').run(verliesUserId);
+    db.prepare('DELETE FROM indelingen WHERE user_id = ?').run(verliesUserId);
+    
+    // Reset indelingen voor koppel
+    db.prepare('DELETE FROM indelingen WHERE user_id = ? AND ingedeeld_door = "koppel"').run(userId);
+    db.prepare('DELETE FROM indelingen WHERE user_id = ? AND ingedeeld_door = "koppel"').run(verliesUserId);
+    
+    console.log(`[ONTKOPPEL MET KEUZE] ${userId} behoudt, ${verliesUserId} verliest roepnummer`);
   }
   
   res.json({ success: true });

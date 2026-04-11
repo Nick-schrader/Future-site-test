@@ -194,9 +194,9 @@ class BerichtenSysteem {
       
       console.log('[BERICHTEN] Creating berichten items, total:', this.berichten.length);
       
-      // Laat alleen laatste 3 berichten zien
-      const laatsteBerichten = this.berichten.slice(-3);
-      console.log('[BERICHTEN] Laatste 3 berichten:', laatsteBerichten.length);
+      // Laat alleen laatste 3 berichten zien - nieuwste eerst
+      const laatsteBerichten = this.berichten.slice().reverse().slice(0, 3);
+      console.log('[BERICHTEN] Laatste 3 berichten (nieuwste eerst):', laatsteBerichten.length);
       
       laatsteBerichten.forEach((bericht, index) => {
         console.log('[BERICHTEN] Creating item for bericht:', bericht);
