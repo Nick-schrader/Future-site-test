@@ -2020,11 +2020,12 @@ function ontkoppelEenheid() {
       .then(rollenData => {
         console.log('Partner rollen data:', rollenData);
         if (rollenData && rollenData.length > 0) {
-          // Maak partner object van rollen data
+          console.log('Partner rollen data details:', rollenData[0]);
+          // Maak partner object van rollen data - gebruik Discord member properties
           const partnerData = {
             id: unit.koppelId,
-            display_name: rollenData[0].displayName || rollenData[0].username || 'Onbekend',
-            username: rollenData[0].username || 'Onbekend',
+            display_name: rollenData[0].displayName || rollenData[0].user?.globalName || rollenData[0].user?.username || 'Onbekend',
+            username: rollenData[0].user?.username || rollenData[0].username || 'Onbekend',
             dienstnummer: '', // Roepnummer niet beschikbaar via rollen endpoint
             voertuig: '' // Voertuig niet beschikbaar via rollen endpoint
           };
