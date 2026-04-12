@@ -2077,16 +2077,12 @@ function ontkoppelEenheid() {
               <div style="display: flex; gap: 15px; margin: 20px 0;">
                 <div style="flex: 1; padding: 15px; border: 2px solid #4a5568; border-radius: 8px; cursor: pointer;" 
                      onclick="selectOntkoppelKeuze('${unit.userId}', '${refreshedPartner.userId}', 'unit1')">
-                  <h4 style="margin: 0 0 10px 0; color: #e2e8f0;">${unit.naam}</h4>
-                  <p style="margin: 0; color: #a0aec0;">Roepnummer: <strong>${unit.roepnummer || 'geen'}</strong></p>
-                  <p style="margin: 5px 0 0 0; color: #a0aec0;">Voertuig: ${unit.voertuig || 'geen'}</p>
+                  <h4 style="margin: 0; color: #e2e8f0;">${unit.naam}</h4>
                 </div>
                 
                 <div style="flex: 1; padding: 15px; border: 2px solid #4a5568; border-radius: 8px; cursor: pointer;" 
                      onclick="selectOntkoppelKeuze('${unit.userId}', '${refreshedPartner.userId}', 'unit2')">
-                  <h4 style="margin: 0 0 10px 0; color: #e2e8f0;">${refreshedPartner.naam}</h4>
-                  <p style="margin: 0; color: #a0aec0;">Roepnummer: <strong>${refreshedPartner.roepnummer || 'geen'}</strong></p>
-                  <p style="margin: 5px 0 0 0; color: #a0aec0;">Voertuig: ${refreshedPartner.voertuig || 'geen'}</p>
+                  <h4 style="margin: 0; color: #e2e8f0;">${refreshedPartner.naam}</h4>
                 </div>
               </div>
               
@@ -2119,16 +2115,12 @@ function ontkoppelEenheid() {
                     <div style="display: flex; gap: 15px; margin: 20px 0;">
                       <div style="flex: 1; padding: 15px; border: 2px solid #4a5568; border-radius: 8px; cursor: pointer;" 
                            onclick="selectOntkoppelKeuze('${unit.userId}', '${partnerUser.id}', 'unit1')">
-                        <h4 style="margin: 0 0 10px 0; color: #e2e8f0;">${unit.naam}</h4>
-                        <p style="margin: 0; color: #a0aec0;">Roepnummer: <strong>${unit.roepnummer || 'geen'}</strong></p>
-                        <p style="margin: 5px 0 0 0; color: #a0aec0;">Voertuig: ${unit.voertuig || 'geen'}</p>
+                        <h4 style="margin: 0; color: #e2e8f0;">${unit.naam}</h4>
                       </div>
                       
                       <div style="flex: 1; padding: 15px; border: 2px solid #4a5568; border-radius: 8px; cursor: pointer;" 
                            onclick="selectOntkoppelKeuze('${unit.userId}', '${partnerUser.id}', 'unit2')">
-                        <h4 style="margin: 0 0 10px 0; color: #e2e8f0;">${partnerUser.displayName || partnerUser.username || 'Onbekend'}</h4>
-                        <p style="margin: 0; color: #a0aec0;">Roepnummer: <strong>geen</strong></p>
-                        <p style="margin: 5px 0 0 0; color: #a0aec0;">Voertuig: geen</p>
+                        <h4 style="margin: 0; color: #e2e8f0;">${partnerUser.displayName || partnerUser.username || 'Onbekend'}</h4>
                       </div>
                     </div>
                     
@@ -2163,16 +2155,12 @@ function ontkoppelEenheid() {
       <div style="display: flex; gap: 15px; margin: 20px 0;">
         <div style="flex: 1; padding: 15px; border: 2px solid #4a5568; border-radius: 8px; cursor: pointer;" 
              onclick="selectOntkoppelKeuze('${unit.userId}', '${partner.userId}', 'unit1')">
-          <h4 style="margin: 0 0 10px 0; color: #e2e8f0;">${unit.naam}</h4>
-          <p style="margin: 0; color: #a0aec0;">Roepnummer: <strong>${unit.roepnummer || 'geen'}</strong></p>
-          <p style="margin: 5px 0 0 0; color: #a0aec0;">Voertuig: ${unit.voertuig || 'geen'}</p>
+          <h4 style="margin: 0; color: #e2e8f0;">${unit.naam}</h4>
         </div>
         
         <div style="flex: 1; padding: 15px; border: 2px solid #4a5568; border-radius: 8px; cursor: pointer;" 
              onclick="selectOntkoppelKeuze('${unit.userId}', '${partner.userId}', 'unit2')">
-          <h4 style="margin: 0 0 10px 0; color: #e2e8f0;">${partner.naam}</h4>
-          <p style="margin: 0; color: #a0aec0;">Roepnummer: <strong>${partner.roepnummer || 'geen'}</strong></p>
-          <p style="margin: 5px 0 0 0; color: #a0aec0;">Voertuig: ${partner.voertuig || 'geen'}</p>
+          <h4 style="margin: 0; color: #e2e8f0;">${partner.naam}</h4>
         </div>
       </div>
       

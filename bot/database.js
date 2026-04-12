@@ -118,6 +118,31 @@ db.exec(`
   );
 `);
 
+// Migrate existing logs table - voeg doelwit kolom toe als die niet bestaat
+try {
+  // Controleer of doelwit kolom bestaat
+  const tableInfo = db.prepare("PRAGMA table_info(logs)").all();
+  const hasDoelwit = tableInfo.some(column => column.name === 'doelwit');
+  
+  if (!hasDoelwit) {
+    console.log('[DB] Adding doelwit column to logs table');
+    db.exec('ALTER TABLE logs ADD COLUMN doelwit TEXT');
+  }
+  
+  // Controleer of tijd kolom TEXT type is
+  const tijdColumn = tableInfo.find(column => column.name === 'tijd');
+  if (tijdColumn && tijdColumn.type === 'INTEGER') {
+    console.log('[DB] Converting tijd column from INTEGER to TEXT');
+    // SQLite ondersteunt geen directe type conversie, dus we moeten een nieuwe kolom maken
+    db.exec('ALTER TABLE logs ADD COLUMN tijd_new TEXT');
+    db.exec('UPDATE logs SET tijd_new = datetime(tijd, "unixepoch") WHERE tijd IS NOT NULL');
+    db.exec('ALTER TABLE logs DROP COLUMN tijd');
+    db.exec('ALTER TABLE logs RENAME COLUMN tijd_new TO tijd');
+  }
+} catch (err) {
+  console.log('[DB] Schema migration error (safe to ignore):', err.message);
+}
+
 // ---- Gebruikers ----
 const upsertGebruiker = db.prepare(`
   INSERT INTO gebruikers (id, username, display_name, avatar, dienst, role, fullname, rollen)
