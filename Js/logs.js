@@ -3,21 +3,10 @@ const ACTIE_LABELS = {
   uren_verwijderd: 'Uren verwijderd',
   uren_aangepast: 'Uren aangepast',
   uren_gereset: 'Uren gereset',
-  reset: 'Reset gebruiker',
-  rol_toewijzen: 'Rol toegekend',
-  indeling: 'Indeling gewijzigd',
-  status: 'Status gewijzigd',
-  voertuig: 'Voertuig gewijzigd',
-  login: 'Login',
-  logout: 'Logout',
-  account_update: 'Account gewijzigd',
-  koppel: 'Gekoppeld',
-  ontkoppel: 'Ontkoppeld',
   promotie: 'Promotie',
   demotie: 'Demotie',
   roepnummer_wijziging: 'Roepnummer wijziging',
   ontslag: 'Ontslag',
-  rang_wijziging: 'Rang wijziging',
 };
 
 let _alleLogs = [];
