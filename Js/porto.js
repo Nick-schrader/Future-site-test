@@ -389,28 +389,46 @@ function laadEenheden() {
       
       // Emergency fix: als gebruiker geen roepnummer heeft, geef er een
       if (roepnummer === '-') {
-        // Geef een tijdelijk roepnummer op basis van userId
-        const tempNum = e.id.slice(-4);
-        roepnummer = `TEMP-${tempNum}`;
+        // Vind eerste beschikbare 18-nummer
+        let beschikbaar18Nummer = null;
+        for (let i = 0; i <= 99; i++) {
+          const testNummer = `18-${String(i).padStart(2, '0')}`;
+          const nummerInGebruik = data.some(d => (d.roepnummer || d.dienstnummer) === testNummer);
+          if (!nummerInGebruik) {
+            beschikbaar18Nummer = testNummer;
+            break;
+          }
+        }
         
-        // Update de gebruiker in de data met het tijdelijke roepnummer
-        e.roepnummer = roepnummer;
-        e.dienstnummer = roepnummer;
-        
-        // Log de emergency fix
-        console.log('[EMERGENCY] Gebruiker zonder roepnummer gevonden:', e.naam, '-> tijdelijk roepnummer:', roepnummer);
-        
-        // Probeer direct de database te updaten
-        fetch(`${API_URL}/api/roepnummer/personeel/${e.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            rang: e.role || 'user',
-            roepnummer: roepnummer,
-            naam: e.naam || e.displayName || e.username,
-            discordId: e.username
-          })
-        }).catch(err => console.log('[EMERGENCY] Database update failed:', err));
+        if (beschikbaar18Nummer) {
+          roepnummer = beschikbaar18Nummer;
+          
+          // Update de gebruiker in de data met het nieuwe roepnummer
+          e.roepnummer = roepnummer;
+          e.dienstnummer = roepnummer;
+          
+          // Log de emergency fix
+          console.log('[EMERGENCY] Gebruiker zonder roepnummer gevonden:', e.naam, '-> automatisch 18-nummer:', roepnummer);
+          
+          // Probeer direct de database te updaten
+          fetch(`${API_URL}/api/roepnummer/personeel/${e.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              rang: e.role || 'user',
+              roepnummer: roepnummer,
+              naam: e.naam || e.displayName || e.username,
+              discordId: e.username
+            })
+          }).catch(err => console.log('[EMERGENCY] Database update failed:', err));
+        } else {
+          // Fallback: TEMP-nummer als geen 18-nummer beschikbaar
+          const tempNum = e.id.slice(-4);
+          roepnummer = `TEMP-${tempNum}`;
+          e.roepnummer = roepnummer;
+          e.dienstnummer = roepnummer;
+          console.log('[EMERGENCY] Geen 18-nummer beschikbaar voor:', e.naam, '-> tijdelijk roepnummer:', roepnummer);
+        }
       }
       
       if (!gegroepeerd[roepnummer]) {
