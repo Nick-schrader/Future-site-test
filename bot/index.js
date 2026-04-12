@@ -1018,6 +1018,39 @@ app.get('/api/meldingen-inactiviteit', (req, res) => {
   res.json(meldingen);
 });
 
+// ---- API: Roepnummer Updates ----
+app.put('/api/roepnummer/personeel/:personeelId', (req, res) => {
+  try {
+    const { rang, roepnummer, naam, discordId } = req.body;
+    const personeelId = req.params.personeelId;
+    
+    console.log('[ROEPNUMMER] Updating personeel:', personeelId, 'to roepnummer:', roepnummer);
+    
+    // Update gebruiker in database
+    const stmt = db.prepare(`
+      UPDATE gebruikers 
+      SET dienstnummer = ?, 
+          shortname = ?,
+          fullname = ?,
+          username = ?
+      WHERE id = ?
+    `);
+    
+    const result = stmt.run(roepnummer, naam, naam, discordId, personeelId);
+    
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Personeel niet gevonden' });
+    }
+    
+    console.log('[ROEPNUMMER] Successfully updated roepnummer for:', personeelId);
+    res.json({ success: true, roepnummer: roepnummer });
+    
+  } catch (err) {
+    console.error('[ROEPNUMMER] Error updating roepnummer:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // ---- API: Logs ----
 app.get('/api/logs', (_req, res) => {
   const logs = db.prepare('SELECT * FROM logs ORDER BY tijd DESC LIMIT 200').all();
