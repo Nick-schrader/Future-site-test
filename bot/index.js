@@ -548,9 +548,20 @@ app.get('/api/db/indelingen', (_req, res) => {
 app.post('/api/eenheid-update', async (req, res) => {
   const { userId, roepnummer, voertuig } = req.body;
   if (!userId) return res.status(400).json({ error: 'Geen userId' });
+  
+  console.log('[EENHEID-UPDATE] Updating:', { userId, roepnummer, voertuig });
+  
   if (voertuig) db.prepare('UPDATE gebruikers SET voertuig = ? WHERE id = ?').run(voertuig, userId);
+  
   if (roepnummer) {
+    // Update gebruikers tabel voor losse eenheden
+    db.prepare('UPDATE gebruikers SET dienstnummer = ? WHERE id = ?').run(roepnummer, userId);
+    
+    // Update indelingen tabel voor gekoppelde eenheden
     db.prepare('UPDATE indelingen SET roepnummer = ?, voertuig = ? WHERE user_id = ?').run(roepnummer, voertuig, userId);
+    
+    console.log('[EENHEID-UPDATE] Updated roepnummer in gebruikers and indelingen tables');
+    
     // Queue Discord naam update
     addDiscordOperation('update_nickname', { userId, roepnummer, role: req.body.role }, async (data) => {
       const guild = await client.guilds.fetch(process.env.GUILD_ID);
@@ -563,6 +574,7 @@ app.post('/api/eenheid-update', async (req, res) => {
       console.error('Queue operation failed:', err);
     });
   }
+  
   res.json({ success: true });
 });
 
