@@ -46,18 +46,34 @@ function laadLogs() {
     })
     .catch(err => {
       console.error('[LOGS] Fout bij laden logs:', err);
-      document.getElementById('logs-tbody').innerHTML = '<tr><td colspan="5" style="color:#555;text-align:center">Kan logs niet laden</td></tr>';
+      const tbody = document.getElementById('logs-tbody');
+      if (!tbody) {
+        console.error('[LOGS] logs-tbody element niet gevonden');
+        return;
+      }
+      tbody.innerHTML = '<tr><td colspan="5" style="color:#555;text-align:center">Kan logs niet laden</td></tr>';
     });
 }
 
 function filterLogs() {
-  console.log('[LOGS] FilterLogs aangeroepen');
-  console.log('[LOGS] _alleLogs:', _alleLogs);
+  const tbody = document.getElementById('logs-tbody');
+  if (!tbody) {
+    console.error('[LOGS] logs-tbody element niet gevonden');
+    return;
+  }
+  
+  // Debug DOM element state
+  console.log('[LOGS] Tbody element found:', tbody);
+  console.log('[LOGS] Tbody parent:', tbody.parentElement);
+  console.log('[LOGS] Tbody visibility:', window.getComputedStyle(tbody).display);
+  console.log('[LOGS] Tbody parent visibility:', window.getComputedStyle(tbody.parentElement).display);
   
   const actie = document.getElementById('log-actie-filter')?.value || '';
   const zoek = document.getElementById('log-zoek-filter')?.value.toLowerCase() || '';
   const datum = document.getElementById('log-date-filter')?.value || '';
 
+  console.log('[LOGS] FilterLogs aangeroepen');
+  console.log('[LOGS] _alleLogs:', _alleLogs);
   console.log('[LOGS] Filters - actie:', actie, 'zoek:', zoek, 'datum:', datum);
 
   let gefilterd = _alleLogs;
@@ -80,7 +96,6 @@ function filterLogs() {
   console.log('[LOGS] Gefilterde logs:', gefilterd);
   console.log('[LOGS] Aantal gefilterd:', gefilterd.length);
 
-  const tbody = document.getElementById('logs-tbody');
   if (gefilterd.length === 0) {
     console.log('[LOGS] Geen logs gevonden, toon "Geen logs" bericht');
     tbody.innerHTML = '<tr><td colspan="6" style="color:#555;text-align:center">Geen logs</td></tr>';

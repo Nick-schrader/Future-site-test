@@ -1021,7 +1021,35 @@ app.get('/api/meldingen-inactiviteit', (req, res) => {
 // ---- API: Logs ----
 app.get('/api/logs', (_req, res) => {
   const logs = db.prepare('SELECT * FROM logs ORDER BY tijd DESC LIMIT 200').all();
+  console.log('[DEBUG] /api/logs - Total logs in DB:', logs.length);
+  console.log('[DEBUG] /api/logs - Latest log:', logs[0]);
   res.json(logs);
+});
+
+// Debug endpoint - inspect database state
+app.get('/api/debug/logs', (_req, res) => {
+  try {
+    // Check table structure
+    const tableInfo = db.prepare("PRAGMA table_info(logs)").all();
+    console.log('[DEBUG] Table structure:', tableInfo);
+    
+    // Get all logs with detailed info
+    const allLogs = db.prepare('SELECT * FROM logs ORDER BY id DESC LIMIT 10').all();
+    console.log('[DEBUG] Latest 10 logs:', allLogs);
+    
+    // Check specific log count
+    const count = db.prepare('SELECT COUNT(*) as count FROM logs').get();
+    console.log('[DEBUG] Total log count:', count);
+    
+    res.json({
+      tableInfo,
+      latestLogs: allLogs,
+      totalCount: count.count
+    });
+  } catch (err) {
+    console.error('[DEBUG] Error in debug endpoint:', err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post('/api/logs', (req, res) => {

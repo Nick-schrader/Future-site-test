@@ -67,7 +67,7 @@ class BerichtenSysteem {
 
   updateBerichtenMenu() {
     let berichtenMenu = document.querySelector('.berichten-menu');
-    const berichtenMenuName = document.querySelector('.berichten-menu-name');
+    let berichtenMenuName = document.querySelector('.berichten-menu-name');
     const berichtenBadge = document.querySelector('.berichten-badge');
     
     console.log('[BERICHTEN] updateBerichtenMenu called');
