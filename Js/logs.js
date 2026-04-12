@@ -111,29 +111,68 @@ function filterLogs() {
     let uren = '-';
     
     if (l.details) {
-      // Als details " | " bevat, splits het
-      if (l.details.includes(' | ')) {
-        const parts = l.details.split(' | ');
-        wie = parts[0] || '-';
-        
-        // Probeer uren te extraheren uit het tweede deel
-        const urenMatch = parts[1]?.match(/([+-]\d+\.?\d*)/);
-        if (urenMatch) {
-          uren = urenMatch[1] + ' uur';
-          // Verwijder de uren uit de reden
-          reden = parts[1].replace(/[+-]\d+\.?\d*\s*uur?/i, '').trim() || '-';
+      // Speciale parsing voor promotie/demotie
+      if (l.actie === 'promotie' || l.actie === 'demotie') {
+        // Format: "oude rang -> nieuwe rang | Roepnummer: XX-XX"
+        if (l.details.includes(' | ')) {
+          const parts = l.details.split(' | ');
+          const rangPart = parts[0] || '';
+          const roepnummerPart = parts[1] || '';
+          
+          // Parse rang wijziging
+          if (rangPart.includes(' -> ')) {
+            const rangen = rangPart.split(' -> ');
+            reden = `${rangen[0]} naar ${rangen[1]}`;
+          } else {
+            reden = rangPart;
+          }
+          
+          // Parse roepnummer
+          if (roepnummerPart.includes('Roepnummer:')) {
+            const roepnummerMatch = roepnummerPart.match(/Roepnummer:\s*(.+)/);
+            if (roepnummerMatch) {
+              uren = roepnummerMatch[1].trim(); // Gebruik uren kolom voor roepnummer
+            }
+          }
+          
+          // Gebruik doelwit als wie, anders fallback
+          wie = l.doelwit || '-';
         } else {
-          reden = parts[1] || '-';
+          // Fallback zonder roepnummer
+          if (l.details.includes(' -> ')) {
+            const rangen = l.details.split(' -> ');
+            reden = `${rangen[0]} naar ${rangen[1]}`;
+          } else {
+            reden = l.details;
+          }
+          wie = l.doelwit || '-';
         }
       } else {
-        // Anders proberen te parsen voor uren aanpassingen
-        const match = l.details.match(/^([^+]+)\s*([+-]\d+\.?\d*)\s*uur?$/i);
-        if (match) {
-          wie = match[1].trim();
-          uren = match[2] + ' uur';
+        // Normale parsing voor andere acties
+        // Als details " | " bevat, splits het
+        if (l.details.includes(' | ')) {
+          const parts = l.details.split(' | ');
+          wie = parts[0] || '-';
+          
+          // Probeer uren te extraheren uit het tweede deel
+          const urenMatch = parts[1]?.match(/([+-]\d+\.?\d*)/);
+          if (urenMatch) {
+            uren = urenMatch[1] + ' uur';
+            // Verwijder de uren uit de reden
+            reden = parts[1].replace(/[+-]\d+\.?\d*\s*uur?/i, '').trim() || '-';
+          } else {
+            reden = parts[1] || '-';
+          }
         } else {
-          // Als niets anders werkt, zet alles in reden
-          reden = l.details;
+          // Anders proberen te parsen voor uren aanpassingen
+          const match = l.details.match(/^([^+]+)\s*([+-]\d+\.?\d*)\s*uur?$/i);
+          if (match) {
+            wie = match[1].trim();
+            uren = match[2] + ' uur';
+          } else {
+            // Als niets anders werkt, zet alles in reden
+            reden = l.details;
+          }
         }
       }
     }
