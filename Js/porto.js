@@ -114,13 +114,13 @@ window.onload = async () => {
 });
   const u = getUser();
   
-  // DEBUG: Show user state after sync
-  console.log('🔍 POST-SYNC USER STATE:');
-  console.log('User:', u);
-  console.log('indienstStart:', u.indienstStart);
-  console.log('ingedeeld:', u.ingedeeld);
-  console.log('role:', u.role);
-  console.log('status:', u.status);
+  // DEBUG: Show user state after sync (production: disabled)
+  // console.log('🔍 POST-SYNC USER STATE:');
+  // console.log('User:', u);
+  // console.log('indienstStart:', u.indienstStart);
+  // console.log('ingedeeld:', u.ingedeeld);
+  // console.log('role:', u.role);
+  // console.log('status:', u.status);
   
   // Check if view was already manually updated (to prevent override)
   const manuallyUpdated = window._viewManuallyUpdated;
@@ -161,20 +161,20 @@ window.onload = async () => {
   const isAdmin = role === 'admin';
   const isOvdOpco = ['ovd', 'opco', 'oc', 'ops'].includes(role);
 
-  // DEBUG: Show screen selection logic
-  console.log('🔍 SCREEN SELECTION:');
-  console.log('Role:', role);
-  console.log('isOvdOpco:', isOvdOpco);
-  console.log('isAdmin:', isAdmin);
-  console.log('indienstStart:', u.indienstStart);
-  console.log('ingedeeld:', u.ingedeeld);
+  // DEBUG: Show screen selection logic (production: disabled)
+  // console.log('🔍 SCREEN SELECTION:');
+  // console.log('Role:', role);
+  // console.log('isOvdOpco:', isOvdOpco);
+  // console.log('isAdmin:', isAdmin);
+  // console.log('indienstStart:', u.indienstStart);
+  // console.log('ingedeeld:', u.ingedeeld);
 
   if (isOvdOpco) {
-    console.log('🔍 SHOWING OVD VIEW');
+    // console.log('🔍 SHOWING OVD VIEW');
     
     // Check en corrigeer roepnummer voor OVD/OPCO bij pagina load
     if (role === 'ovd' && u.dienstnummer !== '17-00') {
-      console.log('🔍 AUTO OVD ROEPNUMMER CORRECTIE - Oud:', u.dienstnummer, '→ Nieuw: 17-00');
+      // console.log('🔍 AUTO OVD ROEPNUMMER CORRECTIE - Oud:', u.dienstnummer, '→ Nieuw: 17-00');
       u.dienstnummer = '17-00';
       saveUser(u);
       
@@ -186,7 +186,7 @@ window.onload = async () => {
       });
     }
     if (role === 'opco' && u.dienstnummer !== '17-01') {
-      console.log('🔍 AUTO OPCO ROEPNUMMER CORRECTIE - Oud:', u.dienstnummer, '→ Nieuw: 17-01');
+      // console.log('🔍 AUTO OPCO ROEPNUMMER CORRECTIE - Oud:', u.dienstnummer, '→ Nieuw: 17-01');
       u.dienstnummer = '17-01';
       saveUser(u);
       
@@ -215,9 +215,9 @@ if (ovdView) {
       fetch(`${API_URL}/api/indeling/${u.id}`)
         .then(r => r.json())
         .then(data => {
-          console.log('🔍 INDELING DATA:', data);
-          console.log('🔍 data.ingedeeld:', data.ingedeeld);
-          console.log('🔍 u.ingedeeld before:', u.ingedeeld);
+          // console.log('🔍 INDELING DATA:', data);
+          // console.log('🔍 data.ingedeeld:', data.ingedeeld);
+          // console.log('🔍 u.ingedeeld before:', u.ingedeeld);
           
           if (data.indienstStart && !u.indienstStart) u.indienstStart = data.indienstStart;
           // NIET automatisch indienstStart zetten - alleen als database dit heeft
@@ -225,27 +225,27 @@ if (ovdView) {
           if (data.voertuig) u.voertuig = data.voertuig;
           if (data.ingedeeld !== undefined) {
             u.ingedeeld = data.ingedeeld;
-            console.log('🔍 u.ingedeeld after update:', u.ingedeeld);
+            // console.log('🔍 u.ingedeeld after update:', u.ingedeeld);
           }
           
           // Als niet ingedeeld, reset rol naar user
           if (!data.ingedeeld && ['ovd','opco','oc','ops'].includes(u.role)) {
-            console.log('🔄 NIET INGEDEELD - Rol reset van', u.role, 'naar user');
+            // console.log('🔄 NIET INGEDEELD - Rol reset van', u.role, 'naar user');
             u.role = 'user';
           }
           
           saveUser(u);
-          console.log('🔍 After saveUser - u.ingedeeld:', u.ingedeeld);
+          // console.log('🔍 After saveUser - u.ingedeeld:', u.ingedeeld);
           
           // Alleen ovd-porto-main tonen als echt ingedeeld
           if (data.ingedeeld) {
-            console.log('🔍 SHOWING ovd-porto-main because data.ingedeeld is true');
+            // console.log('🔍 SHOWING ovd-porto-main because data.ingedeeld is true');
             const main = document.getElementById('ovd-porto-main');
             if (main) { main.style.display = ''; }
             startIndienstTimer('ovd-oc-tijd');
             ovdUpdateInfo();
           } else {
-            console.log('🔍 USER NIET INGEDEELD - Porto menu niet tonen, rol reset naar user');
+            // console.log('🔍 USER NIET INGEDEELD - Porto menu niet tonen, rol reset naar user');
             // Refresh om correcte scherm te tonen
             setTimeout(() => window.location.reload(), 1);
           }
@@ -446,7 +446,7 @@ function laadEenheden() {
       }
     });
     
-    console.log('🔄 GEGROEPEERDE EENHEDEN:', appData.eenheden.length, 'eenheden');
+    // console.log('🔄 GEGROEPEERDE EENHEDEN:', appData.eenheden.length, 'eenheden');
     
     // Render eenheden en forceer directe specialisaties update
     renderEenheden();
@@ -471,42 +471,22 @@ function renderEenheden() {
   GROEPEN.forEach(p => groepen[p] = []);
   groepen['Wachtrij'] = [];
 
-  console.log('RENDER EENHEDEN - Total eenheden before grouping:', appData.eenheden.length);
-  console.log('RENDER EENHEDEN - Eenheden details:', appData.eenheden.map(e => ({id: e.id, naam: e.naam, userId: e.userId})));
-  
   appData.eenheden.forEach((e, index) => {
-    console.log(`RENDER EENHEDEN - Processing eenheid ${index}:`, {
-      id: e.id,
-      naam: e.naam,
-      userId: e.userId,
-      hasId: !!e.id,
-      idValue: e.id
-    });
     
     if (!e.id || e.id === '-') {
-      console.log('RENDER EENHEDEN - Adding to Wachtrij:', e.naam);
       groepen['Wachtrij'].push(e);
       return;
     }
     const prefix = e.id.trim().length >= 2 ? e.id.trim().substring(0, 2) : null;
-    console.log('RENDER EENHEDEN - Prefix for', e.id, ':', prefix);
     
     if (prefix && groepen[prefix] !== undefined) {
-      console.log('RENDER EENHEDEN - Adding to group', prefix, ':', e.naam);
       groepen[prefix].push(e);
     } else {
-      console.log('RENDER EENHEDEN - Adding to Overig:', e.naam);
       if (!groepen['Overig']) groepen['Overig'] = [];
       groepen['Overig'].push(e);
     }
   });
   
-  console.log('RENDER EENHEDEN - Groups after processing:');
-  Object.keys(groepen).forEach(groep => {
-    console.log(`RENDER EENHEDEN - ${groep}:`, groepen[groep].length, 'eenheden');
-  });
-
-  // Sorteer elke groep oplopend op basis van roepnummer (17-00, 17-01, 17-02, ...)
   Object.keys(groepen).forEach(groep => {
     groepen[groep].sort((a, b) => {
       // Extract numeriek deel voor correcte sortering
@@ -2041,14 +2021,14 @@ function ontkoppelEenheid() {
   console.log('🔍 ONTKOPPELEN - Functie aangeroepen');
   
   const id = document.getElementById('edit-unit-id').value;
-  console.log('🔍 ONTKOPPELEN - Unit ID:', id);
+  // console.log('🔍 ONTKOPPELEN - Unit ID:', id);
   
   const unit = appData.eenheden.find(e => e.id === id);
   console.log('🔍 ONTKOPPELEN - Unit gevonden:', unit);
   console.log('🔍 ONTKOPPELEN - Unit koppelId:', unit?.koppelId);
   
   if (!unit || !unit.koppelId) {
-    console.log('🔍 ONTKOPPELEN - Early return - geen unit of koppelId');
+    // console.log('🔍 ONTKOPPELEN - Early return - geen unit of koppelId');
     return;
   }
   
@@ -2057,20 +2037,20 @@ function ontkoppelEenheid() {
   console.log('🔍 ONTKOPPELEN - Beschikbare eenheden:', appData.eenheden.map(e => ({id: e.id, userId: e.userId, naam: e.naam})));
   
   const partner = appData.eenheden.find(e => e.userId === unit.koppelId);
-  console.log('🔍 ONTKOPPELEN - Partner gevonden:', partner);
+  // console.log('🔍 ONTKOPPELEN - Partner gevonden:', partner);
   
   if (!partner) {
-    console.log('Partner niet gevonden in huidige eenheden, ververs eenheden...');
+    // console.log('Partner niet gevonden in huidige eenheden, ververs eenheden...');
     // Ververs eenheden array en probeer opnieuw
     fetch(`${API_URL}/api/eenheden`)
       .then(r => r.json())
       .then(eenheden => {
         appData.eenheden = eenheden;
-        console.log('Eenheden ververst:', eenheden.length, 'eenheden');
+        // console.log('Eenheden ververst:', eenheden.length, 'eenheden');
         
         // Zoek opnieuw naar partner
         const refreshedPartner = appData.eenheden.find(e => e.userId === unit.koppelId);
-        console.log('Partner na verversen:', refreshedPartner);
+        // console.log('Partner na verversen:', refreshedPartner);
         
         if (refreshedPartner) {
           // Toon normale modal met verfriste partner data
@@ -2102,13 +2082,13 @@ function ontkoppelEenheid() {
           document.body.appendChild(modal);
           window._ontkoppelModal = modal;
         } else {
-          console.log('Partner nog steeds niet gevonden na verversen');
+          // console.log('Partner nog steeds niet gevonden na verversen');
           // Fallback: haal gebruiker data via database endpoint
           fetch(`${API_URL}/api/db/gebruikers`)
             .then(r => r.json())
             .then(gebruikers => {
               const partnerUser = gebruikers.find(g => g.id === unit.koppelId);
-              console.log('Partner gebruiker gevonden:', partnerUser);
+              // console.log('Partner gebruiker gevonden:', partnerUser);
               
               if (partnerUser) {
                 // Toon modal met database gebruiker data
@@ -2140,7 +2120,7 @@ function ontkoppelEenheid() {
                 document.body.appendChild(modal);
                 window._ontkoppelModal = modal;
               } else {
-                console.log('Partner ook niet gevonden in database gebruikers');
+                // console.log('Partner ook niet gevonden in database gebruikers');
                 showToast('Partner niet gevonden');
               }
             })
@@ -2204,7 +2184,7 @@ function selectOntkoppelKeuze(unit1Id, unit2Id, keuze) {
         }
       }
       
-      console.log('[ONTKOPPELEN] Beschikbaar 18-nummer gevonden:', beschikbaar18Nummer);
+      // console.log('[ONTKOPPELEN] Beschikbaar 18-nummer gevonden:', beschikbaar18Nummer);
       
       // Stuur ontkoppel request met automatisch 18-nummer
       fetch(`${API_URL}/api/ontkoppel-met-keuze`, {
@@ -2337,14 +2317,6 @@ function ovdUpdateInfo() {
   
   // Check of gebruiker OVD/OPCO/OPS rollen heeft voor ping
   const hasOvdOpcoOps = rolNamen.some(r => r.includes('OVD') || r.includes('OvD') || r.includes('OPCO') || r.includes('OPS'));
-  
-  console.log(' OVD UPDATE INFO - User state:', {
-    userRole: u.role,
-    userRollen: rolNamen,
-    hasOVD: rolNamen.some(r => r.includes('OVD') || r.includes('OvD')),
-    hasOPCO: rolNamen.some(r => r.includes('OPCO')),
-    hasOPS: rolNamen.some(r => r.includes('OPS'))
-  });
 
   // Update basis info
   if (naam) naam.textContent = u.shortname || u.displayName || '-';
