@@ -385,7 +385,33 @@ function laadEenheden() {
     const verwerkteIds = new Set();
     
     data.forEach(e => {
-      const roepnummer = e.roepnummer || e.dienstnummer || '-';
+      let roepnummer = e.roepnummer || e.dienstnummer || '-';
+      
+      // Emergency fix: als gebruiker geen roepnummer heeft, geef er een
+      if (roepnummer === '-') {
+        // Geef een tijdelijk roepnummer op basis van userId
+        const tempNum = e.id.slice(-4);
+        roepnummer = `TEMP-${tempNum}`;
+        
+        // Update de gebruiker in de data met het tijdelijke roepnummer
+        e.roepnummer = roepnummer;
+        e.dienstnummer = roepnummer;
+        
+        // Log de emergency fix
+        console.log('[EMERGENCY] Gebruiker zonder roepnummer gevonden:', e.naam, '-> tijdelijk roepnummer:', roepnummer);
+        
+        // Probeer direct de database te updaten
+        fetch(`${API_URL}/api/roepnummer/personeel/${e.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            rang: e.role || 'user',
+            roepnummer: roepnummer,
+            naam: e.naam || e.displayName || e.username,
+            discordId: e.username
+          })
+        }).catch(err => console.log('[EMERGENCY] Database update failed:', err));
+      }
       
       if (!gegroepeerd[roepnummer]) {
         gegroepeerd[roepnummer] = [];
@@ -2126,7 +2152,7 @@ function ontkoppelEenheid() {
                     
                     <div style="display: flex; gap: 10px; justify-content: flex-end;">
                       <button class="btn-ghost" onclick="closeOntkoppelModal()">Annuleren</button>
-                    </div>
+                    </div>W
                   </div>
                 `;
                 
