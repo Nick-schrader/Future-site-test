@@ -1248,8 +1248,10 @@ app.post('/api/ontkoppel', async (req, res) => {
 
 // ---- API: Ontkoppelen met keuze ----
 app.post('/api/ontkoppel-met-keuze', async (req, res) => {
-  const { userId, verliesUserId } = req.body;
+  const { userId, verliesUserId, nieuwRoepnummer, resetKoppelId } = req.body;
   if (!userId || !verliesUserId) return res.status(400).json({ error: 'Ontbrekende velden' });
+  
+  console.log('[ONTKOPPEL MET KEUZE] Request:', { userId, verliesUserId, nieuwRoepnummer, resetKoppelId });
   
   // Haal koppel informatie op
   const g = db.prepare('SELECT koppel_id, dienstnummer FROM gebruikers WHERE id = ?').get(userId);
@@ -1260,18 +1262,28 @@ app.post('/api/ontkoppel-met-keuze', async (req, res) => {
     db.prepare('UPDATE gebruikers SET koppel_id = NULL WHERE id = ?').run(verliesUserId);
     db.prepare('UPDATE gebruikers SET koppel_id = NULL WHERE id = ?').run(userId);
     
-    // Verwijder roepnummer van verliezer
-    db.prepare('UPDATE gebruikers SET dienstnummer = NULL WHERE id = ?').run(verliesUserId);
+    // Wijs nieuw 18-nummer toe aan verliezer (indien meegegeven)
+    if (nieuwRoepnummer) {
+      db.prepare('UPDATE gebruikers SET dienstnummer = ? WHERE id = ?').run(nieuwRoepnummer, verliesUserId);
+      console.log(`[ONTKOPPEL MET KEUZE] ${verliesUserId} krijgt nieuw roepnummer: ${nieuwRoepnummer}`);
+    } else {
+      // Fallback: verwijder roepnummer van verliezer
+      db.prepare('UPDATE gebruikers SET dienstnummer = NULL WHERE id = ?').run(verliesUserId);
+    }
+    
+    // Reset indelingen voor verliezer
     db.prepare('DELETE FROM indelingen WHERE user_id = ?').run(verliesUserId);
     
-    // Reset indelingen voor koppel
-    db.prepare('DELETE FROM indelingen WHERE user_id = ? AND ingedeeld_door = "koppel"').run(userId);
-    db.prepare('DELETE FROM indelingen WHERE user_id = ? AND ingedeeld_door = "koppel"').run(verliesUserId);
+    // Reset koppel-specifieke indelingen voor beide gebruikers
+    if (resetKoppelId) {
+      db.prepare('DELETE FROM indelingen WHERE user_id = ? AND ingedeeld_door = "koppel"').run(userId);
+      db.prepare('DELETE FROM indelingen WHERE user_id = ? AND ingedeeld_door = "koppel"').run(verliesUserId);
+    }
     
     console.log(`[ONTKOPPEL MET KEUZE] ${userId} behoudt, ${verliesUserId} verliest roepnummer`);
   }
   
-  res.json({ success: true });
+  res.json({ success: true, nieuwRoepnummer });
 });
 
 // ---- API: Actieve kandidaten voor koppelen ----
