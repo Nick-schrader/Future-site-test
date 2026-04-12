@@ -2185,22 +2185,59 @@ function selectOntkoppelKeuze(unit1Id, unit2Id, keuze) {
   const behoudId = keuze === 'unit1' ? unit1Id : unit2Id;
   const verliesId = keuze === 'unit1' ? unit2Id : unit1Id;
   
-  fetch(`${API_URL}/api/ontkoppel-met-keuze`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ 
-      userId: behoudId, 
-      verliesUserId: verliesId 
-    }),
-  }).then(() => {
-    closeOntkoppelModal();
-    closeVoertuigModal();
-    laadEenheden();
-    showToast('Eenheden ontkoppeld - roepnummer behouden');
-  }).catch(err => {
-    console.error('Ontkoppelen mislukt:', err);
-    showToast('Ontkoppelen mislukt');
-  });
+  console.log('[ONTKOPPELEN] Eenheid behoudt roepnummer:', behoudId);
+  console.log('[ONTKOPPELEN] Eenheid verliest roepnummer:', verliesId);
+  
+  // Vind eerste beschikbare 18-nummer voor de gebruiker die het roepnummer verliest
+  fetch(`${API_URL}/api/eenheden`)
+    .then(r => r.json())
+    .then(eenheden => {
+      let beschikbaar18Nummer = null;
+      
+      // Vind eerste beschikbare 18-nummer
+      for (let i = 1; i <= 99; i++) {
+        const testNummer = `18-${String(i).padStart(2, '0')}`;
+        const nummerInGebruik = eenheden.some(e => (e.roepnummer || e.dienstnummer) === testNummer);
+        if (!nummerInGebruik) {
+          beschikbaar18Nummer = testNummer;
+          break;
+        }
+      }
+      
+      console.log('[ONTKOPPELEN] Beschikbaar 18-nummer gevonden:', beschikbaar18Nummer);
+      
+      // Stuur ontkoppel request met automatisch 18-nummer
+      fetch(`${API_URL}/api/ontkoppel-met-keuze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId: behoudId, 
+          verliesUserId: verliesId,
+          nieuwRoepnummer: beschikbaar18Nummer,
+          resetKoppelId: true // Zorg dat koppelId wordt gereset voor beide gebruikers
+        }),
+      }).then(() => {
+        closeOntkoppelModal();
+        closeVoertuigModal();
+        laadEenheden();
+        
+        const verliesUnit = eenheden.find(e => e.id === verliesId);
+        const eenheidNaam = verliesUnit?.naam || 'Onbekend';
+        
+        if (beschikbaar18Nummer) {
+          showToast(`Eenheden ontkoppeld - ${eenheidNaam} krijgt roepnummer ${beschikbaar18Nummer}`);
+        } else {
+          showToast('Eenheden ontkoppeld - geen 18-nummer beschikbaar');
+        }
+      }).catch(err => {
+        console.error('Ontkoppelen mislukt:', err);
+        showToast('Ontkoppelen mislukt');
+      });
+    })
+    .catch(err => {
+      console.error('Fout bij ophalen eenheden:', err);
+      showToast('Fout bij ophalen eenheden');
+    });
 }
 
 function saveEenheidEdit() {
