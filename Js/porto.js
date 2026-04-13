@@ -2074,7 +2074,7 @@ function ontkoppelEenheid() {
               </div>
               
               <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                <button class="btn-ghost" onclick="closeOntkoppelModal()">Annuleren</button>
+                <button class="btn-purple" onclick="closeOntkoppelModal()">Annuleren</button>
               </div>
             </div>
           `;
@@ -2112,8 +2112,8 @@ function ontkoppelEenheid() {
                     </div>
                     
                     <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                      <button class="btn-ghost" onclick="closeOntkoppelModal()">Annuleren</button>
-                    </div>W
+                      <button class="btn-purple" onclick="closeOntkoppelModal()">Annuleren</button>
+                    </div>
                   </div>
                 `;
                 
@@ -2152,7 +2152,7 @@ function ontkoppelEenheid() {
       </div>
       
       <div style="display: flex; gap: 10px; justify-content: flex-end;">
-        <button class="btn-ghost" onclick="closeOntkoppelModal()">Annuleren</button>
+        <button class="btn-purple" onclick="closeOntkoppelModal()">Annuleren</button>
       </div>
     </div>
   `;
