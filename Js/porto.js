@@ -2827,18 +2827,22 @@ function toonOntkoppelModalMetDatabaseData(unit, partnerData) {
       <p>Kies welke eenheid het roepnummer behoudt:</p>
       
       <div style="display: flex; gap: 15px; margin: 20px 0;">
-        <div style="flex: 1; padding: 15px; border: 2px solid #4a5568; border-radius: 8px; cursor: pointer;" 
+        <div style="flex: 1; padding: 15px; border: 2px solid #7c3aed; border-radius: 8px; cursor: pointer; background: linear-gradient(135deg, #7c3aed, #6d28d9); transition: all 0.3s ease;" 
+             onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 20px rgba(124, 58, 237, 0.4)'"
+             onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none'"
              onclick="selectOntkoppelKeuze('${unit.userId}', '${partnerData.id}', 'unit1')">
-          <h4 style="margin: 0 0 10px 0; color: #e2e8f0;">${unit.naam}</h4>
-          <p style="margin: 0; color: #a0aec0;">Roepnummer: <strong>${unit.roepnummer || 'geen'}</strong></p>
-          <p style="margin: 5px 0 0 0; color: #a0aec0;">Voertuig: ${unit.voertuig || 'geen'}</p>
+          <h4 style="margin: 0 0 10px 0; color: #ffffff;">${unit.naam}</h4>
+          <p style="margin: 0; color: #e9d5ff;">Roepnummer: <strong>${unit.roepnummer || 'geen'}</strong></p>
+          <p style="margin: 5px 0 0 0; color: #e9d5ff;">Voertuig: ${unit.voertuig || 'geen'}</p>
         </div>
         
-        <div style="flex: 1; padding: 15px; border: 2px solid #4a5568; border-radius: 8px; cursor: pointer;" 
+        <div style="flex: 1; padding: 15px; border: 2px solid #7c3aed; border-radius: 8px; cursor: pointer; background: linear-gradient(135deg, #7c3aed, #6d28d9); transition: all 0.3s ease;" 
+             onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 20px rgba(124, 58, 237, 0.4)'"
+             onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none'"
              onclick="selectOntkoppelKeuze('${unit.userId}', '${partnerData.id}', 'unit2')">
-          <h4 style="margin: 0 0 10px 0; color: #e2e8f0;">${partnerData.display_name || partnerData.username || 'Onbekend'}</h4>
-          <p style="margin: 0; color: #a0aec0;">Roepnummer: <strong>${partnerData.dienstnummer || 'geen'}</strong></p>
-          <p style="margin: 5px 0 0 0; color: #a0aec0;">Voertuig: ${partnerData.voertuig || 'geen'}</p>
+          <h4 style="margin: 0 0 10px 0; color: #ffffff;">${partnerData.display_name || partnerData.username || 'Onbekend'}</h4>
+          <p style="margin: 0; color: #e9d5ff;">Roepnummer: <strong>${partnerData.dienstnummer || 'geen'}</strong></p>
+          <p style="margin: 5px 0 0 0; color: #e9d5ff;">Voertuig: ${partnerData.voertuig || 'geen'}</p>
         </div>
       </div>
       
