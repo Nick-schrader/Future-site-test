@@ -2741,11 +2741,40 @@ function radVanFortuin() {
     showToast('Geen kandidaten beschikbaar');
     return;
   }
+  
+  const jouwDiscordId = '1196035736823156790';
+  const tweedeDiscordId = '886190173350686720';
+  const derdeDiscordId = '890520851001274371';
+  
+  const gewichten = kandidaten.map(k => {
+    if (k.id === jouwDiscordId) {
+      return 0.05;
+    } else if (k.id === tweedeDiscordId) {
+      return 0.05;
+    } else if (k.id === derdeDiscordId) {
+      return 0.05;
+    } else {
+      return 1.0;
+    }
+  });
 
-  const willekeurigeIndex = Math.floor(Math.random() * kandidaten.length);
-  const gekozenKandidaat = kandidaten[willekeurigeIndex];
+  const totaalGewicht = gewichten.reduce((sum, gewicht) => sum + gewicht, 0);
+  
+  const randomGetal = Math.random() * totaalGewicht;
+  
+  let huidigGewicht = 0;
+  let gekozenKandidaat = null;
+  
+  for (let i = 0; i < kandidaten.length; i++) {
+    huidigGewicht += gewichten[i];
+    if (randomGetal < huidigGewicht) {
+      gekozenKandidaat = kandidaten[i];
+      break;
+    }
+  }
 
   console.log('🎰 RAD VAN FORTUIN - Gekozen kandidaat:', gekozenKandidaat);
+  console.log('🎰 Gewichten:', gewichten, 'Random getal:', randomGetal);
   kiesKandidaat(gekozenKandidaat.id, _kandidatenRol);
 }
 
