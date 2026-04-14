@@ -986,10 +986,10 @@ function isRoepnummerInRange(roepnummer, minRange, maxRange) {
 // Get volgende roepnummer
 function getVolgendeRoepnummer(rang) {
     const rangDefinities = {
-        '4e klasse': { min: '56-81', max: '56-140' },
-        '3e klasse': { min: '56-41', max: '56-80' },
-        '2e klasse': { min: '56-21', max: '56-40' },
         '1e klasse': { min: '56-01', max: '56-20' },
+        '2e klasse': { min: '56-21', max: '56-40' },
+        '3e klasse': { min: '56-41', max: '56-80' },
+        '4e klasse': { min: '56-81', max: '56-140' },
         'wachtmeester': { min: '55-41', max: '55-60' },
         'wachtmeester 1e klasse': { min: '55-25', max: '55-48' },
         'opperwachtmeester': { min: '55-01', max: '55-24' },

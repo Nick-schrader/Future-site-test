@@ -1530,6 +1530,9 @@ function kiesKandidaat(userId, rol) {
     u.role = 'user';  // of null, afhankelijk van wat je wilt
     saveUser(u);
     
+    // Clear kandidaten cache om verse data te krijgen
+    _kandidatenLijst = [];
+    
     document.getElementById('kandidaten-modal').classList.add('hidden');
     showToast('Nieuwe ' + rol.toUpperCase() + ' ingesteld met roepnummer ' + nieuwOvdRoepnummer);
     
