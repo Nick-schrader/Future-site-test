@@ -5,11 +5,11 @@ let huidigeCategorie = 'manschappen';
 // Rang categorieën
 const rangCategorieën = {
     'manschappen': ['1e klasse', '2e klasse', '3e klasse', '4e klasse'],
-    'korporaals': ['wachtmeester', 'wachtmeester 1e klasse', 'opperwachtmeester'],
-    'onderofficieren': ['adjudant-onderofficier', 'kornet'],
-    'officieren': ['tweede luitenant', 'eerste luitenant', 'kapitein'],
-    'hoofdofficieren': ['majoor', 'luitenant-kolonel', 'kolonel'],
-    'kader': ['brigade-generaal', 'generaal-majoor', 'luitenant-generaal']
+    'korporaals': ['opperwachtmeester', 'wachtmeester 1e klasse', 'wachtmeester'],
+    'onderofficieren': ['kornet', 'adjudant-onderofficier'],
+    'officieren': ['kapitein', 'eerste luitenant', 'tweede luitenant'],
+    'hoofdofficieren': ['kolonel', 'luitenant-kolonel', 'majoor'],
+    'kader': ['luitenant-generaal', 'generaal-majoor', 'brigade-generaal']
 };
 
 // Helper functie om user data te krijgen
@@ -937,10 +937,10 @@ async function voegPersoneelToe() {
 // Bepaal rang op basis van roepnummer
 function getRangVoorRoepnummer(roepnummer) {
     const rangDefinities = {
-        '4e klasse': { min: '56-81', max: '56-140' },
-        '3e klasse': { min: '56-41', max: '56-80' },
-        '2e klasse': { min: '56-21', max: '56-40' },
         '1e klasse': { min: '56-01', max: '56-20' },
+        '2e klasse': { min: '56-21', max: '56-40' },
+        '3e klasse': { min: '56-41', max: '56-80' },
+        '4e klasse': { min: '56-81', max: '56-140' },
         'wachtmeester': { min: '55-41', max: '55-60' },
         'wachtmeester 1e klasse': { min: '55-25', max: '55-48' },
         'opperwachtmeester': { min: '55-01', max: '55-24' },
@@ -986,10 +986,10 @@ function isRoepnummerInRange(roepnummer, minRange, maxRange) {
 // Get volgende roepnummer
 function getVolgendeRoepnummer(rang) {
     const rangDefinities = {
-        '4e klasse': { min: '56-81', max: '56-140' },
-        '3e klasse': { min: '56-41', max: '56-80' },
-        '2e klasse': { min: '56-21', max: '56-40' },
         '1e klasse': { min: '56-01', max: '56-20' },
+        '2e klasse': { min: '56-21', max: '56-40' },
+        '3e klasse': { min: '56-41', max: '56-80' },
+        '4e klasse': { min: '56-81', max: '56-140' },
         'wachtmeester': { min: '55-41', max: '55-60' },
         'wachtmeester 1e klasse': { min: '55-25', max: '55-48' },
         'opperwachtmeester': { min: '55-01', max: '55-24' },
@@ -1141,12 +1141,12 @@ async function verplaatsPersoneelNaarRang(personeelId, nieuweRang) {
 
 // Rang hiërarchie
 const rangHiërarchie = [
-    '1e klasse', '2e klasse', '3e klasse', '4e klasse',
-    'opperwachtmeester', 'wachtmeester 1e klasse', 'wachtmeester',
-    'kornet', 'adjudant-onderofficier',
-    'kapitein', 'eerste luitenant', 'tweede luitenant',
-    'kolonel', 'luitenant-kolonel', 'majoor',
-    'luitenant-generaal', 'generaal-majoor', 'brigade-generaal'
+    '4e klasse', '3e klasse', '2e klasse', '1e klasse',
+    'wachtmeester', 'wachtmeester 1e klasse', 'opperwachtmeester',
+    'adjudant-onderofficier', 'kornet',
+    'tweede luitenant', 'eerste luitenant', 'kapitein',
+    'majoor', 'luitenant-kolonel', 'kolonel',
+    'brigade-generaal', 'generaal-majoor', 'luitenant-generaal'
 ];
 
 // Reset database (alle personeel verwijderen)
