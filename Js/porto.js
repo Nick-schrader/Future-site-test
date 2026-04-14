@@ -1120,7 +1120,17 @@ function updateOCInfo() {
         if (vn) vn.textContent = data.voertuigNaam || '-';
         // FIX: Gebruik beide velden voor backward compatibility
         const koppelNaam = data.koppelNaam || data.koppel_naam || '-';
-        if (koppel) koppel.textContent = koppelNaam;
+        if (koppel) {
+          // Als koppelNaam leeg is, probeer alternatieve velden
+          if (koppelNaam === '-' || !koppelNaam) {
+            // Probeer partner naam uit andere data velden
+            const partnerNaam = data.partner_shortname || data.partner_display_name || 
+                              data.voertuigNaam || data.voertuig_naam || 'Onbekend';
+            koppel.textContent = partnerNaam;
+          } else {
+            koppel.textContent = koppelNaam;
+          }
+        }
         
         // Update lokale user data voor consistentie
         u.koppelNaam = koppelNaam;

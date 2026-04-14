@@ -96,7 +96,7 @@ function setupEventListeners() {
     
     if (nieuwePersoneelBtn || resetDatabaseBtn) {
         const user = getUser();
-        const isAdmin = user.rollen && user.rollen.some(rol => rol.naam === 'Administratie');
+        const isAdmin = user.rollen && user.rollen.some(rol => rol.naam === 'Administratie' || rol.naam === 'Kader');
         
         if (isAdmin) {
             if (nieuwePersoneelBtn) {
@@ -276,7 +276,7 @@ function createPersoneelRij(personeel) {
     
     // Check of gebruiker Administratie rol heeft voor admin functionaliteit
     const user = getUser();
-    const isAdmin = user.rollen && user.rollen.some(rol => rol.naam === 'Administratie');
+    const isAdmin = user.rollen && user.rollen.some(rol => rol.naam === 'Administratie' || rol.naam === 'Kader');
     
     // Drag and drop alleen voor admin
     div.draggable = isAdmin;
@@ -319,7 +319,7 @@ function createPersoneelRij(personeel) {
         const isAdmin = user.rollen && (
             user.rollen.some(rol => rol.naam === 'Administratie') || 
             user.rollen.some(rol => rol.naam === 'admin') || 
-            user.rollen.some(rol => rol.naam === 'beheer') ||
+            user.rollen.some(rol => rol.naam === 'Kader') ||
             user.rollen.some(rol => rol.naam === 'Beheer') ||
             user.rollen.some(rol => rol.naam === 'Commandant') ||
             user.rollen.some(rol => rol.naam === 'Hoofdcommissaris')
@@ -344,7 +344,7 @@ function createPersoneelRij(personeel) {
     // Drag and drop - alleen voor Administratie rol
     div.addEventListener('dragstart', function(e) {
         const user = getUser();
-        const isAdmin = user.rollen && user.rollen.some(rol => rol.naam === 'Administratie');
+        const isAdmin = user.rollen && user.rollen.some(rol => rol.naam === 'Administratie' || rol.naam === 'Kader');
         
         if (isAdmin) {
             e.dataTransfer.setData('personeelId', personeel.id);
@@ -356,7 +356,7 @@ function createPersoneelRij(personeel) {
     
     div.addEventListener('dragend', function() {
         const user = getUser();
-        const isAdmin = user.rollen && user.rollen.some(rol => rol.naam === 'Administratie');
+        const isAdmin = user.rollen && user.rollen.some(rol => rol.naam === 'Administratie' || rol.naam === 'Kader');
         
         if (isAdmin) {
             this.classList.remove('dragging');
@@ -772,6 +772,16 @@ async function slaRoepnummerOp(personeelId, buttonElement) {
     if (!personeel) return;
     
     const oudRoepnummer = personeel.roepnummer;
+    const oudeRang = personeel.rang;
+    
+    // Bepaal automatisch de juiste rang op basis van het nieuwe roepnummer
+    const nieuweRang = getRangVoorRoepnummer(nieuwRoepnummer);
+    
+    // Update de rang als deze anders is
+    if (nieuweRang !== personeel.rang) {
+        personeel.rang = nieuweRang;
+        console.log(`[ROEPNUMMER] Rang automatisch aangepast van ${oudeRang} naar ${nieuweRang} voor roepnummer ${nieuwRoepnummer}`);
+    }
     
     // Save to API first
     try {
@@ -809,10 +819,19 @@ async function slaRoepnummerOp(personeelId, buttonElement) {
         BerichtenSysteem.stuurBericht(personeel.discordId, 'roepnummer', berichtTekst);
     }
     
-    toonNotificatie(`Roepnummer voor ${personeel.naam} bijgewerkt naar ${personeel.roepnummer}`);
+    // Toon notificatie met rang wijziging als die is gebeurd
+    if (nieuweRang !== oudeRang) {
+        toonNotificatie(`${personeel.naam} is verplaatst van ${oudeRang} naar ${nieuweRang} met roepnummer ${personeel.roepnummer}`);
+    } else {
+        toonNotificatie(`Roepnummer voor ${personeel.naam} bijgewerkt naar ${personeel.roepnummer}`);
+    }
         
-    // Log de roepnummer wijziging
-    logPersoneelActie('roepnummer_wijziging', personeel.naam, `Oud: ${oudRoepnummer} -> Nieuw: ${personeel.roepnummer}`);
+    // Log de roepnummer en rang wijziging
+    if (nieuweRang !== oudeRang) {
+        logPersoneelActie('roepnummer_en_rang_wijziging', personeel.naam, `Oud: ${oudeRang} (${oudRoepnummer}) -> Nieuw: ${nieuweRang} (${personeel.roepnummer})`);
+    } else {
+        logPersoneelActie('roepnummer_wijziging', personeel.naam, `Oud: ${oudRoepnummer} -> Nieuw: ${personeel.roepnummer}`);
+    }
     
     sluitRoepnummerModal(buttonElement);
 }
@@ -913,6 +932,55 @@ async function voegPersoneelToe() {
     
     sluitModal();
     toonNotificatie('Personeel succesvol toegevoegd');
+}
+
+// Bepaal rang op basis van roepnummer
+function getRangVoorRoepnummer(roepnummer) {
+    const rangDefinities = {
+        '4e klasse': { min: '56-81', max: '56-140' },
+        '3e klasse': { min: '56-41', max: '56-80' },
+        '2e klasse': { min: '56-21', max: '56-40' },
+        '1e klasse': { min: '56-01', max: '56-20' },
+        'wachtmeester': { min: '55-41', max: '55-60' },
+        'wachtmeester 1e klasse': { min: '55-25', max: '55-48' },
+        'opperwachtmeester': { min: '55-01', max: '55-24' },
+        'adjudant-onderofficier': { min: '54-09', max: '54-23' },
+        'kornet': { min: '54-01', max: '54-08' },
+        'tweede luitenant': { min: '53-06', max: '53-12' },
+        'eerste luitenant': { min: '53-04', max: '53-05' },
+        'kapitein': { min: '53-01', max: '53-03' },
+        'majoor': { min: '52-07', max: '52-09' },
+        'luitenant-kolonel': { min: '52-04', max: '52-06' },
+        'kolonel': { min: '52-01', max: '52-03' },
+        'brigade-generaal': { min: '51-04', max: '51-06' },
+        'generaal-majoor': { min: '51-02', max: '51-03' },
+        'luitenant-generaal': { min: '51-01', max: '51-01' }
+    };
+    
+    for (const [rang, def] of Object.entries(rangDefinities)) {
+        if (isRoepnummerInRange(roepnummer, def.min, def.max)) {
+            return rang;
+        }
+    }
+    
+    return '4e klasse'; // Default fallback
+}
+
+// Helper functie om te checken of roepnummer in range valt
+function isRoepnummerInRange(roepnummer, minRange, maxRange) {
+    const [minPrefix, minNum] = minRange.split('-');
+    const [maxPrefix, maxNum] = maxRange.split('-');
+    const [prefix, num] = roepnummer.split('-');
+    
+    if (prefix !== minPrefix || prefix !== maxPrefix) {
+        return false;
+    }
+    
+    const numValue = parseInt(num);
+    const minValue = parseInt(minNum);
+    const maxValue = parseInt(maxNum);
+    
+    return numValue >= minValue && numValue <= maxValue;
 }
 
 // Get volgende roepnummer
@@ -1073,12 +1141,12 @@ async function verplaatsPersoneelNaarRang(personeelId, nieuweRang) {
 
 // Rang hiërarchie
 const rangHiërarchie = [
-    '4e klasse', '3e klasse', '2e klasse', '1e klasse',
-    'wachtmeester', 'wachtmeester 1e klasse', 'opperwachtmeester',
-    'adjudant-onderofficier', 'kornet',
-    'tweede luitenant', 'eerste luitenant', 'kapitein',
-    'majoor', 'luitenant-kolonel', 'kolonel',
-    'brigade-generaal', 'generaal-majoor', 'luitenant-generaal'
+    '1e klasse', '2e klasse', '3e klasse', '4e klasse',
+    'opperwachtmeester', 'wachtmeester 1e klasse', 'wachtmeester',
+    'kornet', 'adjudant-onderofficier',
+    'kapitein', 'eerste luitenant', 'tweede luitenant',
+    'kolonel', 'luitenant-kolonel', 'majoor',
+    'luitenant-generaal', 'generaal-majoor', 'brigade-generaal'
 ];
 
 // Reset database (alle personeel verwijderen)
