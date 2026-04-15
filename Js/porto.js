@@ -2300,6 +2300,7 @@ function saveVoertuigEdit() {
 function ovdAanmelden() {
   const u = getUser();
   u.indienstStart = Date.now();
+  u.role = 'ovd';  // Zet rol expliciet naar 'ovd'
   saveUser(u);
   fetch(`${API_URL}/api/aanmelden`, {
     method: 'POST',
