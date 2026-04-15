@@ -95,6 +95,10 @@ if (!bestaandeKolommen.includes('rangicoon')) {
 if (!bestaandeKolommen.includes('voertuig_naam')) {
   db.exec("ALTER TABLE gebruikers ADD COLUMN voertuig_naam TEXT");
 }
+if (!bestaandeKolommen.includes('isAdmin')) {
+  db.exec("ALTER TABLE gebruikers ADD COLUMN isAdmin INTEGER DEFAULT 0");
+  console.log('[DB] Added isAdmin column to gebruikers table');
+}
 
 // Status alerts tabel
 db.exec(`
