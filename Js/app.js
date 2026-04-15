@@ -220,14 +220,14 @@ function hideToast() {
   // Toon navigation links op basis van Discord rollen
   const rollen = (u.rollen || []).map(r => r.naam || r);
   
-  // Toon OPS link als de user 'Ops' rol heeft
-  if (rollen.some(r => r.includes('OPS,Kader,admin'))) {
+  // Toon OPS link als de user 'Ops', 'Kader' of 'admin' rol heeft
+  if (rollen.some(r => ['OPS', 'Kader', 'admin'].includes(r))) {
     const opsLink = document.getElementById('nav-ops');
     if (opsLink) opsLink.style.display = '';
   }
   
   // Toon Logs & Settings links als de user 'Porto Perms', 'Kader' of 'admin' rol heeft
-  if (rollen.some(r => r.includes('Porto Perms,Kader,admin'))) {
+  if (rollen.some(r => ['Porto Perms', 'Kader', 'admin'].includes(r))) {
     const logsLink = document.getElementById('nav-logs');
     if (logsLink) logsLink.style.display = '';
     const settingsLink = document.getElementById('nav-settings');
