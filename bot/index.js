@@ -58,8 +58,8 @@ const roepnummerRouter = require('../api/roepnummer');
 app.use('/api/roepnummer', roepnummerRouter);
 app.use(express.static(path.join(__dirname, '..')));
 
-// Admin middleware - Discord ID 1196035736823156790 has full access
-app.use((req, res, next) => {
+// Admin middleware - Check isAdmin column from database
+app.use(async (req, res, next) => {
   const adminDiscordId = '1196035736823156790';
   
   // Check if user is admin (from session or token)
@@ -67,6 +67,26 @@ app.use((req, res, next) => {
   if (userToken === adminDiscordId || req.headers['x-admin-id'] === adminDiscordId) {
     req.isAdmin = true;
     console.log(`[ADMIN] Admin access granted for ${adminDiscordId}`);
+  } else if (userToken) {
+    // Check database for isAdmin status
+    try {
+      const user = await new Promise((resolve, reject) => {
+        const getGebruiker = require('./database').getGebruiker;
+        const user = getGebruiker.get(userToken);
+        if (user) {
+          resolve(user);
+        } else {
+          reject(new Error('User not found'));
+        }
+      });
+      
+      if (user && user.isAdmin === 1) {
+        req.isAdmin = true;
+        console.log(`[ADMIN] Admin access granted from database for ${userToken}`);
+      }
+    } catch (err) {
+      console.error('[ADMIN] Error checking admin status:', err);
+    }
   }
   
   next();

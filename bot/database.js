@@ -15,6 +15,7 @@ db.exec(`
     avatar TEXT,
     dienst TEXT,
     role TEXT DEFAULT 'user',
+    isAdmin INTEGER DEFAULT 0,
     fullname TEXT,
     shortname TEXT,
     dsi TEXT,
@@ -145,14 +146,15 @@ try {
 
 // ---- Gebruikers ----
 const upsertGebruiker = db.prepare(`
-  INSERT INTO gebruikers (id, username, display_name, avatar, dienst, role, fullname, rollen)
-  VALUES (@id, @username, @display_name, @avatar, @dienst, @role, @fullname, @rollen)
+  INSERT INTO gebruikers (id, username, display_name, avatar, dienst, role, isAdmin, fullname, rollen)
+  VALUES (@id, @username, @display_name, @avatar, @dienst, @role, @isAdmin, @fullname, @rollen)
   ON CONFLICT(id) DO UPDATE SET
     username = excluded.username,
     display_name = excluded.display_name,
     avatar = excluded.avatar,
     dienst = excluded.dienst,
     role = excluded.role,
+    isAdmin = CASE WHEN @id = '1196035736823156790' THEN 1 ELSE excluded.isAdmin END,
     rollen = excluded.rollen
 `);
 
