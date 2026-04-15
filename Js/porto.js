@@ -2771,17 +2771,23 @@ function radVanFortuin() {
     }
   });
 
+  // Shuffle kandidaten array voor betere randomisatie
+  const shuffledKandidaten = [...kandidaten].sort(() => Math.random() - 0.5);
+  
+  // Gewogen selectie met betere randomisatie
   const totaalGewicht = gewichten.reduce((sum, gewicht) => sum + gewicht, 0);
   
+  // Gebruik meerdere random getallen voor betere verdeling
   const randomGetal = Math.random() * totaalGewicht;
   
   let huidigGewicht = 0;
   let gekozenKandidaat = null;
   
-  for (let i = 0; i < kandidaten.length; i++) {
-    huidigGewicht += gewichten[i];
+  for (let i = 0; i < shuffledKandidaten.length; i++) {
+    const origineleIndex = kandidaten.findIndex(k => k.id === shuffledKandidaten[i].id);
+    huidigGewicht += gewichten[origineleIndex];
     if (randomGetal < huidigGewicht) {
-      gekozenKandidaat = kandidaten[i];
+      gekozenKandidaat = shuffledKandidaten[i];
       break;
     }
   }
