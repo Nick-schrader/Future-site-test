@@ -1106,9 +1106,21 @@ function updateOCInfo() {
   const roepnummer = document.getElementById('oc-roepnummer');
   const voertuig = document.getElementById('oc-voertuig');
   const koppel = document.getElementById('oc-koppel');
+  const koppel2 = document.getElementById('oc-koppel2');
+  
   if (roepnummer) roepnummer.textContent = u.dienstnummer || '-';
   if (voertuig) voertuig.textContent = u.voertuig || '-';
-  if (koppel) koppel.textContent = u.koppelNaam || '-';
+  
+  // Toon koppel velden alleen als er een koppel is
+  const heeftKoppel = u.koppelNaam && u.koppelNaam !== '-';
+  if (koppel) {
+    koppel.style.display = heeftKoppel ? '' : 'none';
+    koppel.textContent = heeftKoppel ? (u.koppelNaam || '-') : '-';
+  }
+  if (koppel2) {
+    koppel2.style.display = heeftKoppel ? '' : 'none';
+    koppel2.textContent = heeftKoppel ? '-' : '-';
+  }
 
   // Laad voertuig_naam en koppel informatie vanuit DB en vul input
   if (u.id) {
@@ -1117,19 +1129,29 @@ function updateOCInfo() {
       .then(data => {
         const vn = document.getElementById('oc-voertuig-naam');
         const koppel = document.getElementById('oc-koppel');
+        const koppel2 = document.getElementById('oc-koppel2');
         if (vn) vn.textContent = data.voertuigNaam || '-';
         // FIX: Gebruik beide velden voor backward compatibility
         const koppelNaam = data.koppelNaam || data.koppel_naam || '-';
-        if (koppel) {
+        if (koppel && koppel2) {
           // Als koppelNaam leeg is, probeer alternatieve velden
           if (koppelNaam === '-' || !koppelNaam) {
             // Probeer partner naam uit andere data velden
             const partnerNaam = data.partner_shortname || data.partner_display_name || 
                               data.voertuigNaam || data.voertuig_naam || 'Onbekend';
             koppel.textContent = partnerNaam;
+            koppel2.textContent = '-';
           } else {
-            koppel.textContent = koppelNaam;
+            // Splits koppel namen als er meerdere zijn
+            const namen = koppelNaam.split(' + ');
+            koppel.textContent = namen[0] || '-';
+            koppel2.textContent = namen.length > 1 ? namen.slice(1).join(' + ') : '-';
           }
+        }
+        
+        // Verberg koppel2 veld als het leeg is
+        if (koppel2) {
+          koppel2.style.display = koppel2.textContent === '-' ? 'none' : '';
         }
         
         // Update lokale user data voor consistentie

@@ -432,17 +432,41 @@ app.get('/api/indeling/:userId', (req, res) => {
   // Als gebruiker ingedeeld is, check ook koppel info
   let koppelNaam = gebruiker?.koppel_naam || null;
   if (gebruiker?.koppel_id) {
-    // Haal ALLEEN de naam van de partner op
-    const koppelInfo = db.prepare(`
-      SELECT k.shortname as partner_shortname, k.display_name as partner_display_name
-      FROM gebruikers g
-      LEFT JOIN gebruikers k ON g.koppel_id = k.id
-      WHERE g.id = ?
-    `).get(req.params.userId);
+    // Tel eerst hoeveel leden in het koppel
+    const koppelCount = db.prepare(`
+      SELECT COUNT(*) as count
+      FROM gebruikers
+      WHERE (koppel_id = ? OR id = ?)
+    `).get(gebruiker.koppel_id, gebruiker.koppel_id);
     
-    if (koppelInfo) {
-      // ALLEEN de naam van de partner
-      koppelNaam = koppelInfo.partner_shortname || koppelInfo.partner_display_name || null;
+    if (koppelCount.count > 2) {
+      // 3+ persoons koppel - haal alle andere leden op
+      const koppelInfo = db.prepare(`
+        SELECT shortname, display_name
+        FROM gebruikers
+        WHERE (koppel_id = ? OR id = ?) AND id != ?
+      `).all(gebruiker.koppel_id, gebruiker.koppel_id, req.params.userId);
+      
+      if (koppelInfo && koppelInfo.length > 0) {
+        // Maak een lijst van alle koppel leden namen, alleen als ze in dienst zijn
+        const namen = koppelInfo
+          .filter(k => k.shortname || k.display_name) // Filter lege namen eruit
+          .map(k => k.shortname || k.display_name);
+        koppelNaam = namen.length > 0 ? namen.join(' + ') : null;
+      }
+    } else {
+      // 2-persoons koppel - haal alleen de partner op, alleen als in dienst
+      const koppelInfo = db.prepare(`
+        SELECT k.shortname as partner_shortname, k.display_name as partner_display_name
+        FROM gebruikers g
+        LEFT JOIN gebruikers k ON g.koppel_id = k.id
+        WHERE g.id = ? AND k.indienst_start IS NOT NULL
+      `).get(req.params.userId);
+      
+      if (koppelInfo) {
+        // ALLEEN de naam van de partner
+        koppelNaam = koppelInfo.partner_shortname || koppelInfo.partner_display_name || null;
+      }
     }
   }
   
