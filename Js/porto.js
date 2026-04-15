@@ -2056,134 +2056,55 @@ function ontkoppelEenheid() {
   console.log('🔍 ONTKOPPELEN - Functie aangeroepen');
   
   const id = document.getElementById('edit-unit-id').value;
-  // console.log('🔍 ONTKOPPELEN - Unit ID:', id);
-  
   const unit = appData.eenheden.find(e => e.id === id);
-  console.log('🔍 ONTKOPPELEN - Unit gevonden:', unit);
-  console.log('🔍 ONTKOPPELEN - Unit koppelId:', unit?.koppelId);
   
   if (!unit || !unit.koppelId) {
-    // console.log('🔍 ONTKOPPELEN - Early return - geen unit of koppelId');
+    console.log('🔍 ONTKOPPELEN - Early return - geen unit of koppelId');
     return;
   }
   
-  // Haal partner eenheid op
-  console.log('🔍 ONTKOPPELEN - Zoek partner met userId:', unit.koppelId);
-  console.log('🔍 ONTKOPPELEN - Beschikbare eenheden:', appData.eenheden.map(e => ({id: e.id, userId: e.userId, naam: e.naam})));
-  
-  const partner = appData.eenheden.find(e => e.userId === unit.koppelId);
-  // console.log('🔍 ONTKOPPELEN - Partner gevonden:', partner);
-  
-  if (!partner) {
-    // console.log('Partner niet gevonden in huidige eenheden, ververs eenheden...');
-    // Ververs eenheden array en probeer opnieuw
-    fetch(`${API_URL}/api/eenheden`)
-      .then(r => r.json())
-      .then(eenheden => {
-        appData.eenheden = eenheden;
-        // console.log('Eenheden ververst:', eenheden.length, 'eenheden');
-        
-        // Zoek opnieuw naar partner
-        const refreshedPartner = appData.eenheden.find(e => e.userId === unit.koppelId);
-        // console.log('Partner na verversen:', refreshedPartner);
-        
-        if (refreshedPartner) {
-          // Toon normale modal met verfriste partner data
-          const modal = document.createElement('div');
-          modal.className = 'modal-overlay';
-          modal.innerHTML = `
-            <div class="modal-content" style="max-width: 500px;">
-              <h3>Eenheden Ontkoppelen</h3>
-              <p>Kies welke eenheid het roepnummer behoudt:</p>
-              
-              <div style="display: flex; gap: 15px; margin: 20px 0;">
-                <div style="flex: 1; padding: 15px; border: 2px solid #4a5568; border-radius: 8px; cursor: pointer;" 
-                     onclick="selectOntkoppelKeuze('${unit.userId}', '${refreshedPartner.userId}', 'unit1')">
-                  <h4 style="margin: 0; color: #e2e8f0;">${unit.naam}</h4>
-                </div>
-                
-                <div style="flex: 1; padding: 15px; border: 2px solid #4a5568; border-radius: 8px; cursor: pointer;" 
-                     onclick="selectOntkoppelKeuze('${unit.userId}', '${refreshedPartner.userId}', 'unit2')">
-                  <h4 style="margin: 0; color: #e2e8f0;">${refreshedPartner.naam}</h4>
-                </div>
-              </div>
-              
-              <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                <button class="btn-purple" onclick="closeOntkoppelModal()">Annuleren</button>
-              </div>
-            </div>
-          `;
-          
-          document.body.appendChild(modal);
-          window._ontkoppelModal = modal;
-        } else {
-          // console.log('Partner nog steeds niet gevonden na verversen');
-          // Fallback: haal gebruiker data via database endpoint
-          fetch(`${API_URL}/api/db/gebruikers`)
-            .then(r => r.json())
-            .then(gebruikers => {
-              const partnerUser = gebruikers.find(g => g.id === unit.koppelId);
-              // console.log('Partner gebruiker gevonden:', partnerUser);
-              
-              if (partnerUser) {
-                // Toon modal met database gebruiker data
-                const modal = document.createElement('div');
-                modal.className = 'modal-overlay';
-                modal.innerHTML = `
-                  <div class="modal-content" style="max-width: 500px;">
-                    <h3>Eenheden Ontkoppelen</h3>
-                    <p>Kies welke eenheid het roepnummer behoudt:</p>
-                    
-                    <div style="display: flex; gap: 15px; margin: 20px 0;">
-                      <div style="flex: 1; padding: 15px; border: 2px solid #4a5568; border-radius: 8px; cursor: pointer;" 
-                           onclick="selectOntkoppelKeuze('${unit.userId}', '${partnerUser.id}', 'unit1')">
-                        <h4 style="margin: 0; color: #e2e8f0;">${unit.naam}</h4>
-                      </div>
-                      
-                      <div style="flex: 1; padding: 15px; border: 2px solid #4a5568; border-radius: 8px; cursor: pointer;" 
-                           onclick="selectOntkoppelKeuze('${unit.userId}', '${partnerUser.id}', 'unit2')">
-                        <h4 style="margin: 0; color: #e2e8f0;">${partnerUser.displayName || partnerUser.username || 'Onbekend'}</h4>
-                      </div>
-                    </div>
-                    
-                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                      <button class="btn-purple" onclick="closeOntkoppelModal()">Annuleren</button>
-                    </div>
-                  </div>
-                `;
-                
-                document.body.appendChild(modal);
-                window._ontkoppelModal = modal;
-              } else {
-                // console.log('Partner ook niet gevonden in database gebruikers');
-                showToast('Partner niet gevonden');
-              }
-            })
-            .catch(err => console.error('Fout bij ophalen database gebruikers:', err));
-        }
-      })
-      .catch(err => console.error('Fout bij verversen eenheden:', err));
-    return;
-  }
-  
-  // Toon keuze modal
+  // Haal alle koppel leden op via nieuwe API
+  fetch(`${API_URL}/api/koppel-leden/${unit.userId}`)
+    .then(r => r.json())
+    .then(data => {
+      if (data.success && data.koppelLeden.length > 0) {
+        showOntkoppelModal(unit, data.koppelLeden);
+      } else {
+        showToast('Geen koppel leden gevonden');
+      }
+    })
+    .catch(err => {
+      console.error('Koppel leden ophalen mislukt:', err);
+      showToast('Fout bij ophalen koppel leden');
+    });
+}
+
+function showOntkoppelModal(unit, koppelLeden) {
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
+  
+  // Bouw HTML voor alle koppel leden
+  let ledenHtml = '';
+  koppelLeden.forEach((lid, index) => {
+    const naam = lid.shortname || lid.display_name || 'Onbekend';
+    const unitId = index === 0 ? unit.userId : lid.id;
+    const keuze = `unit${index + 1}`;
+    
+    ledenHtml += `
+      <div style="flex: 1; padding: 15px; border: 2px solid #4a5568; border-radius: 8px; cursor: pointer;" 
+           onclick="selectOntkoppelKeuze('${unit.userId}', '${unitId}', '${keuze}')">
+        <h4 style="margin: 0; color: #e2e8f0;">${naam}</h4>
+      </div>
+    `;
+  });
+  
   modal.innerHTML = `
-    <div class="modal-content" style="max-width: 500px;">
+    <div class="modal-content" style="max-width: 800px;">
       <h3>Eenheden Ontkoppelen</h3>
       <p>Kies welke eenheid het roepnummer behoudt:</p>
       
       <div style="display: flex; gap: 15px; margin: 20px 0;">
-        <div style="flex: 1; padding: 15px; border: 2px solid #4a5568; border-radius: 8px; cursor: pointer;" 
-             onclick="selectOntkoppelKeuze('${unit.userId}', '${partner.userId}', 'unit1')">
-          <h4 style="margin: 0; color: #e2e8f0;">${unit.naam}</h4>
-        </div>
-        
-        <div style="flex: 1; padding: 15px; border: 2px solid #4a5568; border-radius: 8px; cursor: pointer;" 
-             onclick="selectOntkoppelKeuze('${unit.userId}', '${partner.userId}', 'unit2')">
-          <h4 style="margin: 0; color: #e2e8f0;">${partner.naam}</h4>
-        </div>
+        ${ledenHtml}
       </div>
       
       <div style="display: flex; gap: 10px; justify-content: flex-end;">
@@ -2196,9 +2117,9 @@ function ontkoppelEenheid() {
   window._ontkoppelModal = modal;
 }
 
-function selectOntkoppelKeuze(unit1Id, unit2Id, keuze) {
-  const behoudId = keuze === 'unit1' ? unit1Id : unit2Id;
-  const verliesId = keuze === 'unit1' ? unit2Id : unit1Id;
+function selectOntkoppelKeuze(hoofdUserId, gekozenUnitId, keuze) {
+  const behoudId = gekozenUnitId;
+  const verliesId = hoofdUserId;
   
   console.log('[ONTKOPPELEN] Eenheid behoudt roepnummer:', behoudId);
   console.log('[ONTKOPPELEN] Eenheid verliest roepnummer:', verliesId);
@@ -2218,8 +2139,6 @@ function selectOntkoppelKeuze(unit1Id, unit2Id, keuze) {
           break;
         }
       }
-      
-      // console.log('[ONTKOPPELEN] Beschikbaar 18-nummer gevonden:', beschikbaar18Nummer);
       
       // Stuur ontkoppel request met automatisch 18-nummer
       fetch(`${API_URL}/api/ontkoppel-met-keuze`, {

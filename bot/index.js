@@ -1322,6 +1322,29 @@ app.post('/api/ontkoppel-met-keuze', async (req, res) => {
   res.json({ success: true, nieuwRoepnummer });
 });
 
+// ---- API: Haal alle koppel leden op voor ontkoppeling ----
+app.get('/api/koppel-leden/:userId', (req, res) => {
+  const userId = req.params.userId;
+  if (!userId) return res.status(400).json({ error: 'Geen userId' });
+  
+  // Haal koppel informatie op
+  const gebruiker = db.prepare('SELECT koppel_id FROM gebruikers WHERE id = ?').get(userId);
+  if (!gebruiker) return res.status(400).json({ error: 'Gebruiker niet gevonden' });
+  
+  let koppelLeden = [];
+  
+  if (gebruiker.koppel_id) {
+    // Haal alle leden van het koppel op
+    koppelLeden = db.prepare(`SELECT id, shortname, display_name, dienstnummer FROM gebruikers WHERE (koppel_id = ? OR id = ?) AND indienst_start IS NOT NULL ORDER BY id`).all(gebruiker.koppel_id, gebruiker.koppel_id);
+  }
+  
+  res.json({ 
+    success: true, 
+    koppelLeden: koppelLeden,
+    koppelId: gebruiker.koppel_id 
+  });
+});
+
 // ---- API: Actieve kandidaten voor koppelen ----
 app.get('/api/koppel-kandidaten/:userId', (req, res) => {
   const kandidaten = db.prepare(`

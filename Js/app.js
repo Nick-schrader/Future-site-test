@@ -221,13 +221,13 @@ function hideToast() {
   const rollen = (u.rollen || []).map(r => r.naam || r);
   
   // Toon OPS link als de user 'Ops' rol heeft
-  if (rollen.some(r => r.includes('OPS'))) {
+  if (rollen.some(r => r.includes('OPS,Kader,admin'))) {
     const opsLink = document.getElementById('nav-ops');
     if (opsLink) opsLink.style.display = '';
   }
   
-  // Toon Logs & Settings links als de user 'Porto Perms' rol heeft
-  if (rollen.some(r => r.includes('Porto Perms'))) {
+  // Toon Logs & Settings links als de user 'Porto Perms', 'Kader' of 'admin' rol heeft
+  if (rollen.some(r => r.includes('Porto Perms,Kader,admin'))) {
     const logsLink = document.getElementById('nav-logs');
     if (logsLink) logsLink.style.display = '';
     const settingsLink = document.getElementById('nav-settings');
