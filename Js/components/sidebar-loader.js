@@ -20,14 +20,20 @@ async function loadSidebar() {
       sidebarPlaceholder.innerHTML = sidebarHTML;
       console.log('[SIDEBAR] Sidebar HTML injected');
       
-      // Remove inline opacity styles to let CSS classes work
+      // Remove inline styles and ensure CSS hover works
       setTimeout(() => {
         const labels = sidebarPlaceholder.querySelectorAll('.sidebar-label');
         labels.forEach(label => {
           label.style.removeProperty('opacity');
         });
-        console.log('[SIDEBAR] Inline opacity styles removed');
-      }, 50);
+        
+        // Force CSS reflow to ensure hover works
+        sidebarPlaceholder.style.display = 'none';
+        sidebarPlaceholder.offsetHeight; // Trigger reflow
+        sidebarPlaceholder.style.display = '';
+        
+        console.log('[SIDEBAR] CSS hover enabled - original behavior');
+      }, 100);
     } else {
       console.error('[SIDEBAR] No sidebar placeholder found');
       return;
