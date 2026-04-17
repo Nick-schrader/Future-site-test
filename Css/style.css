@@ -138,7 +138,12 @@ main.main {
   overflow: hidden;
   transition: width 0.25s ease;
 }
-.sidebar:hover { width: 200px; }
+.sidebar:hover { 
+  width: 200px; 
+}
+.sidebar:hover .sidebar-label { 
+  opacity: 1; 
+}
 .sidebar-item {
   display: flex;
   align-items: center;
