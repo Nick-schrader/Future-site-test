@@ -19,6 +19,15 @@ async function loadSidebar() {
       // Vervang placeholder innerHTML met sidebar content
       sidebarPlaceholder.innerHTML = sidebarHTML;
       console.log('[SIDEBAR] Sidebar HTML injected');
+      
+      // Remove inline opacity styles to let CSS classes work
+      setTimeout(() => {
+        const labels = sidebarPlaceholder.querySelectorAll('.sidebar-label');
+        labels.forEach(label => {
+          label.style.removeProperty('opacity');
+        });
+        console.log('[SIDEBAR] Inline opacity styles removed');
+      }, 50);
     } else {
       console.error('[SIDEBAR] No sidebar placeholder found');
       return;

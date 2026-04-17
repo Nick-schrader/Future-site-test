@@ -109,11 +109,12 @@ class SidebarComponent {
       }, 100);
     });
 
-    // Ensure labels are visible when expanded
+    // Ensure labels are visible when expanded - remove inline styles
     const updateLabels = () => {
       const labels = sidebar.querySelectorAll('.sidebar-label');
       labels.forEach(label => {
-        label.style.opacity = isExpanded ? '1' : '0';
+        // Remove inline styles to let CSS classes work
+        label.style.removeProperty('opacity');
       });
     };
 
