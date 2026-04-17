@@ -62,7 +62,8 @@ async function loadSidebar() {
 
 async function loadSidebarScript() {
   // Als sidebar component al geladen is, skip
-  if (window.sidebarComponent) {
+  if (window.sidebarComponent || window.SidebarComponent) {
+    console.log('[SIDEBAR] Component already loaded, skipping...');
     return;
   }
   
