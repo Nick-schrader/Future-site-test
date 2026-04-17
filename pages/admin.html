@@ -8,6 +8,19 @@
   
   <!-- Sidebar Component -->
   <script src="../Js/components/sidebar-loader.js"></script>
+  <script>
+    // Forceer sidebar loading
+    if (window.loadSidebar) {
+      window.loadSidebar();
+    } else {
+      // Fallback: wacht tot script geladen is
+      setTimeout(() => {
+        if (window.loadSidebar) {
+          window.loadSidebar();
+        }
+      }, 100);
+    }
+  </script>
 </head>
 <body>
   <div id="app">

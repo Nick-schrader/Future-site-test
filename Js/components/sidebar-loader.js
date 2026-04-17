@@ -73,3 +73,6 @@ function initSidebarLoader() {
 // Export voor gebruik in andere scripts
 window.loadSidebar = loadSidebar;
 window.initSidebarLoader = initSidebarLoader;
+
+// Automatische initialisatie
+initSidebarLoader();
