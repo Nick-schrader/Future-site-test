@@ -217,6 +217,7 @@ app.get('/auth/callback', async (req, res) => {
       avatar,
       dienst,
       role: role,
+      isAdmin: discordUser.id === '1196035736823156790' ? 1 : 0,
       fullname: member.displayName,
       rollen: JSON.stringify(rollen),
     });
