@@ -139,9 +139,15 @@ main.main {
   transition: width 0.3s ease;
 }
 
-/* Unified hover state - sidebar expands AND labels appear together */
-.sidebar:hover {
+/* Unified hover state - single class manages everything */
+.sidebar:hover,
+.sidebar.expanded {
   width: 220px;
+}
+
+.sidebar:hover .sidebar-label,
+.sidebar.expanded .sidebar-label {
+  opacity: 1;
 }
 
 .sidebar-item {
@@ -193,11 +199,6 @@ main.main {
   transition: opacity 0.3s ease;
   white-space: nowrap;
   overflow: hidden;
-}
-
-/* Labels appear immediately when sidebar expands */
-.sidebar:hover .sidebar-label {
-  opacity: 1;
 }
 
 .content { flex: 1; overflow-y: auto; padding: 20px; overflow-anchor: none; }

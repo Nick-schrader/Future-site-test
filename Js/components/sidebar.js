@@ -81,6 +81,51 @@ class SidebarComponent {
       console.log('[SIDEBAR] Discord roles updated event received');
       this.updateNavigation();
     });
+
+    // Setup unified sidebar hover behavior
+    this.setupUnifiedHover();
+  }
+
+  setupUnifiedHover() {
+    const sidebar = document.querySelector('.sidebar');
+    if (!sidebar) return;
+
+    let isExpanded = false;
+    let hoverTimeout;
+
+    // Unified hover management
+    sidebar.addEventListener('mouseenter', () => {
+      clearTimeout(hoverTimeout);
+      sidebar.classList.add('expanded');
+      isExpanded = true;
+      console.log('[SIDEBAR] Unified hover - expanded');
+    });
+
+    sidebar.addEventListener('mouseleave', () => {
+      hoverTimeout = setTimeout(() => {
+        sidebar.classList.remove('expanded');
+        isExpanded = false;
+        console.log('[SIDEBAR] Unified hover - collapsed');
+      }, 100);
+    });
+
+    // Ensure labels are visible when expanded
+    const updateLabels = () => {
+      const labels = sidebar.querySelectorAll('.sidebar-label');
+      labels.forEach(label => {
+        label.style.opacity = isExpanded ? '1' : '0';
+      });
+    };
+
+    // Update labels on state change
+    const observer = new MutationObserver(() => {
+      updateLabels();
+    });
+
+    observer.observe(sidebar, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
   }
 
   // Methode om handmatig navigatie bij te werken
