@@ -136,26 +136,9 @@ main.main {
   padding: 16px 0;
   gap: 4px;
   overflow: hidden;
-  transition: width 0.3s ease;
+  transition: width 0.25s ease;
 }
-
-/* CSS hover for basic functionality */
-.sidebar:hover {
-  width: 220px;
-}
-
-.sidebar:hover .sidebar-label {
-  opacity: 1;
-}
-
-/* JavaScript support for unified behavior */
-.sidebar.expanded {
-  width: 220px;
-}
-
-.sidebar.expanded .sidebar-label {
-  opacity: 1;
-}
+.sidebar:hover { width: 200px; }
 
 .sidebar-item {
   display: flex;
@@ -200,13 +183,8 @@ main.main {
   height: 20px;
 }
 
-.sidebar-label {
-  opacity: 0;
-  font-weight: 500;
-  transition: opacity 0.3s ease;
-  white-space: nowrap;
-  overflow: hidden;
-}
+.sidebar-label { opacity: 0; transition: opacity 0.2s; font-weight: 500; }
+.sidebar:hover .sidebar-label { opacity: 1; }
 
 .content { flex: 1; overflow-y: auto; padding: 20px; overflow-anchor: none; }
 

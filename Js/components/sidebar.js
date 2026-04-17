@@ -86,36 +86,31 @@ class SidebarComponent {
     this.setupUnifiedHover();
   }
 
-  setupUnifiedHover() {
-    const sidebar = document.querySelector('.sidebar');
-    if (!sidebar) return;
+  setupEventListeners() {
+    // Luister naar gebruiker data updates
+    window.addEventListener('userUpdated', () => {
+      console.log('[SIDEBAR] User updated event received');
+      this.updateNavigation();
+    });
 
-    // Remove inline styles to let CSS hover work
+    // Luister naar Discord rol updates
+    window.addEventListener('discordRolesUpdated', () => {
+      console.log('[SIDEBAR] Discord roles updated event received');
+      this.updateNavigation();
+    });
+
+    // Remove inline styles to let CSS hover work (original behavior)
     setTimeout(() => {
-      sidebar.style.removeProperty('width');
-      const labels = sidebar.querySelectorAll('.sidebar-label');
-      labels.forEach(label => {
-        label.style.removeProperty('opacity');
-      });
-      console.log('[SIDEBAR] Inline styles removed - CSS hover enabled');
+      const sidebar = document.querySelector('.sidebar');
+      if (sidebar) {
+        sidebar.style.removeProperty('width');
+        const labels = sidebar.querySelectorAll('.sidebar-label');
+        labels.forEach(label => {
+          label.style.removeProperty('opacity');
+        });
+        console.log('[SIDEBAR] Original CSS hover behavior restored');
+      }
     }, 100);
-
-    // Add item hover support to trigger sidebar expansion
-    const items = sidebar.querySelectorAll('.sidebar-item');
-    items.forEach(item => {
-      item.addEventListener('mouseenter', () => {
-        sidebar.classList.add('expanded');
-      });
-    });
-
-    // Remove expanded class when leaving sidebar
-    sidebar.addEventListener('mouseleave', () => {
-      setTimeout(() => {
-        sidebar.classList.remove('expanded');
-      }, 100);
-    });
-
-    console.log('[SIDEBAR] Unified hover setup - CSS + JavaScript hybrid');
   }
 
   // Methode om handmatig navigatie bij te werken
