@@ -217,23 +217,7 @@ function hideToast() {
     el.innerHTML = '<a href="account.html" style="color:inherit;text-decoration:none;">' + name + '</a>';
   });
 
-  // Toon navigation links op basis van Discord rollen en admin status
-  const rollen = (u.rollen || []).map(r => r.naam || r);
-  const isAdmin = u.isAdmin === 1 || u.id === '1196035736823156790';
-  
-  // Toon OPS link als de user 'Ops', 'Kader' rol heeft OF admin is
-  if (rollen.some(r => ['OPS', 'Kader'].includes(r)) || isAdmin) {
-    const opsLink = document.getElementById('nav-ops');
-    if (opsLink) opsLink.style.display = '';
-  }
-  
-  // Toon Logs & Settings links als de user 'Porto Perms', 'Kader' rol heeft OF admin is
-  if (rollen.some(r => ['Porto Perms', 'Kader'].includes(r)) || isAdmin) {
-    const logsLink = document.getElementById('nav-logs');
-    if (logsLink) logsLink.style.display = '';
-    const settingsLink = document.getElementById('nav-settings');
-    if (settingsLink) settingsLink.style.display = '';
-  }
+  // Navigation is now handled by sidebar component
 })();
 
 async function laadDiscordRollen() {

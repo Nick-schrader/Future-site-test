@@ -33,18 +33,7 @@ function laadTijden() {
   console.log('[OPS DEBUG] API_URL:', API_URL);
   console.log('[OPS DEBUG] Full URL:', `${API_URL}/api/tijden-overzicht`);
   
-  // Toon/verberg menu items op basis van rol en admin status
-  const navOps = document.getElementById('nav-ops');
-  const navLogs = document.getElementById('nav-logs');
-  const navSettings = document.getElementById('nav-settings');
-  const user = getUser();
-  const rollen = (user.rollen || []).map(r => r.naam || r);
-  const isAdmin = user.isAdmin === 1 || user.id === '1196035736823156790';
-  const userRole = rollen[0] || 'user';
-  
-  if (navOps) navOps.style.display = ['ovd', 'opco'].includes(userRole) || isAdmin ? '' : 'none';
-  if (navLogs) navLogs.style.display = ['ovd', 'opco'].includes(userRole) || isAdmin ? '' : 'none';
-  if (navSettings) navSettings.style.display = ['ovd', 'opco'].includes(userRole) || isAdmin ? '' : 'none';
+  // Navigation is now handled by sidebar component
 
   // Check if elements exist
   const weekFilter = document.getElementById('week-filter');
