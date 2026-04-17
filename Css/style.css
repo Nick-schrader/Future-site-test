@@ -157,6 +157,10 @@ main.main {
   text-decoration: none;
   color: #888;
   font-size: 0.9rem;
+  position: relative;
+}
+.sidebar-item .sidebar-label {
+  transition: opacity 0.2s ease;
 }
 .sidebar-item:hover { background: #2a2d3e; color: #cdd6f4; }
 .sidebar-item.active { background: #2a2d3e; color: #a78bfa; }

@@ -33,22 +33,30 @@ class SidebarComponent {
     const navLogs = document.getElementById('nav-logs');
     const navSettings = document.getElementById('nav-settings');
     
-    if (navOps) {
-      const showOps = ['ovd', 'opco'].includes(userRole) || isAdmin;
-      navOps.style.display = showOps ? '' : 'none';
-      console.log('[SIDEBAR] OPS visibility:', showOps);
-    }
-    
-    if (navLogs) {
-      const showLogs = ['ovd', 'opco'].includes(userRole) || isAdmin;
-      navLogs.style.display = showLogs ? '' : 'none';
-      console.log('[SIDEBAR] Logs visibility:', showLogs);
-    }
-    
-    if (navSettings) {
-      const showSettings = ['ovd', 'opco'].includes(userRole) || isAdmin;
-      navSettings.style.display = showSettings ? '' : 'none';
-      console.log('[SIDEBAR] Settings visibility:', showSettings);
+    // Admin ziet altijd alle menu items
+    if (isAdmin) {
+      console.log('[SIDEBAR] Admin user - showing all menu items');
+      if (navOps) navOps.style.display = '';
+      if (navLogs) navLogs.style.display = '';
+      if (navSettings) navSettings.style.display = '';
+    } else {
+      // Normale gebruikers: toon op basis van rollen
+      const hasAccess = ['ovd', 'opco'].includes(userRole);
+      
+      if (navOps) {
+        navOps.style.display = hasAccess ? '' : 'none';
+        console.log('[SIDEBAR] OPS visibility:', hasAccess);
+      }
+      
+      if (navLogs) {
+        navLogs.style.display = hasAccess ? '' : 'none';
+        console.log('[SIDEBAR] Logs visibility:', hasAccess);
+      }
+      
+      if (navSettings) {
+        navSettings.style.display = hasAccess ? '' : 'none';
+        console.log('[SIDEBAR] Settings visibility:', hasAccess);
+      }
     }
 
     // Voeg active class toe aan huidige pagina
