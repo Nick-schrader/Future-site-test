@@ -53,7 +53,7 @@ async function loadSidebarScript() {
   
   return new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = './sidebar.js';
+    script.src = '../Js/components/sidebar.js';
     script.onload = resolve;
     script.onerror = reject;
     document.head.appendChild(script);
