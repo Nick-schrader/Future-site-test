@@ -139,13 +139,11 @@ main.main {
   transition: width 0.3s ease;
 }
 
-/* Unified hover state - single class manages everything */
-.sidebar:hover,
+/* JavaScript-managed expanded state */
 .sidebar.expanded {
   width: 220px;
 }
 
-.sidebar:hover .sidebar-label,
 .sidebar.expanded .sidebar-label {
   opacity: 1;
 }

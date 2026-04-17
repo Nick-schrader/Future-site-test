@@ -92,41 +92,56 @@ class SidebarComponent {
 
     let isExpanded = false;
     let hoverTimeout;
+    let isHovering = false;
 
-    // Unified hover management
+    // Complete JavaScript state management - no CSS hover
+    const setExpandedState = (expanded) => {
+      isExpanded = expanded;
+      if (expanded) {
+        sidebar.classList.add('expanded');
+        sidebar.style.width = '220px';
+      } else {
+        sidebar.classList.remove('expanded');
+        sidebar.style.width = '64px';
+      }
+      
+      // Update all labels immediately
+      const labels = sidebar.querySelectorAll('.sidebar-label');
+      labels.forEach(label => {
+        label.style.opacity = expanded ? '1' : '0';
+      });
+      
+      console.log(`[SIDEBAR] State changed: ${expanded ? 'expanded' : 'collapsed'}`);
+    };
+
+    // Unified hover management - pure JavaScript
     sidebar.addEventListener('mouseenter', () => {
       clearTimeout(hoverTimeout);
-      sidebar.classList.add('expanded');
-      isExpanded = true;
-      console.log('[SIDEBAR] Unified hover - expanded');
+      isHovering = true;
+      setExpandedState(true);
     });
 
     sidebar.addEventListener('mouseleave', () => {
+      isHovering = false;
       hoverTimeout = setTimeout(() => {
-        sidebar.classList.remove('expanded');
-        isExpanded = false;
-        console.log('[SIDEBAR] Unified hover - collapsed');
-      }, 100);
+        if (!isHovering) {
+          setExpandedState(false);
+        }
+      }, 150);
     });
 
-    // Ensure labels are visible when expanded - remove inline styles
-    const updateLabels = () => {
-      const labels = sidebar.querySelectorAll('.sidebar-label');
-      labels.forEach(label => {
-        // Remove inline styles to let CSS classes work
-        label.style.removeProperty('opacity');
+    // Handle item hover within sidebar
+    const items = sidebar.querySelectorAll('.sidebar-item');
+    items.forEach(item => {
+      item.addEventListener('mouseenter', () => {
+        if (!isExpanded) {
+          setExpandedState(true);
+        }
       });
-    };
-
-    // Update labels on state change
-    const observer = new MutationObserver(() => {
-      updateLabels();
     });
 
-    observer.observe(sidebar, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
+    // Initialize state
+    setExpandedState(false);
   }
 
   // Methode om handmatig navigatie bij te werken
