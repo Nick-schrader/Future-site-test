@@ -22,16 +22,23 @@ class SidebarComponent {
     const userRole = rollen[0] || 'user';
 
     console.log('[SIDEBAR] User data:', { userRole, isAdmin, rollen: rollen.slice(0, 3) });
+    
+    // Debug: Check if sidebar items exist
+    const navOps = document.getElementById('nav-ops');
+    const navLogs = document.getElementById('nav-logs');
+    const navSettings = document.getElementById('nav-settings');
+    
+    console.log('[SIDEBAR] Sidebar items found:', {
+      navOps: !!navOps,
+      navLogs: !!navLogs,
+      navSettings: !!navSettings,
+      totalItems: document.querySelectorAll('.sidebar-item').length
+    });
 
     // Verwijder active class van alle sidebar items
     document.querySelectorAll('.sidebar-item').forEach(item => {
       item.classList.remove('active');
     });
-
-    // Toon/verberg menu items op basis van rol en admin status
-    const navOps = document.getElementById('nav-ops');
-    const navLogs = document.getElementById('nav-logs');
-    const navSettings = document.getElementById('nav-settings');
     
     // Admin ziet altijd alle menu items
     if (isAdmin) {
