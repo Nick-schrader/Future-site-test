@@ -139,7 +139,16 @@ main.main {
   transition: width 0.3s ease;
 }
 
-/* JavaScript-managed expanded state */
+/* CSS hover for basic functionality */
+.sidebar:hover {
+  width: 220px;
+}
+
+.sidebar:hover .sidebar-label {
+  opacity: 1;
+}
+
+/* JavaScript support for unified behavior */
 .sidebar.expanded {
   width: 220px;
 }

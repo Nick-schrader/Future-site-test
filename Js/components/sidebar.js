@@ -90,58 +90,32 @@ class SidebarComponent {
     const sidebar = document.querySelector('.sidebar');
     if (!sidebar) return;
 
-    let isExpanded = false;
-    let hoverTimeout;
-    let isHovering = false;
-
-    // Complete JavaScript state management - no CSS hover
-    const setExpandedState = (expanded) => {
-      isExpanded = expanded;
-      if (expanded) {
-        sidebar.classList.add('expanded');
-        sidebar.style.width = '220px';
-      } else {
-        sidebar.classList.remove('expanded');
-        sidebar.style.width = '64px';
-      }
-      
-      // Update all labels immediately
+    // Remove inline styles to let CSS hover work
+    setTimeout(() => {
+      sidebar.style.removeProperty('width');
       const labels = sidebar.querySelectorAll('.sidebar-label');
       labels.forEach(label => {
-        label.style.opacity = expanded ? '1' : '0';
+        label.style.removeProperty('opacity');
       });
-      
-      console.log(`[SIDEBAR] State changed: ${expanded ? 'expanded' : 'collapsed'}`);
-    };
+      console.log('[SIDEBAR] Inline styles removed - CSS hover enabled');
+    }, 100);
 
-    // Unified hover management - pure JavaScript
-    sidebar.addEventListener('mouseenter', () => {
-      clearTimeout(hoverTimeout);
-      isHovering = true;
-      setExpandedState(true);
-    });
-
-    sidebar.addEventListener('mouseleave', () => {
-      isHovering = false;
-      hoverTimeout = setTimeout(() => {
-        if (!isHovering) {
-          setExpandedState(false);
-        }
-      }, 150);
-    });
-
-    // Handle item hover within sidebar
+    // Add item hover support to trigger sidebar expansion
     const items = sidebar.querySelectorAll('.sidebar-item');
     items.forEach(item => {
       item.addEventListener('mouseenter', () => {
-        if (!isExpanded) {
-          setExpandedState(true);
-        }
+        sidebar.classList.add('expanded');
       });
     });
 
-    // Initialize state
-    setExpandedState(false);
+    // Remove expanded class when leaving sidebar
+    sidebar.addEventListener('mouseleave', () => {
+      setTimeout(() => {
+        sidebar.classList.remove('expanded');
+      }, 100);
+    });
+
+    console.log('[SIDEBAR] Unified hover setup - CSS + JavaScript hybrid');
   }
 
   // Methode om handmatig navigatie bij te werken
