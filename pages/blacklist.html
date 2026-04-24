@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Porto Systeem - Werving en Selectie</title>
+  <title>Porto Systeem - Blacklist</title>
   <link rel="stylesheet" href="../Css/style.css" />
 </head>
 <body>
@@ -59,7 +59,7 @@
             <span class="sidebar-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
             <span class="sidebar-label">Ops overzicht</span>
           </a>
-          <a class="sidebar-item active" href="werving-selectie.html" id="nav-werving">
+          <a class="sidebar-item" href="werving-selectie.html" id="nav-werving">
             <span class="sidebar-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><line x1="22" y1="11" x2="6" y2="11"/><path d="M22 11v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/></svg></span>
             <span class="sidebar-label">Werving en selectie</span>
           </a>
@@ -68,7 +68,7 @@
         <!-- Kader -->
         <div class="sidebar-category" onclick="toggleCategory(this)">Kader</div>
         <div class="sidebar-category-items">
-          <a class="sidebar-item" href="blacklist.html" id="nav-blacklist">
+          <a class="sidebar-item active" href="blacklist.html" id="nav-blacklist">
             <span class="sidebar-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l18 18M8.5 8.5v8.5M15.5 15.5v-8.5M12 12v-8.5"/></svg></span>
             <span class="sidebar-label">Blacklist</span>
           </a>
@@ -85,83 +85,54 @@
 
       <main class="content">
         <div class="card">
-          <h3 style="margin-bottom:16px">Werving en Selectie</h3>
-          <p style="color:#888;margin-bottom:20px">Beheer het wervings- en selectieproces voor nieuwe medewerkers.</p>
+          <h3 style="margin-bottom:16px">🚫 Blacklist</h3>
+          <p style="color:#888;margin-bottom:20px">Beheer geblackliste personen en hun redenen.</p>
           
-          <div class="werving-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
-            <!-- Open Sollicitaties -->
-            <div class="card" style="padding:16px">
-              <h4 style="margin-bottom:12px;color:#a78bfa">📋 Open Sollicitaties</h4>
-              <div class="stat-item">
-                <div class="stat-value" id="open-sollicitaties">0</div>
-                <div class="stat-label">Openstaande sollicitaties</div>
-              </div>
-              <button class="btn-purple" style="margin-top:12px;width:100%" onclick="loadOpenSollicitaties()">Bekijken</button>
-            </div>
-
-            <!-- In Behandeling -->
-            <div class="card" style="padding:16px">
-              <h4 style="margin-bottom:12px;color:#60a5fa">⏳ In Behandeling</h4>
-              <div class="stat-item">
-                <div class="stat-value" id="behandeling-sollicitaties">0</div>
-                <div class="stat-label">Sollicitaties in behandeling</div>
-              </div>
-              <button class="btn-purple" style="margin-top:12px;width:100%" onclick="loadBehandelingSollicitaties()">Bekijken</button>
-            </div>
-
-            <!-- Aangenomen -->
-            <div class="card" style="padding:16px">
-              <h4 style="margin-bottom:12px;color:#34d399">✅ Aangenomen</h4>
-              <div class="stat-item">
-                <div class="stat-value" id="aangenomen-sollicitaties">0</div>
-                <div class="stat-label">Aangenomen kandidaten</div>
-              </div>
-              <button class="btn-purple" style="margin-top:12px;width:100%" onclick="loadAangenomenSollicitaties()">Bekijken</button>
-            </div>
-
-            <!-- Afgewezen -->
-            <div class="card" style="padding:16px">
-              <h4 style="margin-bottom:12px;color:#f87171">❌ Afgewezen</h4>
-              <div class="stat-item">
-                <div class="stat-value" id="afgewezen-sollicitaties">0</div>
-                <div class="stat-label">Afgewezen kandidaten</div>
-              </div>
-              <button class="btn-purple" style="margin-top:12px;width:100%" onclick="loadAfgewezenSollicitaties()">Bekijken</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Sollicitaties Tabel -->
-        <div class="card" style="margin-top:16px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-            <h3>Sollicitaties</h3>
-            <div style="display:flex;gap:8px">
-              <select id="status-filter" class="input-field" style="width:150px" onchange="filterSollicitaties()">
-                <option value="">Alle statussen</option>
-                <option value="open">Open</option>
-                <option value="behandeling">In behandeling</option>
-                <option value="aangenomen">Aangenomen</option>
-                <option value="afgewezen">Afgewezen</option>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <input type="text" id="blacklist-zoek" class="input-field" placeholder="Zoek op naam, Discord ID of reden..." style="width:250px" oninput="filterBlacklist()">
+              <select id="blacklist-filter" class="input-field" style="width:150px" onchange="filterBlacklist()">
+                <option value="">Alle redenen</option>
+                <option value="misdraging">Misdraging</option>
+                <option value="inactiviteit">Inactiviteit</option>
+                <option value="regels">Regel overtreding</option>
+                <option value="overig">Overig</option>
               </select>
-              <button class="btn-purple" onclick="nieuweSollicitatie()">+ Nieuwe Sollicitatie</button>
+            </div>
+            <div class="blacklist-stats">
+              <span style="background:#f87171;color:white;padding:4px 12px;border-radius:4px;font-weight:bold">
+                Totaal: <span id="blacklist-totaal">0</span>
+              </span>
             </div>
           </div>
+          
           <div class="table-wrap">
-            <table class="db-table" id="sollicitaties-table">
+            <table class="db-table" id="blacklist-table">
               <thead>
                 <tr>
                   <th>Naam</th>
-                  <th>Discord</th>
-                  <th>Status</th>
-                  <th>Aanvraagdatum</th>
-                  <th>Behandelaar</th>
+                  <th>Discord ID</th>
+                  <th>Roepnummer</th>
+                  <th>Reden</th>
+                  <th>Blacklist Datum</th>
+                  <th>Door</th>
                   <th>Acties</th>
                 </tr>
               </thead>
-              <tbody id="sollicitaties-tbody">
-                <tr><td colspan="6" style="color:#555;text-align:center">Laden...</td></tr>
+              <tbody id="blacklist-tbody">
+                <tr><td colspan="7" style="color:#555;text-align:center">Laden...</td></tr>
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card" style="margin-top:16px">
+          <h4 style="margin-bottom:12px">Snelle Acties</h4>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <button class="btn-purple" onclick="toevoegenAanBlacklist()">+ Toevoegen aan Blacklist</button>
+            <button class="btn-ghost" onclick="exportBlacklist()">📥 Exporteren</button>
+            <button class="btn-ghost" onclick="refreshBlacklist()">🔄 Vernieuwen</button>
           </div>
         </div>
       </main>
@@ -173,29 +144,71 @@
       <button onclick="hideToast()">&#10005;</button>
     </div>
 
-    <!-- SOLlicitatie MODAL -->
-    <div id="sollicitatie-modal" class="modal-overlay hidden">
+    <!-- BLACKLIST TOEVOEGEN MODAL -->
+    <div id="blacklist-toevoegen-modal" class="modal-overlay hidden">
       <div class="modal-card">
-        <h2>Sollicitatie Beheren</h2>
-        <div id="sollicitatie-details" style="margin-bottom:16px">
-          <!-- Dynamische sollicitatie details -->
+        <h2>Persoon Toevoegen aan Blacklist</h2>
+        <div class="form-group">
+          <label>Discord ID</label>
+          <input type="text" id="blacklist-discord-id" class="input-field" placeholder="Discord gebruikers-ID">
         </div>
         <div class="form-group">
-          <label>Status</label>
-          <select id="sollicitatie-status" class="input-field">
-            <option value="open">Open</option>
-            <option value="behandeling">In behandeling</option>
-            <option value="aangenomen">Aangenomen</option>
-            <option value="afgewezen">Afgewezen</option>
+          <label>Naam</label>
+          <input type="text" id="blacklist-naam" class="input-field" placeholder="Volledige naam">
+        </div>
+        <div class="form-group">
+          <label>Roepnummer (indien van toepassing)</label>
+          <input type="text" id="blacklist-roepnummer" class="input-field" placeholder="Bvb 21-04">
+        </div>
+        <div class="form-group">
+          <label>Reden</label>
+          <select id="blacklist-reden" class="input-field">
+            <option value="">Selecteer reden...</option>
+            <option value="misdraging">Misdraging</option>
+            <option value="inactiviteit">Inactiviteit</option>
+            <option value="regels">Regel overtreding</option>
+            <option value="overig">Overig</option>
           </select>
         </div>
         <div class="form-group">
-          <label>Notities</label>
-          <textarea id="sollicitatie-notities" class="input-field" rows="4" placeholder="Voeg notities toe..."></textarea>
+          <label>Beschrijving</label>
+          <textarea id="blacklist-beschrijving" class="input-field" rows="4" placeholder="Gedetailleerde beschrijving van de reden..."></textarea>
         </div>
         <div style="display:flex;gap:10px;margin-top:8px">
-          <button class="btn-purple" style="flex:1" onclick="saveSollicitatie()">Opslaan</button>
-          <button class="btn-ghost" style="flex:1" onclick="closeSollicitatieModal()">Annuleren</button>
+          <button class="btn-red" style="flex:1" onclick="saveBlacklistToevoegen()">Toevoegen aan Blacklist</button>
+          <button class="btn-ghost" style="flex:1" onclick="closeBlacklistToevoegenModal()">Annuleren</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLACKLIST BEWERKEN MODAL -->
+    <div id="blacklist-bewerken-modal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <h2>Blackitem Bewerken</h2>
+        <div id="blacklist-details" style="margin-bottom:16px">
+          <!-- Dynamische details -->
+        </div>
+        <div class="form-group">
+          <label>Reden</label>
+          <select id="blacklist-edit-reden" class="input-field">
+            <option value="misdraging">Misdraging</option>
+            <option value="inactiviteit">Inactiviteit</option>
+            <option value="regels">Regel overtreding</option>
+            <option value="overig">Overig</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Beschrijving</label>
+          <textarea id="blacklist-edit-beschrijving" class="input-field" rows="4"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Notities</label>
+          <textarea id="blacklist-edit-notities" class="input-field" rows="3" placeholder="Interne notities..."></textarea>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <button class="btn-purple" style="flex:1" onclick="saveBlacklistBewerken()">Opslaan</button>
+          <button class="btn-red" style="flex:1" onclick="verwijderUitBlacklist()">Verwijderen</button>
+          <button class="btn-ghost" style="flex:1" onclick="closeBlacklistBewerkenModal()">Annuleren</button>
         </div>
       </div>
     </div>
@@ -220,7 +233,7 @@
   <script src="../config.js"></script>
   <script src="../Js/app.js"></script>
   <script src="../Js/berichten.js"></script>
-  <script src="../Js/werving-selectie.js"></script>
+  <script src="../Js/blacklist.js"></script>
   
   <script>
     // Update actieve navigatie

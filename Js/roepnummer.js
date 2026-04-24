@@ -92,9 +92,10 @@ function toonRoepnummerPagina() {
 function setupEventListeners() {
     // Admin knoppen - alleen zichtbaar voor Administratie rol
     const nieuwePersoneelBtn = document.getElementById('nieuwePersoneelBtn');
+    const blacklistBtn = document.getElementById('blacklistBtn');
     const resetDatabaseBtn = document.getElementById('resetDatabaseBtn');
     
-    if (nieuwePersoneelBtn || resetDatabaseBtn) {
+    if (nieuwePersoneelBtn || blacklistBtn || resetDatabaseBtn) {
         const user = getUser();
         const isAdmin = user.rollen && user.rollen.some(rol => rol.naam === 'Administratie' || rol.naam === 'Kader');
         
@@ -103,12 +104,16 @@ function setupEventListeners() {
                 nieuwePersoneelBtn.style.display = 'inline-block';
                 nieuwePersoneelBtn.addEventListener('click', openNieuwePersoneelModal);
             }
+            if (blacklistBtn) {
+                blacklistBtn.style.display = 'inline-block';
+            }
             if (resetDatabaseBtn) {
                 resetDatabaseBtn.style.display = 'inline-block';
                 resetDatabaseBtn.addEventListener('click', resetDatabase);
             }
         } else {
             if (nieuwePersoneelBtn) nieuwePersoneelBtn.style.display = 'none';
+            if (blacklistBtn) blacklistBtn.style.display = 'none';
             if (resetDatabaseBtn) resetDatabaseBtn.style.display = 'none';
         }
     }
@@ -291,6 +296,7 @@ function createPersoneelRij(personeel) {
             <button class="mini-admin-btn promote" onclick="promoveerPersoneel('${personeel.id}')" title="Promoveren">+</button>
             <button class="mini-admin-btn demote" onclick="demoteerPersoneel('${personeel.id}')" title="Demoteren">-</button>
             <button class="mini-admin-btn edit" onclick="bewerkRoepnummer('${personeel.id}')" title="Roepnummer bewerken">#</button>
+            <button class="mini-admin-btn blacklist" onclick="blacklistPersoneel('${personeel.id}')" title="Blacklisten">🚫</button>
             <button class="mini-admin-btn dismiss" onclick="ontslaPersoneel('${personeel.id}')" title="Ontslaan">×</button>
         </div>
     ` : '';
@@ -1176,6 +1182,120 @@ async function resetDatabase() {
     }
 }
 
+// Blacklist personeel
+async function blacklistPersoneel(personeelId) {
+    const personeel = personeelData.find(p => p.id === personeelId);
+    if (!personeel) {
+        toonNotificatie('Personeel niet gevonden');
+        return;
+    }
+
+    // Toon bevestiging modal
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-card">
+            <h2>🚫 Persoon Blacklisten</h2>
+            <div style="margin-bottom:16px">
+                <p>Weet je zeker dat je <strong>${personeel.naam}</strong> wilt blacklisten?</p>
+                <div style="background:#f87171;color:white;padding:12px;border-radius:4px;margin:12px 0">
+                    <strong>Let op:</strong> Deze persoon zal worden verwijderd uit het personeelsbestand en toegevoegd aan de blacklist.
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Reden voor blacklist</label>
+                <select id="blacklist-reden" class="input-field">
+                    <option value="">Selecteer reden...</option>
+                    <option value="misdraging">Misdraging</option>
+                    <option value="inactiviteit">Inactiviteit</option>
+                    <option value="regels">Regel overtreding</option>
+                    <option value="overig">Overig</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Beschrijving</label>
+                <textarea id="blacklist-beschrijving" class="input-field" rows="3" placeholder="Gedetailleerde beschrijving..."></textarea>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:8px">
+                <button class="btn-red" style="flex:1" onclick="confirmBlacklist('${personeelId}')">Bevestigen</button>
+                <button class="btn-ghost" style="flex:1" onclick="closeBlacklistModal()">Annuleren</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Sla huidige personeel ID op
+    window.currentBlacklistPersoneelId = personeelId;
+}
+
+// Bevestig blacklist
+async function confirmBlacklist(personeelId) {
+    const reden = document.getElementById('blacklist-reden').value;
+    const beschrijving = document.getElementById('blacklist-beschrijving').value;
+    
+    if (!reden || !beschrijving) {
+        toonNotificatie('Vul alle velden in');
+        return;
+    }
+
+    const personeel = personeelData.find(p => p.id === personeelId);
+    if (!personeel) return;
+
+    try {
+        // Voeg toe aan blacklist
+        const blacklistResponse = await fetch('/api/blacklist', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                discord_id: personeel.discordId || personeel.discord,
+                naam: personeel.naam,
+                roepnummer: personeel.roepnummer,
+                reden: reden,
+                beschrijving: beschrijving,
+                blacklisted_by: getUser().displayName || getUser().username || 'Systeem'
+            })
+        });
+
+        if (!blacklistResponse.ok) {
+            throw new Error('Fout bij toevoegen aan blacklist');
+        }
+
+        // Verwijder uit personeelsbestand
+        const deleteResponse = await fetch(`/api/roepnummer/personeel/${personeelId}`, {
+            method: 'DELETE'
+        });
+
+        if (!deleteResponse.ok) {
+            throw new Error('Fout bij verwijderen personeel');
+        }
+
+        toonNotificatie(`${personeel.naam} is geblacklist en verwijderd uit het personeelsbestand`);
+        closeBlacklistModal();
+        
+        // Reload data
+        laadPersoneel();
+        
+        // Log actie
+        logPersoneelActie('BLACKLIST', personeel.naam, `Reden: ${reden} - ${beschrijving}`);
+        
+    } catch (error) {
+        console.error('Fout bij blacklisten:', error);
+        toonNotificatie('Fout bij blacklisten van personeel');
+    }
+}
+
+// Sluit blacklist modal
+function closeBlacklistModal() {
+    const modal = document.querySelector('.modal-overlay');
+    if (modal) {
+        modal.remove();
+    }
+    window.currentBlacklistPersoneelId = null;
+}
+
 // Make functions available globally for onclick handlers
 window.promoveerPersoneel = promoveerPersoneel;
 window.demoteerPersoneel = demoteerPersoneel;
@@ -1186,4 +1306,7 @@ window.voegPersoneelToe = voegPersoneelToe;
 window.openNieuwePersoneelModal = openNieuwePersoneelModal;
 window.sluitModal = sluitModal;
 window.sluitRoepnummerModal = sluitRoepnummerModal;
+window.blacklistPersoneel = blacklistPersoneel;
+window.confirmBlacklist = confirmBlacklist;
+window.closeBlacklistModal = closeBlacklistModal;
 window.resetDatabase = resetDatabase;
