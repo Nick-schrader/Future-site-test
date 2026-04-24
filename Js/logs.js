@@ -2,7 +2,7 @@
 const ACTIE_LABELS = {
   uren_gereset: 'Uren gereset',
   promotie: 'Promotie',
-  demotie: 'Demotie',
+  demotie: 'Demote',
   roepnummer_wijziging: 'Roepnummer wijziging',
   roepnummer_en_rang_wijziging: 'Roepnummer en rang wijziging',
   ontslag: 'Ontslag',
