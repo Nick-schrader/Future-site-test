@@ -1,4 +1,5 @@
 // Roepnummer pagina JavaScript
+const API = window.location.origin;
 let personeelData = [];
 let huidigeCategorie = 'manschappen';
 
@@ -1244,7 +1245,7 @@ async function confirmBlacklist(personeelId) {
 
     try {
         // Voeg toe aan blacklist
-        const blacklistResponse = await fetch('/api/blacklist', {
+        const blacklistResponse = await fetch(`${API}/api/blacklist`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
