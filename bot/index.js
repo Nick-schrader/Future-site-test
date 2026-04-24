@@ -1663,6 +1663,16 @@ app.post('/api/blacklist', async (req, res) => {
       new Date().toISOString()
     );
     
+    // Voeg toe aan logs
+    const { addLogEntry } = require('./database');
+    addLogEntry({
+      actie: 'blacklist_toegevoegd',
+      door: blacklisted_by || 'Systeem',
+      doelwit: `${naam} (${discord_id})`,
+      details: `Reden: ${reden}${roepnummer ? ` | Roepnummer: ${roepnummer}` : ''}${beschrijving ? ` | ${beschrijving}` : ''}`,
+      extra: `Blacklist ID: ${result.lastInsertRowid}`
+    });
+    
     console.log(`[BLACKLIST] ${naam} toegevoegd aan blacklist door ${blacklisted_by}`);
     
     res.json({ 
@@ -1706,6 +1716,20 @@ app.delete('/api/blacklist/:id', async (req, res) => {
     if (result.changes === 0) {
       return res.status(404).json({ error: 'Blacklist item niet gevonden' });
     }
+    
+    // Haal item info voor logging
+    const getItemStmt = db.prepare('SELECT naam, discord_id FROM blacklist WHERE id = ?');
+    const item = getItemStmt.get(id);
+    
+    // Voeg toe aan logs
+    const { addLogEntry } = require('./database');
+    addLogEntry({
+      actie: 'blacklist_verwijderd',
+      door: 'Systeem', // TODO: Haal huidige gebruiker op
+      doelwit: item ? `${item.naam} (${item.discord_id})` : `ID: ${id}`,
+      details: `Blacklist item verwijderd`,
+      extra: `Verwijderd ID: ${id}`
+    });
     
     console.log(`[BLACKLIST] Item ${id} verwijderd uit blacklist`);
     

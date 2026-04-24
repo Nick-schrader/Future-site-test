@@ -1,12 +1,14 @@
 // ---- LOGS PAGE ----
 const ACTIE_LABELS = {
-  uren_verwijderd: 'Uren verwijderd',
-  uren_aangepast: 'Uren aangepast',
   uren_gereset: 'Uren gereset',
   promotie: 'Promotie',
   demotie: 'Demotie',
   roepnummer_wijziging: 'Roepnummer wijziging',
+  roepnummer_en_rang_wijziging: 'Roepnummer en rang wijziging',
   ontslag: 'Ontslag',
+  blacklist_toegevoegd: 'Toegevoegd aan blacklist',
+  blacklist_verwijderd: 'Verwijderd uit blacklist',
+  BLACKLIST: 'Blacklist',
 };
 
 let _alleLogs = [];
