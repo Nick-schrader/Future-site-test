@@ -12,7 +12,7 @@ const ACTIE_LABELS = {
 let _alleLogs = [];
 
 window.onload = () => {
-  if (!sessionStorage.getItem('loggedIn')) { window.location.href = '../index.html'; return; }
+  if (!localStorage.getItem('loggedIn')) { window.location.href = '../index.html'; return; }
   laadLogs();
 };
 

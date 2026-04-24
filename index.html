@@ -86,9 +86,9 @@
             }),
           });
         }).then(() => {
-          // Sla gebruiker op in sessionStorage
-          sessionStorage.setItem('loggedIn', '1');
-          sessionStorage.setItem('user', JSON.stringify({
+          // Sla gebruiker op in localStorage
+          localStorage.setItem('loggedIn', '1');
+          localStorage.setItem('user', JSON.stringify({
             username: data.user.username,
             id: data.user.id,
             displayName: data.user.displayName,
@@ -113,8 +113,8 @@
         }).catch(err => {
           console.error('Database reset failed:', err);
           // Fallback: sla toch op zonder reset
-          sessionStorage.setItem('loggedIn', '1');
-          sessionStorage.setItem('user', JSON.stringify({
+          localStorage.setItem('loggedIn', '1');
+          localStorage.setItem('user', JSON.stringify({
             username: data.user.username,
             id: data.user.id,
             displayName: data.user.displayName,

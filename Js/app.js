@@ -90,7 +90,7 @@ async function syncUserFromDB() {
 (function() {
   const inPages = window.location.pathname.includes('/pages/');
   const isAccount = window.location.pathname.includes('account.html');
-  if (inPages && !isAccount && !sessionStorage.getItem('loggedIn')) {
+  if (inPages && !isAccount && !localStorage.getItem('loggedIn')) {
     window.location.href = '../index.html';
   }
 })();

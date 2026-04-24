@@ -249,13 +249,38 @@ app.get('/auth/callback', async (req, res) => {
   }
 });
 
-app.get('/auth/done', (req, res) => {
-  const user = req.query.user || '{}';
-  res.send(`<!DOCTYPE html><html><body><script>
-    sessionStorage.setItem('loggedIn', '1');
-    sessionStorage.setItem('user', decodeURIComponent(${JSON.stringify(encodeURIComponent(user))}));
+app.get('/auth/done', async (req, res) => {
+  try {
+    const user = req.query.user || '{}';
+    const userData = JSON.parse(decodeURIComponent(user));
+    
+    // Controleer of gebruiker ontslagen is
+    const gebruiker = await getGebruiker(userData.id);
+    const isOntslagen = gebruiker && (gebruiker.role === 'dismissed' || gebruiker.status === 10);
+    
+    if (isOntslagen) {
+      // Gebruiker is ontslagen, blokkeer toegang
+      res.send(`<!DOCTYPE html><html><body style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;background:#f5f5f5"><div style="background:white;padding:40px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.1);text-align:center"><h2 style="color:#dc2626;margin-bottom:16px">🚫 Toegang Geweigerd</h2><p style="color:#666;margin-bottom:24px">Je bent ontslagen uit de dienst en hebt geen toegang meer tot het systeem.</p><p style="color:#999;font-size:0.9rem">Reden: ${gebruiker.ontslagReden || 'Ontslagen uit dienst'}</p></div></body></html>`);
+      return;
+    }
+    
+    // Gebruiker heeft toegang, sta login toe
+    res.send(`<!DOCTYPE html><html><body><script>
+    localStorage.setItem('loggedIn', '1');
+    localStorage.setItem('user', decodeURIComponent(${JSON.stringify(encodeURIComponent(user))}));
     window.location.href = '/pages/porto.html';
   </script></body></html>`);
+    
+  } catch (error) {
+    console.error('[AUTH] Fout bij controleren gebruiker status:', error);
+    // Fallback: sta login toe bij error
+    const user = req.query.user || '{}';
+    res.send(`<!DOCTYPE html><html><body><script>
+      localStorage.setItem('loggedIn', '1');
+      localStorage.setItem('user', decodeURIComponent(${JSON.stringify(encodeURIComponent(user))}));
+      window.location.href = '/pages/porto.html';
+    </script></body></html>`);
+  }
 });
 
 // ---- API: Instellingen opslaan ----
@@ -1538,6 +1563,74 @@ app.post('/api/evaluaties', async (req, res) => {
     console.log(`[EVALUATIES] Evaluatie opgeslagen: ${discordNaam} (${beoordeling}) door ${team}`);
   } catch (err) {
     console.error('[EVALUATIES] Fout bij opslaan evaluatie:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ---- API: Dismiss User ----
+// Reset login status voor ontslagen gebruiker
+app.post('/api/dismiss-user', async (req, res) => {
+  try {
+    const { discordId, reden } = req.body;
+    
+    if (!discordId) {
+      return res.status(400).json({ error: 'Discord ID is verplicht' });
+    }
+    
+    // Update gebruiker in database - markeer als ontslagen
+    const updateResult = upsertGebruiker.run({
+      id: discordId,
+      role: 'dismissed', // Speciale rol voor ontslagen gebruikers
+      status: 10, // Status 10 = uit dienst
+      indienstStart: null,
+      voertuig: null,
+      dienstnummer: null,
+      ontslagReden: reden || 'Ontslagen uit dienst',
+      ontslagDatum: new Date().toISOString()
+    });
+    
+    console.log(`[DISMISS] Gebruiker ${discordId} gemarkeerd als ontslagen: ${reden}`);
+    
+    res.json({ 
+      success: true, 
+      message: 'Gebruiker toegang ingetrokken',
+      discordId,
+      reden
+    });
+    
+  } catch (err) {
+    console.error('[DISMISS] Fout bij intrekken toegang:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ---- API: Check User Status ----
+// Controleer of gebruiker nog toegang heeft
+app.get('/api/user-status/:discordId', async (req, res) => {
+  try {
+    const { discordId } = req.params;
+    
+    // Haal gebruiker data op uit database
+    const gebruiker = await getGebruiker(discordId);
+    
+    if (!gebruiker) {
+      return res.status(404).json({ error: 'Gebruiker niet gevonden' });
+    }
+    
+    // Controleer of gebruiker ontslagen is
+    const isOntslagen = gebruiker.role === 'dismissed' || gebruiker.status === 10;
+    
+    res.json({
+      discordId,
+      hasAccess: !isOntslagen,
+      role: gebruiker.role,
+      status: gebruiker.status,
+      ontslagReden: gebruiker.ontslagReden,
+      ontslagDatum: gebruiker.ontslagDatum
+    });
+    
+  } catch (err) {
+    console.error('[USER-STATUS] Fout bij controleren gebruiker status:', err);
     res.status(500).json({ error: err.message });
   }
 });

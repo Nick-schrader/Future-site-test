@@ -708,16 +708,38 @@ async function ontslaPersoneel(personeelId) {
         localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
         renderPersoneel();
         
+        // Reset login status for dismissed user
+        try {
+            const dismissResponse = await fetch(`/api/dismiss-user`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    discordId: personeel.discordId,
+                    reden: 'Ontslagen uit dienst'
+                })
+            });
+            
+            if (dismissResponse.ok) {
+                console.log('[ROEPNUMMER] Login status gereset voor ontslagen gebruiker');
+            } else {
+                console.error('[ROEPNUMMER] Fout bij resetten login status:', dismissResponse.statusText);
+            }
+        } catch (error) {
+            console.error('[ROEPNUMMER] API fout bij resetten login status:', error);
+        }
+        
         // Stuur bericht naar gebruiker over ontslag
         if (personeel.discordId && typeof BerichtenSysteem !== 'undefined') {
-            const berichtTekst = `Je bent ontslagen uit de dienst. Bedankt voor je inzet.`;
+            const berichtTekst = `Je bent ontslagen uit de dienst. Bedankt voor je inzet. Je toegang tot het systeem is ingetrokken.`;
             BerichtenSysteem.stuurBericht(personeel.discordId, 'ontslag', berichtTekst);
         }
         
-        toonNotificatie(`${personeel.naam} is ontslagen`);
+        toonNotificatie(`${personeel.naam} is ontslagen en toegang is ingetrokken`);
         
         // Log de ontslag actie
-        logPersoneelActie('ontslag', personeel.naam, `Ontslagen uit dienst | Laatste rang: ${personeel.rang}`);
+        logPersoneelActie('ontslag', personeel.naam, `Ontslagen uit dienst | Laatste rang: ${personeel.rang} | Toegang ingetrokken`);
     }
 }
 

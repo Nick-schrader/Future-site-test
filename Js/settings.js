@@ -1,7 +1,7 @@
 // ---- SETTINGS PAGE ----
 window.onload = async () => {
   // Login check
-  if (!sessionStorage.getItem('loggedIn')) {
+  if (!localStorage.getItem('loggedIn')) {
     window.location.href = '../index.html';
     return;
   }
