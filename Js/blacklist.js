@@ -21,7 +21,7 @@ async function loadBlacklist() {
     } catch (error) {
         console.error('Fout bij laden blacklist:', error);
         document.getElementById('blacklist-tbody').innerHTML = 
-            '<tr><td colspan="7" style="color:#f87171;text-align:center">Fout bij laden data</td></tr>';
+            '<tr><td colspan="5" style="color:#f87171;text-align:center">Fout bij laden data</td></tr>';
     }
 }
 
@@ -30,25 +30,20 @@ function displayBlacklist(data) {
     const tbody = document.getElementById('blacklist-tbody');
     
     if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="color:#888;text-align:center">Geen geblackliste personen gevonden</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="color:#888;text-align:center">Geen geblackliste personen gevonden</td></tr>';
         return;
     }
 
     tbody.innerHTML = data.map(item => {
-        const redenBadge = getRedenBadge(item.reden);
-        const blacklistDatum = new Date(item.blacklist_datum).toLocaleDateString('nl-NL');
+        const blacklistDatum = item.datum ? new Date(item.datum).toLocaleDateString('nl-NL') : '-';
         
         return `
             <tr>
                 <td>${item.naam || '-'}</td>
                 <td>${item.discord_id || '-'}</td>
-                <td>${item.roepnummer || '-'}</td>
-                <td>${redenBadge}</td>
+                <td>${item.reden || '-'}</td>
                 <td>${blacklistDatum}</td>
                 <td>${item.blacklisted_by || '-'}</td>
-                <td>
-                    <button class="btn-purple small" onclick="editBlacklist('${item.id}')">Bewerken</button>
-                </td>
             </tr>
         `;
     }).join('');
@@ -261,36 +256,6 @@ async function verwijderUitBlacklist() {
     }
 }
 
-// Exporteer blacklist
-function exportBlacklist() {
-    const csvContent = [
-        ['Naam', 'Discord ID', 'Roepnummer', 'Reden', 'Blacklist Datum', 'Door'],
-        ...blacklistData.map(item => [
-            item.naam || '',
-            item.discord_id || '',
-            item.roepnummer || '',
-            item.reden || '',
-            new Date(item.blacklist_datum).toLocaleDateString('nl-NL'),
-            item.blacklisted_by || ''
-        ])
-    ].map(row => row.join(',')).join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `blacklist_export_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-
-    showToast('Blacklist geëxporteerd!');
-}
-
-// Vernieuw blacklist
-function refreshBlacklist() {
-    loadBlacklist();
-    showToast('Blacklist vernieuwd!');
-}
 
 // Toast helper
 function showToast(message, type = 'success') {

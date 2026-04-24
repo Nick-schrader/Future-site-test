@@ -99,11 +99,6 @@
                 <option value="overig">Overig</option>
               </select>
             </div>
-            <div class="blacklist-stats">
-              <span style="background:#f87171;color:white;padding:4px 12px;border-radius:4px;font-weight:bold">
-                Totaal: <span id="blacklist-totaal">0</span>
-              </span>
-            </div>
           </div>
           
           <div class="table-wrap">
@@ -112,15 +107,13 @@
                 <tr>
                   <th>Naam</th>
                   <th>Discord ID</th>
-                  <th>Roepnummer</th>
                   <th>Reden</th>
                   <th>Blacklist Datum</th>
                   <th>Door</th>
-                  <th>Acties</th>
                 </tr>
               </thead>
               <tbody id="blacklist-tbody">
-                <tr><td colspan="7" style="color:#555;text-align:center">Laden...</td></tr>
+                <tr><td colspan="5" style="color:#555;text-align:center">Laden...</td></tr>
               </tbody>
             </table>
           </div>
@@ -131,8 +124,6 @@
           <h4 style="margin-bottom:12px">Snelle Acties</h4>
           <div style="display:flex;gap:12px;flex-wrap:wrap">
             <button class="btn-purple" onclick="toevoegenAanBlacklist()">+ Toevoegen aan Blacklist</button>
-            <button class="btn-ghost" onclick="exportBlacklist()">📥 Exporteren</button>
-            <button class="btn-ghost" onclick="refreshBlacklist()">🔄 Vernieuwen</button>
           </div>
         </div>
       </main>
