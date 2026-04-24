@@ -1635,6 +1635,91 @@ app.get('/api/user-status/:discordId', async (req, res) => {
   }
 });
 
+// ---- API: Blacklist ----
+// Voeg personeel toe aan blacklist
+app.post('/api/blacklist', async (req, res) => {
+  try {
+    const { discord_id, naam, roepnummer, reden, beschrijving, blacklisted_by } = req.body;
+    
+    // Valideer verplichte velden
+    if (!discord_id || !naam || !reden) {
+      return res.status(400).json({ error: 'Verplichte velden missen' });
+    }
+    
+    // Sla op in database blacklist tabel
+    const { db } = require('./database');
+    const stmt = db.prepare(`
+      INSERT INTO blacklist (discord_id, naam, roepnummer, reden, beschrijving, blacklisted_by, datum)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
+    
+    stmt.run(
+      discord_id,
+      naam,
+      roepnummer || '',
+      reden,
+      beschrijving || '',
+      blacklisted_by || 'Systeem',
+      new Date().toISOString()
+    );
+    
+    console.log(`[BLACKLIST] ${naam} toegevoegd aan blacklist door ${blacklisted_by}`);
+    
+    res.json({ 
+      success: true, 
+      message: 'Personeel succesvol toegevoegd aan blacklist',
+      discord_id,
+      naam
+    });
+    
+  } catch (err) {
+    console.error('[BLACKLIST] Fout bij toevoegen aan blacklist:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ---- API: Get Blacklist ----
+// Haal blacklist op
+app.get('/api/blacklist', async (_req, res) => {
+  try {
+    const { db } = require('./database');
+    const blacklist = db.prepare('SELECT * FROM blacklist ORDER BY datum DESC').all();
+    
+    res.json(blacklist);
+    
+  } catch (err) {
+    console.error('[BLACKLIST] Fout bij ophalen blacklist:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ---- API: Delete from Blacklist ----
+// Verwijder uit blacklist
+app.delete('/api/blacklist/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const { db } = require('./database');
+    const stmt = db.prepare('DELETE FROM blacklist WHERE id = ?');
+    const result = stmt.run(id);
+    
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Blacklist item niet gevonden' });
+    }
+    
+    console.log(`[BLACKLIST] Item ${id} verwijderd uit blacklist`);
+    
+    res.json({ 
+      success: true, 
+      message: 'Item succesvol verwijderd uit blacklist'
+    });
+    
+  } catch (err) {
+    console.error('[BLACKLIST] Fout bij verwijderen uit blacklist:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Tijdelijke database functies (these should be replaced with real database implementation)
 async function getEvaluatiesFromDatabase() {
   // TODO: Implementeer echte database query
