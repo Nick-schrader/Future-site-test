@@ -76,6 +76,17 @@ db.exec(`
     rang TEXT NOT NULL,
     roepnummer TEXT
   );
+
+  CREATE TABLE IF NOT EXISTS blacklist (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    discord_id TEXT NOT NULL,
+    naam TEXT NOT NULL,
+    roepnummer TEXT,
+    reden TEXT NOT NULL,
+    beschrijving TEXT,
+    blacklisted_by TEXT,
+    datum TEXT NOT NULL
+  );
 `);
 
 // Migraties: kolommen toevoegen als ze nog niet bestaan
