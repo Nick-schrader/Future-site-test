@@ -1720,6 +1720,118 @@ app.delete('/api/blacklist/:id', async (req, res) => {
   }
 });
 
+// Werving en Selectie API Endpoints
+app.get('/api/werving/sollicitaties', (req, res) => {
+  try {
+    const { db } = require('./database');
+    const stmt = db.prepare('SELECT * FROM sollicitaties ORDER BY aanvraagdatum DESC');
+    const sollicitaties = stmt.all();
+    
+    console.log(`[WERVING] ${sollicitaties.length} sollicitaties opgehaald`);
+    res.json(sollicitaties);
+    
+  } catch (err) {
+    console.error('[WERVING] Fout bij ophalen sollicitaties:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/werving/sollicitant', (req, res) => {
+  try {
+    const { naam, discordId, roepnummer, team, status = 'open' } = req.body;
+    
+    if (!naam || !discordId) {
+      return res.status(400).json({ error: 'Naam en Discord ID zijn verplicht' });
+    }
+    
+    const { db } = require('./database');
+    const stmt = db.prepare(`INSERT INTO sollicitaties (naam, discord_id, roepnummer, team, status, aanvraagdatum) VALUES (?, ?, ?, ?, ?, datetime('now'))`);
+    
+    const result = stmt.run(naam, discordId, roepnummer, team, status);
+    
+    console.log(`[WERVING] Sollicitant ${naam} (ID: ${discordId}) toegevoegd`);
+    
+    res.json({ 
+      success: true, 
+      id: result.lastInsertRowid,
+      message: 'Sollicitant succesvol toegevoegd'
+    });
+    
+  } catch (err) {
+    console.error('[WERVING] Fout bij toevoegen sollicitant:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/werving/sollicitant/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const { db } = require('./database');
+    const stmt = db.prepare('SELECT * FROM sollicitaties WHERE id = ?');
+    const sollicitant = stmt.get(id);
+    
+    if (!sollicitant) {
+      return res.status(404).json({ error: 'Sollicitant niet gevonden' });
+    }
+    
+    res.json(sollicitant);
+    
+  } catch (err) {
+    console.error('[WERVING] Fout bij ophalen sollicitant:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/werving/sollicitant/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    
+    if (!status) {
+      return res.status(400).json({ error: 'Status is verplicht' });
+    }
+    
+    const { db } = require('./database');
+    const stmt = db.prepare('UPDATE sollicitaties SET status = ? WHERE id = ?');
+    const result = stmt.run(status, id);
+    
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Sollicitant niet gevonden' });
+    }
+    
+    console.log(`[WERVING] Sollicitant ${id} status bijgewerkt naar ${status}`);
+    
+    res.json({ 
+      success: true, 
+      message: 'Status succesvol bijgewerkt'
+    });
+    
+  } catch (err) {
+    console.error('[WERVING] Fout bij updaten sollicitant:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Blacklist check endpoint
+app.get('/api/blacklist/check/:discordId', (req, res) => {
+  try {
+    const { discordId } = req.params;
+    
+    const { db } = require('./database');
+    const stmt = db.prepare('SELECT COUNT(*) as count FROM blacklist WHERE discord_id = ?');
+    const result = stmt.get(discordId);
+    
+    const isBlacklisted = result.count > 0;
+    
+    res.json({ isBlacklisted });
+    
+  } catch (err) {
+    console.error('[BLACKLIST] Fout bij controle:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Tijdelijke database functies (these should be replaced with real database implementation)
 async function getEvaluatiesFromDatabase() {
   // TODO: Implementeer echte database query

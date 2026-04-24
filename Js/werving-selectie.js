@@ -11,6 +11,140 @@ document.addEventListener('DOMContentLoaded', function() {
     updateStatistics();
 });
 
+
+// Controleer blacklist
+async function checkBlacklist(discordId) {
+    try {
+        const response = await fetch(`${API}/api/blacklist/check/${discordId}`);
+        const result = await response.json();
+        return result.isBlacklisted;
+    } catch (error) {
+        console.error('Fout bij blacklist controle:', error);
+        return false;
+    }
+}
+
+// Voeg sollicitant toe
+async function addSollicitant(sollicitant) {
+    try {
+        const response = await fetch(`${API}/api/werving/sollicitant`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(sollicitant)
+        });
+        
+        if (!response.ok) {
+            throw new Error('Fout bij toevoegen sollicitant');
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('Fout bij toevoegen sollicitant:', error);
+        throw error;
+    }
+}
+
+// Voeg toe aan roepnummer systeem
+async function addToRoepnummer(sollicitant) {
+    try {
+        const response = await fetch(`${API}/api/personeel`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                naam: sollicitant.naam,
+                discord_id: sollicitant.discordId,
+                roepnummer: sollicitant.roepnummer,
+                team: sollicitant.team,
+                status: 'actief'
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Fout bij toevoegen aan roepnummer systeem');
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('Fout bij toevoegen aan roepnummer:', error);
+        throw error;
+    }
+}
+
+// Aannemen met blacklist controle
+async function acceptSollicitant(sollicitantId, discordId, naam) {
+    try {
+        // Controleer blacklist eerst
+        const isBlacklisted = await checkBlacklist(discordId);
+        
+        if (isBlacklisted) {
+            // Toon pop-up voor blacklist
+            const proceed = confirm(`⚠️ Waarschuwing: ${naam} (Discord ID: ${discordId}) staat op de blacklist!\n\nWil je toch doorgaan met aannemen?`);
+            if (!proceed) {
+                return; // Gebruiker heeft geannuleerd
+            }
+        }
+        
+        // Update status naar aangenomen
+        await updateSollicitantStatus(sollicitantId, 'aangenomen');
+        
+        // Haal sollicitant data op
+        const sollicitant = await getSollicitant(sollicitantId);
+        
+        // Voeg toe aan roepnummer systeem
+        await addToRoepnummer({
+            naam: sollicitant.naam,
+            discordId: sollicitant.discord_id,
+            roepnummer: sollicitant.roepnummer,
+            team: sollicitant.team
+        });
+        
+        // Herlaad data
+        loadSollicitaties();
+        alert(`${naam} is succesvol aangenomen en toegevoegd aan het roepnummer systeem!`);
+        
+    } catch (error) {
+        console.error('Fout bij aannemen sollicitant:', error);
+        alert('Fout bij aannemen van sollicitant');
+    }
+}
+
+// Get sollicitant details
+async function getSollicitant(id) {
+    try {
+        const response = await fetch(`${API}/api/werving/sollicitant/${id}`);
+        return await response.json();
+    } catch (error) {
+        console.error('Fout bij ophalen sollicitant:', error);
+        throw error;
+    }
+}
+
+// Update sollicitant status
+async function updateSollicitantStatus(id, status) {
+    try {
+        const response = await fetch(`${API}/api/werving/sollicitant/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Fout bij updaten status');
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('Fout bij updaten status:', error);
+        throw error;
+    }
+}
+
 // Laad alle sollicitaties
 async function loadSollicitaties() {
     try {
