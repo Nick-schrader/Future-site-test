@@ -29,7 +29,7 @@ function displayBlacklist(data) {
     const tbody = document.getElementById('blacklist-tbody');
     
     if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="color:#888;text-align:center">Geen geblackliste personen gevonden</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="color:#888;text-align:center">Geen geblackliste personen gevonden</td></tr>';
         return;
     }
 
@@ -40,9 +40,14 @@ function displayBlacklist(data) {
             <tr>
                 <td>${item.naam || '-'}</td>
                 <td>${item.discord_id || '-'}</td>
-                <td>${item.reden || '-'}</td>
+                <td>${getRedenBadge(item.reden || '-')}</td>
+                <td>${item.beschrijving || '-'}</td>
                 <td>${blacklistDatum}</td>
                 <td>${item.blacklisted_by || '-'}</td>
+                <td>
+                    <button class="btn-ghost" onclick="editBlacklist('${item.id}')" style="padding:4px 8px;font-size:0.8rem">✏️</button>
+                    <button class="btn-ghost" onclick="verwijderUitBlacklist('${item.id}')" style="padding:4px 8px;font-size:0.8rem;background:#dc2626">🗑️</button>
+                </td>
             </tr>
         `;
     }).join('');
