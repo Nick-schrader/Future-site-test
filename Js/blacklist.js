@@ -40,7 +40,7 @@ function displayBlacklist(data) {
             <tr>
                 <td>${item.naam || '-'}</td>
                 <td>${item.discord_id || '-'}</td>
-                <td>${getRedenBadge(item.reden || '-')}</td>
+                <td>${item.reden ? getRedenBadge(item.reden) : item.reden || '-'}</td>
                 <td>${item.beschrijving || '-'}</td>
                 <td>${blacklistDatum}</td>
                 <td>${item.blacklisted_by || '-'}</td>

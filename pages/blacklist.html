@@ -91,11 +91,6 @@
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:space-between">
               <input type="text" id="blacklist-zoek" class="input-field" placeholder="Zoek op naam, Discord ID of reden..." style="width:300px" oninput="filterBlacklist()">
-              <div class="dropdown" style="position:relative">
-                <button class="btn-ghost" onclick="toggleDropdown('blacklist-menu')" style="padding:8px 12px">⚙️ Acties</button>
-                <div id="blacklist-menu" class="dropdown-menu hidden" style="position:absolute;top:100%;right:0;background:#1e293b;border:1px solid #374151;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:1000;min-width:200px">
-                </div>
-              </div>
             </div>
           </div>
           
@@ -107,12 +102,15 @@
                   <th>Discord ID</th>
                   <th>Reden</th>
                   <th>Beschrijving</th>
+                  <th>Prullenbak</th>
+                  <th>Potlood</th>
                   <th>Blacklist Datum</th>
                   <th>Door</th>
+                  <th>Acties</th>
                 </tr>
               </thead>
               <tbody id="blacklist-tbody">
-                <tr><td colspan="6" style="color:#555;text-align:center">Laden...</td></tr>
+                <tr><td colspan="9" style="color:#555;text-align:center">Laden...</td></tr>
               </tbody>
             </table>
           </div>
