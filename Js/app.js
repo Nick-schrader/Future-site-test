@@ -22,29 +22,20 @@ const defaultUser = {
 };
 
 function getUser() {
-  const saved = sessionStorage.getItem('user');
+  const saved = localStorage.getItem('user');
   if (!saved || saved === 'null' || saved === 'undefined') {
     return { ...defaultUser };
   }
   try {
     const parsed = JSON.parse(saved);
-    const user = parsed && parsed.id ? parsed : { ...defaultUser };
-    
-    // Admin override - Discord ID 1196035736823156790 gets admin privileges
-   // if (user.id === '1196035736823156790') {
-   //   user.isAdmin = true;
-    //  user.role = 'admin'; // Override role for admin
-   //   console.log('[ADMIN] Admin user detected:', user.id);
-   // }
-    
-    return user;
+    return { ...defaultUser, ...parsed };
   } catch (e) {
     return { ...defaultUser };
   }
 }
 
 function saveUser(u) {
-  sessionStorage.setItem('user', JSON.stringify(u));
+  localStorage.setItem('user', JSON.stringify(u));
 }
 
 // Haal verse gebruikersdata op uit DB en merge met sessionStorage
@@ -148,11 +139,11 @@ function logout() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ indienstStart: u.indienstStart }),
     }).finally(() => {
-      sessionStorage.clear();
+      localStorage.clear();
       window.location.href = '../index.html';
     });
   } else {
-    sessionStorage.clear();
+    localStorage.clear();
     window.location.href = '../index.html';
   }
 }
