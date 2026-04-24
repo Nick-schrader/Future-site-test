@@ -172,6 +172,11 @@ main.main {
   letter-spacing: 0.05em;
   opacity: 0;
   transition: opacity 0.2s;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .sidebar:hover .sidebar-category {
@@ -181,6 +186,29 @@ main.main {
 .sidebar-category:first-child {
   margin-top: 0;
   border-top: none;
+}
+
+.sidebar-category::after {
+  content: '▼';
+  font-size: 0.6rem;
+  transition: transform 0.2s ease;
+  margin-right: 4px;
+}
+
+.sidebar-category.collapsed::after {
+  transform: rotate(-90deg);
+}
+
+.sidebar-category-items {
+  max-height: 500px;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+  opacity: 1;
+}
+
+.sidebar-category-items.collapsed {
+  max-height: 0;
+  opacity: 0;
 }
 
 .sidebar-category-item {
