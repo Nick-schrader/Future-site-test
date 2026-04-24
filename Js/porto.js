@@ -246,8 +246,7 @@ if (ovdView) {
             ovdUpdateInfo();
           } else {
             // console.log('🔍 USER NIET INGEDEELD - Porto menu niet tonen, rol reset naar user');
-            // Refresh om correcte scherm te tonen
-            setTimeout(() => window.location.reload(), 1);
+            // Geen refresh nodig - toon gewoon user interface
           }
           if (u.status) {
             highlightStatus(u.status);
