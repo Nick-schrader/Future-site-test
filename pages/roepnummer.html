@@ -72,7 +72,7 @@
             <span class="sidebar-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><line x1="22" y1="11" x2="6" y2="11"/><path d="M22 11v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/></svg></span>
             <span class="sidebar-label">Werving en selectie</span>
           </a>
-          <a class="sidebar-item" href="blacklist.html" id="nav-blacklist" style="display:none">
+          <a class="sidebar-item" href="blacklist.html" id="nav-blacklist">
             <span class="sidebar-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l18 18M8.5 8.5v8.5M15.5 15.5v-8.5M12 12v-8.5"/></svg></span>
             <span class="sidebar-label">Blacklist</span>
           </a>
@@ -81,11 +81,11 @@
         <!-- Kader -->
         <div class="sidebar-category" onclick="toggleCategory(this)">Kader</div>
         <div class="sidebar-category-items">
-          <a class="sidebar-item" href="logs.html" id="nav-logs" style="display:none">
+          <a class="sidebar-item" href="logs.html" id="nav-logs">
             <span class="sidebar-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
             <span class="sidebar-label">Logs</span>
           </a>
-          <a class="sidebar-item" href="settings.html" id="nav-settings" style="display:none">
+          <a class="sidebar-item" href="settings.html" id="nav-settings">
             <span class="sidebar-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
             <span class="sidebar-label">Settings</span>
           </a>
@@ -116,7 +116,6 @@
           
           <!-- Admin knoppen - alleen zichtbaar voor Administratie -->
           <div class="admin-buttons" style="display: flex; gap: 10px;">
-            <button class="btn-blacklist" id="blacklistBtn" style="display: none; background: #1f2937; color: white; padding: 10px 20px; font-size: 14px; border: none; border-radius: 4px; cursor: pointer;" onclick="window.location.href='blacklist.html'">🚫 Blacklist</button>
             <button class="btn-toevoegen" id="nieuwePersoneelBtn" style="display: none; padding: 10px 20px; font-size: 14px; border: none; border-radius: 4px; cursor: pointer;">+ Nieuw Personeel Toevoegen</button>
           </div>
           

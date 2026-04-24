@@ -165,76 +165,134 @@
           </div>
         </div>
 
-        <!-- Google Forms Sollicitaties -->
+        <!-- Team Evaluatie Systeem -->
         <div class="card" style="margin-top:16px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-            <h3>📋 Google Forms Sollicitaties</h3>
-            <div style="display:flex;gap:8px">
-              <button class="btn-purple" onclick="loadGoogleFormsData()">🔄 Vernieuwen</button>
-              <button class="btn-ghost" onclick="exportGoogleFormsToCSV()">📥 Export</button>
-            </div>
+            <h3>� Team Evaluatie Systeem</h3>
+            <button class="btn-purple" onclick="openEvaluatieModal()">+ Nieuwe Evaluatie</button>
           </div>
           
-          <!-- Google Forms API Config -->
-          <div class="card" style="margin-bottom:16px;background:#f8f9fa;padding:12px">
-            <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
-              <div style="flex:1;min-width:200px">
-                <label style="font-size:0.9rem;color:#666">Google API Key</label>
-                <input type="password" id="google-api-key" class="input-field" placeholder="API key..." style="width:100%">
-              </div>
-              <div style="flex:1;min-width:200px">
-                <label style="font-size:0.9rem;color:#666">Spreadsheet ID</label>
-                <input type="text" id="spreadsheet-id" class="input-field" value="1a8NGIPezRQPbFXz_YQUAmZu8VbRgA5hujrhj6GWt0mc" style="width:100%">
+          <!-- Evaluatie Formulier -->
+          <div class="card" style="margin-bottom:16px;background:#f8f9fa;padding:16px">
+            <h4 style="margin-bottom:12px">Voeg Sollicitant Evaluatie Toe</h4>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
+              <div>
+                <label style="font-size:0.9rem;color:#666">Discord Naam</label>
+                <input type="text" id="eval-discord-naam" class="input-field" placeholder="Discord naam..." style="width:100%">
               </div>
               <div>
-                <button class="btn-purple" onclick="saveGoogleFormsConfig()">Opslaan</button>
+                <label style="font-size:0.9rem;color:#666">Discord ID</label>
+                <input type="text" id="eval-discord-id" class="input-field" placeholder="Discord ID..." style="width:100%">
+              </div>
+              <div>
+                <label style="font-size:0.9rem;color:#666">Roepnummer</label>
+                <input type="text" id="eval-roepnummer" class="input-field" placeholder="Roepnummer..." style="width:100%">
+              </div>
+              <div>
+                <label style="font-size:0.9rem;color:#666">Jouw Team</label>
+                <input type="text" id="eval-team" class="input-field" placeholder="Team naam..." style="width:100%">
               </div>
             </div>
+            <div style="margin-top:12px">
+              <label style="font-size:0.9rem;color:#666">Evaluatie</label>
+              <select id="eval-beoordeling" class="input-field" style="width:100%;margin-bottom:12px">
+                <option value="">Kies beoordeling...</option>
+                <option value="goedgekeurd">✅ Goedgekeurd</option>
+                <option value="afgekeurd">❌ Afgekeurd</option>
+                <option value="twijfelachtig">🤔 Twijfelachtig</option>
+                <option value="blacklist">🚫 Blacklist</option>
+              </select>
+              <button class="btn-purple" onclick="submitEvaluatie()">Verstuur Evaluatie</button>
+            </div>
           </div>
 
-          <!-- Google Forms Statistics -->
+          <!-- Evaluatie Overzicht -->
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px">
-            <div class="stat-item" style="background:#f0f9ff;padding:12px;border-radius:8px">
-              <div class="stat-value" id="google-forms-total" style="color:#0369a1">0</div>
-              <div class="stat-label" style="color:#0369a1">Totaal Forms</div>
-            </div>
             <div class="stat-item" style="background:#f0fdf4;padding:12px;border-radius:8px">
-              <div class="stat-value" id="google-forms-today" style="color:#166534">0</div>
-              <div class="stat-label" style="color:#166534">Vandaag</div>
+              <div class="stat-value" id="eval-totaal" style="color:#166534">0</div>
+              <div class="stat-label" style="color:#166534">Totaal Evaluaties</div>
+            </div>
+            <div class="stat-item" style="background:#dcfce7;padding:12px;border-radius:8px">
+              <div class="stat-value" id="eval-goedgekeurd" style="color:#15803d">0</div>
+              <div class="stat-label" style="color:#15803d">Goedgekeurd</div>
             </div>
             <div class="stat-item" style="background:#fef3c7;padding:12px;border-radius:8px">
-              <div class="stat-value" id="google-forms-week" style="color:#92400e">0</div>
-              <div class="stat-label" style="color:#92400e">Deze Week</div>
+              <div class="stat-value" id="eval-twijfel" style="color:#92400e">0</div>
+              <div class="stat-label" style="color:#92400e">Twijfelachtig</div>
+            </div>
+            <div class="stat-item" style="background:#fee2e2;padding:12px;border-radius:8px">
+              <div class="stat-value" id="eval-blacklist" style="color:#dc2626">0</div>
+              <div class="stat-label" style="color:#dc2626">Blacklist</div>
             </div>
           </div>
 
-          <!-- Search and Filter -->
-          <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-            <input type="text" id="google-forms-search" class="input-field" placeholder="Zoek in Google Forms..." style="flex:1;min-width:200px" oninput="filterGoogleForms()">
-            <select id="google-forms-date-filter" class="input-field" style="width:150px" onchange="filterGoogleForms()">
-              <option value="">Alle data</option>
-              <option value="today">Vandaag</option>
-              <option value="week">Deze week</option>
-              <option value="month">Deze maand</option>
-            </select>
+          <!-- Search -->
+          <div style="display:flex;gap:8px;margin-bottom:16px">
+            <input type="text" id="eval-search" class="input-field" placeholder="Zoek sollicitant..." style="flex:1" oninput="filterEvaluaties()">
           </div>
+        </div>
 
-          <!-- Google Forms Table -->
+        <!-- Goedgekeurde Sollicitanten -->
+        <div class="card" style="margin-top:16px">
+          <h3>✅ Goedgekeurde Sollicitanten</h3>
           <div class="table-wrap">
-            <table class="db-table" id="google-forms-table">
+            <table class="db-table" id="goedgekeurd-table">
               <thead>
-                <tr id="google-forms-headers">
-                  <th colspan="7" style="text-align:center;color:#888">
-                    <div style="padding:20px">
-                      <h4>📋 Google Forms Integratie</h4>
-                      <p style="margin:10px 0;color:#888;font-size:0.9rem">Configureer je Google API key om sollicitatieformulieren te kunnen ophalen.</p>
-                      <button class="btn-purple" onclick="showGoogleFormsSetup()">📖 Setup Gids</button>
-                    </div>
-                  </th>
+                <tr>
+                  <th>Discord Naam</th>
+                  <th>Discord ID</th>
+                  <th>Roepnummer</th>
+                  <th>Teams</th>
+                  <th>Consensus</th>
+                  <th>Acties</th>
                 </tr>
               </thead>
-              <tbody id="google-forms-tbody">
-                <tr><td colspan="7" style="color:#555;text-align:center">Configureer API om data te laden</td></tr>
+              <tbody id="goedgekeurd-tbody">
+                <tr><td colspan="6" style="color:#555;text-align:center">Geen goedgekeurde sollicitanten</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Vindt Niet Iedereen Goed -->
+        <div class="card" style="margin-top:16px">
+          <h3>🤔 Vindt Niet Iedereen Goed</h3>
+          <div class="table-wrap">
+            <table class="db-table" id="twijfel-table">
+              <thead>
+                <tr>
+                  <th>Discord Naam</th>
+                  <th>Discord ID</th>
+                  <th>Roepnummer</th>
+                  <th>Teams</th>
+                  <th>Beoordelingen</th>
+                  <th>Acties</th>
+                </tr>
+              </thead>
+              <tbody id="twijfel-tbody">
+                <tr><td colspan="6" style="color:#555;text-align:center">Geen twijfelachtige sollicitanten</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Blacklist Sollicitanten -->
+        <div class="card" style="margin-top:16px">
+          <h3>🚫 Blacklist Sollicitanten</h3>
+          <div class="table-wrap">
+            <table class="db-table" id="blacklist-table">
+              <thead>
+                <tr>
+                  <th>Discord Naam</th>
+                  <th>Discord ID</th>
+                  <th>Roepnummer</th>
+                  <th>Teams</th>
+                  <th>Redenen</th>
+                  <th>Acties</th>
+                </tr>
+              </thead>
+              <tbody id="blacklist-tbody">
+                <tr><td colspan="6" style="color:#555;text-align:center">Geen blacklist sollicitanten</td></tr>
               </tbody>
             </table>
           </div>
@@ -242,22 +300,43 @@
       </main>
     </div>
 
-    <!-- Google Forms Setup Modal -->
-    <div id="google-forms-setup-modal" class="modal-overlay hidden">
-      <div class="modal-card" style="max-width:500px">
-        <h2>📋 Google Forms Setup</h2>
-        <div style="max-height:300px;overflow-y:auto">
-          <h4 style="margin-top:16px">Stappen:</h4>
-          <ol style="color:#666;font-size:0.9rem">
-            <li>Ga naar <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a></li>
-            <li>Activeer "Google Sheets API"</li>
-            <li>Maak een API key aan</li>
-            <li>Deel je Google Sheets spreadsheet</li>
-            <li>Kopieer de API key hierboven</li>
-          </ol>
+    <!-- Evaluatie Modal -->
+    <div id="evaluatie-modal" class="modal-overlay hidden">
+      <div class="modal-card" style="max-width:600px">
+        <h2>� Sollicitant Evaluatie</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
+          <div>
+            <label style="font-size:0.9rem;color:#666">Discord Naam</label>
+            <input type="text" id="modal-discord-naam" class="input-field" placeholder="Discord naam..." style="width:100%">
+          </div>
+          <div>
+            <label style="font-size:0.9rem;color:#666">Discord ID</label>
+            <input type="text" id="modal-discord-id" class="input-field" placeholder="Discord ID..." style="width:100%">
+          </div>
+          <div>
+            <label style="font-size:0.9rem;color:#666">Roepnummer</label>
+            <input type="text" id="modal-roepnummer" class="input-field" placeholder="Roepnummer..." style="width:100%">
+          </div>
+          <div>
+            <label style="font-size:0.9rem;color:#666">Jouw Team</label>
+            <input type="text" id="modal-team" class="input-field" placeholder="Team naam..." style="width:100%">
+          </div>
+        </div>
+        <div style="margin-top:12px">
+          <label style="font-size:0.9rem;color:#666">Evaluatie</label>
+          <select id="modal-beoordeling" class="input-field" style="width:100%;margin-bottom:12px">
+            <option value="">Kies beoordeling...</option>
+            <option value="goedgekeurd">✅ Goedgekeurd</option>
+            <option value="afgekeurd">❌ Afgekeurd</option>
+            <option value="twijfelachtig">🤔 Twijfelachtig</option>
+            <option value="blacklist">🚫 Blacklist</option>
+          </select>
+          <label style="font-size:0.9rem;color:#666">Opmerkingen</label>
+          <textarea id="modal-opmerkingen" class="input-field" rows="3" placeholder="Voeg opmerkingen toe..." style="width:100%"></textarea>
         </div>
         <div style="display:flex;gap:10px;margin-top:16px">
-          <button class="btn-purple" style="flex:1" onclick="closeGoogleFormsSetup()">Sluiten</button>
+          <button class="btn-purple" style="flex:1" onclick="submitModalEvaluatie()">Verstuur Evaluatie</button>
+          <button class="btn-ghost" style="flex:1" onclick="closeEvaluatieModal()">Annuleren</button>
         </div>
       </div>
     </div>
@@ -316,8 +395,7 @@
   <script src="../Js/app.js"></script>
   <script src="../Js/berichten.js"></script>
   <script src="../Js/werving-selectie.js"></script>
-  <script src="../Js/google-forms.js"></script>
-  <script src="../Js/google-forms-werving.js"></script>
+  <script src="../Js/evaluatie-systeem.js"></script>
   
   <script>
     // Update actieve navigatie

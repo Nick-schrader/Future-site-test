@@ -1495,6 +1495,66 @@ app.post('/api/queue-clear', (_req, res) => {
   }
 });
 
+// ---- API: Evaluaties ----
+// Haal alle evaluaties op
+app.get('/api/evaluaties', async (_req, res) => {
+  try {
+    // Voor nu gebruiken we een tijdelijke oplossing met database
+    // TODO: Implementeer echte database tabel voor evaluaties
+    const evaluaties = await getEvaluatiesFromDatabase();
+    res.json(evaluaties);
+  } catch (err) {
+    console.error('[EVALUATIES] Fout bij ophalen evaluaties:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Sla nieuwe evaluatie op
+app.post('/api/evaluaties', async (req, res) => {
+  try {
+    const { discordNaam, discordId, roepnummer, team, beoordeling, opmerkingen, geëvalueerdDoor } = req.body;
+    
+    // Valideer verplichte velden
+    if (!discordNaam || !discordId || !roepnummer || !team || !beoordeling) {
+      return res.status(400).json({ error: 'Verplichte velden missen' });
+    }
+    
+    const evaluatie = {
+      id: Date.now().toString(),
+      discordNaam,
+      discordId,
+      roepnummer,
+      team,
+      beoordeling,
+      opmerkingen: opmerkingen || '',
+      geëvalueerdDoor: geëvalueerdDoor || 'Onbekend',
+      datum: new Date().toISOString()
+    };
+    
+    // Sla evaluatie op in database
+    await saveEvaluatieToDatabase(evaluatie);
+    
+    res.json({ success: true, evaluatie });
+    console.log(`[EVALUATIES] Evaluatie opgeslagen: ${discordNaam} (${beoordeling}) door ${team}`);
+  } catch (err) {
+    console.error('[EVALUATIES] Fout bij opslaan evaluatie:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Tijdelijke database functies (these should be replaced with real database implementation)
+async function getEvaluatiesFromDatabase() {
+  // TODO: Implementeer echte database query
+  // Voor nu gebruiken we een mock implementatie
+  return [];
+}
+
+async function saveEvaluatieToDatabase(evaluatie) {
+  // TODO: Implementeer echte database insert
+  // Voor nu loggen we alleen
+  console.log('[MOCK DB] Evaluatie opgeslagen:', evaluatie);
+}
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`API draait op http://localhost:${PORT}`));
 client.login(process.env.DISCORD_TOKEN);

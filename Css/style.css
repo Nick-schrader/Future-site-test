@@ -1187,6 +1187,12 @@ input:checked + .slider:before { transform: translateX(16px); }
   color: white;
 }
 
+.mini-admin-btn.blacklist {
+  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  border-color: #111827;
+  color: white;
+}
+
 .btn-small {
   padding: 8px 12px;
   font-size: 0.8rem;
