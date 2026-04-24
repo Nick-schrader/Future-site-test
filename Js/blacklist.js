@@ -17,7 +17,6 @@ async function loadBlacklist() {
         const response = await fetch(`${API}/api/blacklist`);
         blacklistData = await response.json();
         displayBlacklist(blacklistData);
-        updateStatistics();
     } catch (error) {
         console.error('Fout bij laden blacklist:', error);
         document.getElementById('blacklist-tbody').innerHTML = 
@@ -60,10 +59,6 @@ function getRedenBadge(reden) {
     return badges[reden] || reden;
 }
 
-// Update statistieken
-function updateStatistics() {
-    document.getElementById('blacklist-totaal').textContent = blacklistData.length;
-}
 
 // Filter blacklist
 function filterBlacklist() {
