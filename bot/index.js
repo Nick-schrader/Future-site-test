@@ -1708,6 +1708,7 @@ app.get('/api/blacklist', async (_req, res) => {
 app.delete('/api/blacklist/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    console.log(`[BLACKLIST DELETE] Request received for ID: ${id}`);
     
     const { db } = require('./database');
     
@@ -1715,7 +1716,10 @@ app.delete('/api/blacklist/:id', async (req, res) => {
     const getItemStmt = db.prepare('SELECT naam, discord_id FROM blacklist WHERE id = ?');
     const item = getItemStmt.get(id);
     
+    console.log(`[BLACKLIST DELETE] Item found:`, item);
+    
     if (!item) {
+      console.log(`[BLACKLIST DELETE] Item not found for ID: ${id}`);
       return res.status(404).json({ error: 'Blacklist item niet gevonden' });
     }
     

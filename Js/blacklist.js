@@ -15,7 +15,9 @@ document.addEventListener('DOMContentLoaded', function() {
 async function loadBlacklist() {
     try {
         const response = await fetch(`${API}/api/blacklist`);
-        blacklistData = await response.json();
+        const data = await response.json();
+        console.log('Blacklist data geladen:', data);
+        blacklistData = data;
         displayBlacklist(blacklistData);
     } catch (error) {
         console.error('Fout bij laden blacklist:', error);
@@ -256,20 +258,26 @@ async function saveBlacklistBewerken() {
 
 // Verwijder uit blacklist
 async function verwijderUitBlacklist(id) {
+    console.log('Verwijder blacklist item met ID:', id);
+    
     if (!confirm('Weet je zeker dat je deze persoon wilt verwijderen uit de blacklist?')) {
         return;
     }
 
     try {
+        console.log('Sending DELETE request to:', `${API}/api/blacklist/${id}`);
         const response = await fetch(`${API}/api/blacklist/${id}`, {
             method: 'DELETE'
         });
 
+        console.log('DELETE response status:', response.status);
+        
         if (response.ok) {
             showToast('Persoon verwijderd uit blacklist!');
             loadBlacklist();
         } else {
             const errorData = await response.json();
+            console.log('DELETE error response:', errorData);
             showToast(`Fout bij verwijderen: ${errorData.error || 'Onbekende fout'}`, 'error');
         }
     } catch (error) {
