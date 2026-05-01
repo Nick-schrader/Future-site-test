@@ -293,5 +293,49 @@ db.exec(`
     sleutel TEXT PRIMARY KEY,
     waarde TEXT
   );
+
+  CREATE TABLE IF NOT EXISTS logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    actie TEXT,
+    door TEXT,
+    doelwit TEXT,
+    details TEXT,
+    extra TEXT,
+    timestamp TEXT NOT NULL
+  );
 `);
 db.prepare("INSERT OR IGNORE INTO systeem_instellingen (sleutel, waarde) VALUES ('max_koppel', '2')").run();
+
+// Logging functie
+function addLogEntry(logData) {
+  try {
+    const stmt = db.prepare(`
+      INSERT INTO logs (actie, door, doelwit, details, extra, timestamp)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
+    
+    stmt.run(
+      logData.actie || '',
+      logData.door || '',
+      logData.doelwit || '',
+      logData.details || '',
+      logData.extra || '',
+      new Date().toISOString()
+    );
+  } catch (error) {
+    console.error('[DATABASE] Fout bij toevoegen log entry:', error);
+  }
+}
+
+module.exports = {
+  db,
+  addLogEntry,
+  upsertGebruiker,
+  getGebruiker,
+  updateGebruikerInstellingen,
+  addAanmelding,
+  getWachtrij,
+  removeAanmelding,
+  addIndeling,
+  getIndeling
+};

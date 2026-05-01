@@ -1135,10 +1135,15 @@ app.put('/api/roepnummer/personeel/:personeelId', (req, res) => {
 
 // ---- API: Logs ----
 app.get('/api/logs', (_req, res) => {
-  const logs = db.prepare('SELECT * FROM logs ORDER BY tijd DESC LIMIT 200').all();
-  console.log('[DEBUG] /api/logs - Total logs in DB:', logs.length);
-  console.log('[DEBUG] /api/logs - Latest log:', logs[0]);
-  res.json(logs);
+  try {
+    const logs = db.prepare('SELECT * FROM logs ORDER BY timestamp DESC LIMIT 200').all();
+    console.log('[DEBUG] /api/logs - Total logs in DB:', logs.length);
+    console.log('[DEBUG] /api/logs - Latest log:', logs[0]);
+    res.json(logs);
+  } catch (error) {
+    console.error('[LOGS] Fout bij ophalen logs:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Debug endpoint - inspect database state
