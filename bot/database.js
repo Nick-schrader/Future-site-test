@@ -203,7 +203,7 @@ const dismissGebruiker = db.prepare(`
   UPDATE gebruikers SET 
     role = 'dismissed',
     status = 10,
-    indienstStart = NULL,
+    indienst_start = NULL,
     voertuig = NULL,
     dienstnummer = NULL,
     ontslagReden = @ontslagReden,
