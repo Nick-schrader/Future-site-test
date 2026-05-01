@@ -45,17 +45,12 @@ class BerichtenSysteem {
   async loadBerichten() {
     try {
       // Haal berichten op voor deze gebruiker via Discord ID
-      const response = await fetch(`${window.CONFIG.API_URL}/api/berichten/${this.user.id}`);
-      if (response.ok) {
-        this.berichten = await response.json();
-      } else {
-        // Fallback naar localStorage als API niet beschikbaar is
-        const saved = localStorage.getItem(`berichten_${this.user.id}`);
-        if (saved) {
-          this.berichten = JSON.parse(saved);
-        }
-      }
+      const apiUrl = window.location.origin;
+      const response = await fetch(`${apiUrl}/api/berichten/${this.user.id}`);
+      const data = await response.json();
+      this.berichten = data || [];
     } catch (error) {
+      console.log('[BERICHTEN] Fout bij laden berichten, gebruik fallback:', error);
       console.log('[BERICHTEN] Fout bij laden berichten:', error);
       // Fallback naar localStorage
       const saved = localStorage.getItem(`berichten_${this.user.id}`);
@@ -265,14 +260,13 @@ class BerichtenSysteem {
       
       // Probeer te syncen met API
       try {
-        await fetch(`${window.CONFIG.API_URL}/api/berichten/${berichtId}/gelezen`, {
+        const apiUrl = window.location.origin;
+        const response = await fetch(`${apiUrl}/api/berichten/${berichtId}/gelezen`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          }
+          headers: { 'Content-Type': 'application/json' }
         });
       } catch (error) {
-        console.log('[BERICHTEN] Fout bij markeren als gelezen:', error);
+        console.log('[BERICHTEN] Fout bij markeren gelezen via API:', error);
       }
       
       // Update menu
@@ -294,12 +288,13 @@ class BerichtenSysteem {
     console.log('[BERICHTEN] Bericht versturen naar:', discordId);
     console.log('[BERICHTEN] Bericht type:', type);
     console.log('[BERICHTEN] Bericht tekst:', bericht);
-    console.log('[BERICHTEN] API URL:', window.CONFIG.API_URL);
+    console.log('[BERICHTEN] API URL:', window.location.origin);
     console.log('[BERICHTEN] Nieuw bericht object:', nieuwBericht);
 
     try {
       // Probeer naar API te sturen
-      const response = await fetch(`${window.CONFIG.API_URL}/api/berichten`, {
+      const apiUrl = window.location.origin;
+      const response = await fetch(`${apiUrl}/api/berichten`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -353,7 +348,8 @@ window.verwijderBericht = function(berichtId, event) {
     }
     
     // Verwijder uit database via API
-    fetch(`${window.CONFIG.API_URL}/api/berichten/${berichtId}`, {
+    const apiUrl = window.location.origin;
+    fetch(`${apiUrl}/api/berichten/${berichtId}`, {
         method: 'DELETE'
     })
     .then(response => {
