@@ -325,6 +325,7 @@ function displayGesprekken() {
                 <tr>
                     <td>${gesprek.ingameNaam}</td>
                     <td>${gesprek.discordId}</td>
+                    <td>${gesprek.aangemaaktDoor || 'Onbekend'}</td>
                     <td>${gesprek.goedgekeurdDoor}</td>
                     <td>${datum}</td>
                     <td>
