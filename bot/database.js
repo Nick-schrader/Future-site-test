@@ -87,6 +87,29 @@ db.exec(`
     blacklisted_by TEXT,
     datum TEXT NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS sollicitatie_tickets (
+    id TEXT PRIMARY KEY,
+    ingame_naam TEXT NOT NULL,
+    discord_id TEXT NOT NULL,
+    geboortedatum TEXT,
+    sollicitatie_nummer TEXT,
+    status TEXT NOT NULL DEFAULT 'wachtend',
+    aangemaakt_door TEXT,
+    datum TEXT NOT NULL,
+    goedgekeurd_door TEXT
+  );
+
+  CREATE TABLE IF NOT EXISTS sollicitatie_gesprekken (
+    id TEXT PRIMARY KEY,
+    ingame_naam TEXT NOT NULL,
+    discord_id TEXT NOT NULL,
+    aangemaakt_door TEXT,
+    goedgekeurd_door TEXT,
+    datum TEXT NOT NULL,
+    notitie TEXT,
+    status TEXT NOT NULL DEFAULT 'wachtend'
+  );
 `);
 
 // Migraties: kolommen toevoegen als ze nog niet bestaan

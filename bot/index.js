@@ -1856,6 +1856,229 @@ app.get('/api/blacklist/check/:discordId', (req, res) => {
   }
 });
 
+// ---- API: Sollicitatie Tickets ----
+// Haal alle sollicitatie tickets op
+app.get('/api/sollicitatie-tickets', async (_req, res) => {
+  try {
+    const { db } = require('./database');
+    const tickets = db.prepare('SELECT * FROM sollicitatie_tickets ORDER BY datum DESC').all();
+    
+    res.json(tickets);
+    
+  } catch (err) {
+    console.error('[SOLLICITATIE] Fout bij ophalen tickets:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Voeg nieuw sollicitatie ticket toe
+app.post('/api/sollicitatie-tickets', async (req, res) => {
+  try {
+    const { ingameNaam, discordId, geboortedatum, sollicitatieNummer, aangemaaktDoor } = req.body;
+    
+    if (!ingameNaam || !discordId) {
+      return res.status(400).json({ error: 'Verplichte velden missen' });
+    }
+    
+    const { db } = require('./database');
+    const stmt = db.prepare(`
+      INSERT INTO sollicitatie_tickets (id, ingame_naam, discord_id, geboortedatum, sollicitatie_nummer, aangemaakt_door, datum)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
+    
+    const result = stmt.run(
+      Date.now().toString(),
+      ingameNaam,
+      discordId,
+      geboortedatum || '',
+      sollicitatieNummer || '',
+      aangemaaktDoor || 'Systeem',
+      new Date().toISOString()
+    );
+    
+    res.json({ 
+      success: true, 
+      message: 'Sollicitatie ticket aangemaakt',
+      id: result.lastInsertRowid
+    });
+    
+  } catch (err) {
+    console.error('[SOLLICITATIE] Fout bij aanmaken ticket:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update sollicitatie ticket
+app.patch('/api/sollicitatie-tickets/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, goedgekeurdDoor } = req.body;
+    
+    const { db } = require('./database');
+    const stmt = db.prepare(`
+      UPDATE sollicitatie_tickets 
+      SET status = ?, goedgekeurd_door = ? 
+      WHERE id = ?
+    `);
+    
+    const result = stmt.run(status || 'wachtend', goedgekeurdDoor || '', id);
+    
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Ticket niet gevonden' });
+    }
+    
+    res.json({ success: true, message: 'Ticket bijgewerkt' });
+    
+  } catch (err) {
+    console.error('[SOLLICITATIE] Fout bij bijwerken ticket:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Verwijder sollicitatie ticket
+app.delete('/api/sollicitatie-tickets/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const { db } = require('./database');
+    const stmt = db.prepare('DELETE FROM sollicitatie_tickets WHERE id = ?');
+    const result = stmt.run(id);
+    
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Ticket niet gevonden' });
+    }
+    
+    res.json({ success: true, message: 'Ticket verwijderd' });
+    
+  } catch (err) {
+    console.error('[SOLLICITATIE] Fout bij verwijderen ticket:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ---- API: Sollicitatie Gesprekken ----
+// Haal alle sollicitatie gesprekken op
+app.get('/api/sollicitatie-gesprekken', async (_req, res) => {
+  try {
+    const { db } = require('./database');
+    const gesprekken = db.prepare('SELECT * FROM sollicitatie_gesprekken ORDER BY datum DESC').all();
+    
+    res.json(gesprekken);
+    
+  } catch (err) {
+    console.error('[SOLLICITATIE] Fout bij ophalen gesprekken:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Voeg nieuw sollicitatie gesprek toe
+app.post('/api/sollicitatie-gesprekken', async (req, res) => {
+  try {
+    const { ingameNaam, discordId, aangemaaktDoor, goedgekeurdDoor, notitie } = req.body;
+    
+    if (!ingameNaam || !discordId) {
+      return res.status(400).json({ error: 'Verplichte velden missen' });
+    }
+    
+    const { db } = require('./database');
+    const stmt = db.prepare(`
+      INSERT INTO sollicitatie_gesprekken (id, ingame_naam, discord_id, aangemaakt_door, goedgekeurd_door, datum, notitie)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
+    
+    const result = stmt.run(
+      Date.now().toString(),
+      ingameNaam,
+      discordId,
+      aangemaaktDoor || '',
+      goedgekeurdDoor || '',
+      new Date().toISOString(),
+      notitie || ''
+    );
+    
+    res.json({ 
+      success: true, 
+      message: 'Sollicitatie gesprek aangemaakt',
+      id: result.lastInsertRowid
+    });
+    
+  } catch (err) {
+    console.error('[SOLLICITATIE] Fout bij aanmaken gesprek:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Verwijder sollicitatie gesprek
+app.delete('/api/sollicitatie-gesprekken/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const { db } = require('./database');
+    const stmt = db.prepare('DELETE FROM sollicitatie_gesprekken WHERE id = ?');
+    const result = stmt.run(id);
+    
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Gesprek niet gevonden' });
+    }
+    
+    res.json({ success: true, message: 'Gesprek verwijderd' });
+    
+  } catch (err) {
+    console.error('[SOLLICITATIE] Fout bij verwijderen gesprek:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ---- API: Personeel ----
+// Haal alle personeel op
+app.get('/api/personeel', async (_req, res) => {
+  try {
+    const { db } = require('./database');
+    const personeel = db.prepare('SELECT * FROM personeel ORDER BY naam').all();
+    
+    res.json(personeel);
+    
+  } catch (err) {
+    console.error('[PERSONEEL] Fout bij ophalen personeel:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Voeg nieuw personeel toe
+app.post('/api/personeel', async (req, res) => {
+  try {
+    const { naam, discordId, rang, roepnummer } = req.body;
+    
+    if (!naam || !discordId || !rang) {
+      return res.status(400).json({ error: 'Verplichte velden missen' });
+    }
+    
+    const { db } = require('./database');
+    const stmt = db.prepare(`
+      INSERT INTO personeel (naam, discord_id, rang, roepnummer, datum)
+      VALUES (?, ?, ?, ?, ?)
+    `);
+    
+    const result = stmt.run(
+      naam,
+      discordId,
+      rang,
+      roepnummer || '',
+      new Date().toISOString()
+    );
+    
+    res.json({ 
+      success: true, 
+      message: 'Personeel toegevoegd',
+      id: result.lastInsertRowid
+    });
+    
+  } catch (err) {
+    console.error('[PERSONEEL] Fout bij toevoegen personeel:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Tijdelijke database functies (these should be replaced with real database implementation)
 async function getEvaluatiesFromDatabase() {
   // TODO: Implementeer echte database query

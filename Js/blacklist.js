@@ -139,11 +139,36 @@ async function saveBlacklistToevoegen() {
             closeBlacklistToevoegenModal();
             loadBlacklist();
         } else {
-            showToast('Fout bij toevoegen aan blacklist', 'error');
+            const errorData = await response.json();
+            showToast(`Fout bij toevoegen: ${errorData.error || 'Onbekende fout'}`, 'error');
         }
     } catch (error) {
-        console.error('Fout bij toevoegen blacklist:', error);
-        showToast('Fout bij opslaan', 'error');
+        console.error('Fout bij toevoegen aan blacklist:', error);
+        
+        // Fallback naar localStorage als API faalt
+        try {
+            const blacklist = JSON.parse(localStorage.getItem('blacklist') || '[]');
+            const newItem = {
+                id: Date.now().toString(),
+                discord_id: discordId,
+                naam,
+                roepnummer,
+                reden,
+                beschrijving,
+                blacklisted_by: window.getUser?.()?.username || 'Systeem',
+                datum: new Date().toISOString()
+            };
+            
+            blacklist.push(newItem);
+            localStorage.setItem('blacklist', JSON.stringify(blacklist));
+            
+            showToast('Persoon toegevoegd aan blacklist (lokaal opgeslagen)!');
+            closeBlacklistToevoegenModal();
+            loadBlacklist();
+        } catch (localError) {
+            console.error('Fout bij lokale opslag:', localError);
+            showToast('Fout bij opslaan - probeer het opnieuw', 'error');
+        }
     }
 }
 
