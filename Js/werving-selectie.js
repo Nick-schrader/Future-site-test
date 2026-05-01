@@ -13,6 +13,47 @@ document.addEventListener('DOMContentLoaded', function() {
     loadGesprekken();
 });
 
+// Update dashboard statistieken
+function updateDashboardStats() {
+    const wachtend = tickets.filter(t => t.status === 'wachtend').length;
+    const afgekeurd = tickets.filter(t => t.status === 'afgekeurd').length;
+    const gesprekken = gesprekken.length;
+    const totaal = tickets.length + gesprekken.length;
+
+    document.getElementById('wachtend-count').textContent = wachtend;
+    document.getElementById('afgekeurd-count').textContent = afgekeurd;
+    document.getElementById('gesprekken-count').textContent = gesprekken;
+    document.getElementById('totaal-count').textContent = totaal;
+    
+    document.getElementById('wachtend-badge').textContent = wachtend;
+    document.getElementById('gesprekken-badge').textContent = gesprekken;
+}
+
+// Open sollicitant formulier
+function openSollicitantForm() {
+    document.getElementById('sollicitant-form').style.display = 'block';
+    // Scroll naar formulier
+    document.getElementById('sollicitant-form').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Sluit sollicitant formulier
+function closeSollicitantForm() {
+    document.getElementById('sollicitant-form').style.display = 'none';
+    // Leeg formulier
+    document.getElementById('ingame-naam').value = '';
+    document.getElementById('discord-id').value = '';
+    document.getElementById('geboortedatum').value = '';
+    document.getElementById('sollicitatie-nummer').value = '';
+}
+
+// Scroll naar sectie
+function scrollToSection(sectionId) {
+    const section = document.getElementById(sectionId);
+    if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
 // Laad huidige gebruiker
 function loadCurrentUser() {
     const userStr = localStorage.getItem('user');
@@ -26,10 +67,10 @@ async function voegSollicitantToe() {
     const ingameNaam = document.getElementById('ingame-naam').value.trim();
     const discordId = document.getElementById('discord-id').value.trim();
     const geboortedatum = document.getElementById('geboortedatum').value;
-    const telefoonnummer = document.getElementById('telefoonnummer').value.trim();
+    const sollicitatieNummer = document.getElementById('sollicitatie-nummer').value.trim();
 
     // Valideer input
-    if (!ingameNaam || !discordId || !geboortedatum || !telefoonnummer) {
+    if (!ingameNaam || !discordId || !geboortedatum || !sollicitatieNummer) {
         showToast('Vul alle verplichte velden in', 'error');
         return;
     }
@@ -39,7 +80,7 @@ async function voegSollicitantToe() {
         ingameNaam,
         discordId,
         geboortedatum,
-        telefoonnummer,
+        sollicitatieNummer,
         aangemaaktDoor: currentUser?.displayName || currentUser?.username || 'Onbekend'
     });
 }
@@ -141,30 +182,32 @@ function displayTickets() {
     
     if (tickets.length === 0) {
         tbody.innerHTML = '<tr><td colspan="8" style="color:#555;text-align:center">Geen sollicitatie tickets</td></tr>';
-        return;
+    } else {
+        tbody.innerHTML = tickets.map(ticket => {
+            const statusBadge = getStatusBadge(ticket.status);
+            const aangemaaktOp = new Date(ticket.datum).toLocaleDateString();
+            
+            return `
+                <tr>
+                    <td>${statusBadge}</td>
+                    <td>${ticket.ingameNaam}</td>
+                    <td>${ticket.discordId}</td>
+                    <td>${new Date(ticket.geboortedatum).toLocaleDateString()}</td>
+                    <td>${ticket.sollicitatieNummer}</td>
+                    <td>${ticket.aangemaaktDoor}</td>
+                    <td>${aangemaaktOp}</td>
+                    <td>
+                        ${ticket.status === 'wachtend' ? `
+                            <button class="btn-purple" onclick="beoordeelTicket('${ticket.id}')" style="padding:4px 8px;font-size:0.8rem">Beoordeel</button>
+                        ` : ''}
+                    </td>
+                </tr>
+            `;
+        }).join('');
     }
-
-    tbody.innerHTML = tickets.map(ticket => {
-        const statusBadge = getStatusBadge(ticket.status);
-        const aangemaaktOp = new Date(ticket.datum).toLocaleDateString();
-        
-        return `
-            <tr>
-                <td>${statusBadge}</td>
-                <td>${ticket.ingameNaam}</td>
-                <td>${ticket.discordId}</td>
-                <td>${new Date(ticket.geboortedatum).toLocaleDateString()}</td>
-                <td>${ticket.telefoonnummer}</td>
-                <td>${ticket.aangemaaktDoor}</td>
-                <td>${aangemaaktOp}</td>
-                <td>
-                    ${ticket.status === 'wachtend' ? `
-                        <button class="btn-purple" onclick="beoordeelTicket('${ticket.id}')" style="padding:4px 8px;font-size:0.8rem">Beoordeel</button>
-                    ` : ''}
-                </td>
-            </tr>
-        `;
-    }).join('');
+    
+    // Update dashboard statistieken
+    updateDashboardStats();
 }
 
 // Laad gesprekken
@@ -188,26 +231,28 @@ function displayGesprekken() {
     
     if (gesprekken.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" style="color:#555;text-align:center">Geen gesprekken</td></tr>';
-        return;
+    } else {
+        tbody.innerHTML = gesprekken.map(gesprek => {
+            const datum = new Date(gesprek.datum).toLocaleDateString();
+            const notitie = gesprek.notitie || 'Geen notitie';
+            
+            return `
+                <tr>
+                    <td>${gesprek.ingameNaam}</td>
+                    <td>${gesprek.discordId}</td>
+                    <td>${gesprek.goedgekeurdDoor}</td>
+                    <td>${datum}</td>
+                    <td>${notitie}</td>
+                    <td>
+                        <button class="btn-green" onclick="finaliseerGesprek('${gesprek.id}')" style="padding:4px 8px;font-size:0.8rem">Goedkeuren</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
     }
-
-    tbody.innerHTML = gesprekken.map(gesprek => {
-        const datum = new Date(gesprek.datum).toLocaleDateString();
-        const notitie = gesprek.notitie || 'Geen notitie';
-        
-        return `
-            <tr>
-                <td>${gesprek.ingameNaam}</td>
-                <td>${gesprek.discordId}</td>
-                <td>${gesprek.goedgekeurdDoor}</td>
-                <td>${datum}</td>
-                <td>${notitie}</td>
-                <td>
-                    <button class="btn-green" onclick="finaliseerGesprek('${gesprek.id}')" style="padding:4px 8px;font-size:0.8rem">Goedkeuren</button>
-                </td>
-            </tr>
-        `;
-    }).join('');
+    
+    // Update dashboard statistieken
+    updateDashboardStats();
 }
 
 // Beoordeel ticket
@@ -219,7 +264,7 @@ function beoordeelTicket(ticketId) {
     document.getElementById('ticket-ingame-naam').value = ticket.ingameNaam;
     document.getElementById('ticket-discord-id').value = ticket.discordId;
     document.getElementById('ticket-geboortedatum').value = new Date(ticket.geboortedatum).toLocaleDateString();
-    document.getElementById('ticket-telefoonnummer').value = ticket.telefoonnummer;
+    document.getElementById('ticket-sollicitatie-nummer').value = ticket.sollicitatieNummer;
 
     // Sla ticket ID op voor later gebruik
     window.currentTicketId = ticketId;
@@ -344,7 +389,7 @@ async function finaliseerGesprek(gesprekId) {
             naam: gesprek.ingameNaam,
             discordId: gesprek.discordId,
             roepnummer: roepnummer,
-            rang: 'Wachtmeester 3e klasse',
+            rang: '4e klasse',
             datum: new Date().toISOString(),
             toegevoegdDoor: currentUser?.displayName || currentUser?.username || 'Onbekend'
         };

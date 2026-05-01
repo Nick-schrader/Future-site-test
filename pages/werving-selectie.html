@@ -5,6 +5,58 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Porto Systeem - Werving en Selectie</title>
   <link rel="stylesheet" href="../Css/style.css" />
+  <style>
+    .stat-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .stat-label {
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+    .btn-blue {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    .btn-blue:hover {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      transform: translateY(-1px);
+    }
+    .btn-green {
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    .btn-green:hover {
+      background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+      transform: translateY(-1px);
+    }
+  </style>
 </head>
 <body>
   <div id="app">
@@ -84,8 +136,44 @@
       </aside>
 
       <main class="content">
-        <!-- Sollicitant Toevoegen -->
+        <!-- Dashboard Overzicht -->
         <div class="card">
+          <h3>📊 Werving & Selectie Dashboard</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px">
+            <div class="stat-card">
+              <div class="stat-number" id="wachtend-count">0</div>
+              <div class="stat-label">⏳ Wachtende Tickets</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" id="gesprekken-count">0</div>
+              <div class="stat-label">💬 Geplande Gesprekken</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" id="afgekeurd-count">0</div>
+              <div class="stat-label">❌ Afgekeurd</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" id="totaal-count">0</div>
+              <div class="stat-label">📋 Totaal Sollicitanten</div>
+            </div>
+          </div>
+          
+          <!-- Actie Knoppen -->
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <button class="btn-purple" onclick="openSollicitantForm()">
+              📋 Nieuwe Sollicitant Toevoegen
+            </button>
+            <button class="btn-blue" onclick="scrollToSection('tickets-section')">
+              🎫 Bekijk Wachtende Tickets (<span id="wachtend-badge">0</span>)
+            </button>
+            <button class="btn-green" onclick="scrollToSection('gesprekken-section')">
+              💬 Bekijk Gesprekken (<span id="gesprekken-badge">0</span>)
+            </button>
+          </div>
+        </div>
+
+        <!-- Sollicitant Formulier (Verborgen tot op knop geklikt) -->
+        <div id="sollicitant-form" class="card" style="margin-top:16px;display:none">
           <h3>📋 Sollicitant Toevoegen</h3>
           <div class="form-group">
             <label>Ingame naam *</label>
@@ -100,14 +188,17 @@
             <input type="date" id="geboortedatum" class="input-field" required>
           </div>
           <div class="form-group">
-            <label>Telefoonnummer *</label>
-            <input type="tel" id="telefoonnummer" class="input-field" placeholder="Voer telefoonnummer in..." required>
+            <label>Sollicitatie Nummer *</label>
+            <input type="text" id="sollicitatie-nummer" class="input-field" placeholder="Voer sollicitatie nummer in..." required>
           </div>
-          <button class="btn-purple" onclick="voegSollicitantToe()">Sollicitant Toevoegen</button>
+          <div style="display:flex;gap:10px">
+            <button class="btn-purple" onclick="voegSollicitantToe()">Sollicitant Toevoegen</button>
+            <button class="btn-ghost" onclick="closeSollicitantForm()">Annuleren</button>
+          </div>
         </div>
 
         <!-- Sollicitatie Tickets -->
-        <div class="card" style="margin-top:16px">
+        <div id="tickets-section" class="card" style="margin-top:16px">
           <h3>🎫 Sollicitatie Tickets</h3>
           <div class="table-wrap" style="overflow-x:auto">
             <table class="db-table" style="min-width:800px;font-size:0.9rem">
@@ -117,7 +208,7 @@
                   <th style="min-width:150px">Ingame Naam</th>
                   <th style="min-width:120px">Discord ID</th>
                   <th style="min-width:100px">Geboortedatum</th>
-                  <th style="min-width:120px">Telefoonnummer</th>
+                  <th style="min-width:120px">Sollicitatie Nummer</th>
                   <th style="min-width:150px">Aangemaakt door</th>
                   <th style="min-width:150px">Datum</th>
                   <th style="min-width:100px">Acties</th>
@@ -131,7 +222,7 @@
         </div>
 
         <!-- Gesprekken -->
-        <div class="card" style="margin-top:16px">
+        <div id="gesprekken-section" class="card" style="margin-top:16px">
           <h3>💬 Gesprekken</h3>
           <div class="table-wrap" style="overflow-x:auto">
             <table class="db-table" style="min-width:800px;font-size:0.9rem">
@@ -184,8 +275,8 @@
           <input type="text" id="ticket-geboortedatum" class="input-field" readonly>
         </div>
         <div class="form-group">
-          <label>Telefoonnummer</label>
-          <input type="text" id="ticket-telefoonnummer" class="input-field" readonly>
+          <label>Sollicitatie Nummer</label>
+          <input type="text" id="ticket-sollicitatie-nummer" class="input-field" readonly>
         </div>
         <div style="display:flex;gap:10px;margin-top:16px">
           <button class="btn-green" onclick="keurTicketGoed()">Goedkeuren</button>
