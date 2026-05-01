@@ -411,12 +411,38 @@ async function keurTicketGoed() {
                 return volledigeNaam; // Als er geen tweede deel is, return volledige naam
             }
 
+            // Vind beschikbaar roepnummer voor 4e klasse (range: 56-81 tot 56-140)
+            async function vindBeschikbaarRoepnummer() {
+                try {
+                    // Haal bestaande personeel op om gebruikte roepnummers te checken
+                    const response = await fetch(`${API}/api/roepnummer/personeel`);
+                    const bestaandPersoneel = response.ok ? await response.json() : [];
+                    
+                    const gebruikteNummers = bestaandPersoneel
+                        .filter(p => p.rang === '4e klasse' && p.roepnummer)
+                        .map(p => parseInt(p.roepnummer.split('-')[1]));
+                    
+                    // Vind eerste beschikbare nummer in range 81-140
+                    for (let i = 81; i <= 140; i++) {
+                        if (!gebruikteNummers.includes(i)) {
+                            return `56-${i.toString().padStart(2, '0')}`;
+                        }
+                    }
+                    return null; // Geen beschikbaar nummer
+                } catch (error) {
+                    console.error('Fout bij vinden roepnummer:', error);
+                    return null;
+                }
+            }
+
+            const beschikbaarRoepnummer = await vindBeschikbaarRoepnummer();
+            
             // Voeg personeel toe aan roepnummer systeem als 4e klasse
             const personeelData = {
                 naam: afkortNaam(ticket.ingameNaam),
                 discordId: ticket.discordId,
                 rang: '4e klasse',
-                roepnummer: null // Laat systeem automatisch toewijzen
+                roepnummer: beschikbaarRoepnummer
             };
 
             await fetch(`${API}/api/roepnummer/personeel`, {
