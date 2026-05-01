@@ -306,6 +306,13 @@ db.exec(`
 `);
 db.prepare("INSERT OR IGNORE INTO systeem_instellingen (sleutel, waarde) VALUES ('max_koppel', '2')").run();
 
+// Migratie: voeg timestamp kolom toe aan logs tabel als deze niet bestaat
+const logsKolommen = db.prepare("PRAGMA table_info(logs)").all().map(k => k.name);
+if (!logsKolommen.includes('timestamp')) {
+  db.exec("ALTER TABLE logs ADD COLUMN timestamp TEXT");
+  console.log('[DATABASE] timestamp kolom toegevoegd aan logs tabel');
+}
+
 // Logging functie
 function addLogEntry(logData) {
   try {

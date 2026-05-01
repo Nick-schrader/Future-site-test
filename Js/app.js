@@ -3,6 +3,9 @@ const API_URL = window.CONFIG?.API_URL || (window.location.hostname === 'localho
   ? 'http://localhost:3001'
   : window.location.origin);
 
+// Maak API_URL globaal beschikbaar
+window.API_URL = API_URL;
+
 // ---- GEDEELDE STATE (via sessionStorage) ----
 const defaultUser = {
   username: 'gwnboxerjur.',
