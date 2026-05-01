@@ -2159,7 +2159,17 @@ app.get('/api/personeel', async (_req, res) => {
     const { db } = require('./database');
     const personeel = db.prepare('SELECT * FROM personeel ORDER BY naam').all();
     
-    res.json(personeel);
+    // Map database velden naar frontend veldnamen
+    const mappedPersoneel = personeel.map(p => ({
+      id: p.id,
+      naam: p.naam,
+      discordId: p.discord_id,
+      rang: p.rang,
+      roepnummer: p.roepnummer
+    }));
+    
+    console.log('[PERSONEEL] Personeel mapped:', mappedPersoneel.length);
+    res.json(mappedPersoneel);
     
   } catch (err) {
     console.error('[PERSONEEL] Fout bij ophalen personeel:', err);

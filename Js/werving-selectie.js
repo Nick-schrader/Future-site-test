@@ -10,7 +10,7 @@ let currentUser = null;
 async function getVolgendeRoepnummerForRang(rang) {
     try {
         // Haal bestaande personeel op om gebruikte roepnummers te checken
-        const response = await fetch(`${API}/api/roepnummer/personeel`);
+        const response = await fetch(`${API}/api/personeel`);
         const bestaandPersoneel = response.ok ? await response.json() : [];
         
         const rangDefinities = {
@@ -482,7 +482,7 @@ async function keurTicketGoed() {
             
             console.log('[WERING] Personeel data voor roepnummer systeem:', personeelData);
 
-            await fetch(`${API}/api/roepnummer/personeel`, {
+            await fetch(`${API}/api/personeel`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
