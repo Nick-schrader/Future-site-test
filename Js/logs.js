@@ -20,6 +20,7 @@ window.onload = () => {
 
 function laadLogs() {
   console.log('[LOGS] Laden van logs...');
+  const API_URL = window.location.origin;
   console.log('[LOGS] API URL:', API_URL);
   
   fetch(`${API_URL}/api/logs`)
@@ -29,20 +30,17 @@ function laadLogs() {
     })
     .then(data => {
       console.log('[LOGS] Data ontvangen:', data);
-      console.log('[LOGS] Aantal logs:', data.length);
+      console.log('[LOGS] Aantal logs:', Array.isArray(data) ? data.length : 'Not an array');
       
-      _alleLogs = data;
-      console.log('Logs data:', data); // Debug: bekijk data structuur
+      // Zorg dat data altijd een array is
+      _alleLogs = Array.isArray(data) ? data : [];
+      console.log('Logs data:', _alleLogs);
       filterLogs();
     })
-    .catch(err => {
-      console.error('[LOGS] Fout bij laden logs:', err);
-      const tbody = document.getElementById('logs-tbody');
-      if (!tbody) {
-        console.error('[LOGS] logs-tbody element niet gevonden');
-        return;
-      }
-      tbody.innerHTML = '<tr><td colspan="5" style="color:#555;text-align:center">Kan logs niet laden</td></tr>';
+    .catch(error => {
+      console.log('[LOGS] Fout bij laden logs:', error);
+      _alleLogs = [];
+      filterLogs();
     });
 }
 
@@ -79,7 +77,7 @@ function filterLogs() {
   if (datum) {
     const filterDatum = new Date(datum);
     gefilterd = gefilterd.filter(l => {
-      const logDatum = new Date(l.tijd);
+      const logDatum = new Date(l.timestamp || l.tijd);
       return logDatum.toDateString() === filterDatum.toDateString();
     });
   }
@@ -170,7 +168,7 @@ function filterLogs() {
     
     return `
     <tr>
-      <td style="white-space:nowrap;color:#888;font-size:0.8rem">${new Date(l.tijd).toLocaleString('nl-NL')}</td>
+      <td style="white-space:nowrap;color:#888;font-size:0.8rem">${new Date(l.timestamp || l.tijd).toLocaleString('nl-NL')}</td>
       <td><span class="badge badge-purple">${ACTIE_LABELS[l.actie] || l.actie}</span></td>
       <td>${l.door || '-'}</td>
       <td>${wie}</td>
