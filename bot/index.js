@@ -1614,6 +1614,8 @@ app.post('/api/dismiss-user', async (req, res) => {
   try {
     const { discordId, reden } = req.body;
     
+    console.log('[DISMISS] Starting dismiss process - FIXED VERSION');
+    
     if (!discordId) {
       return res.status(400).json({ error: 'Discord ID is verplicht' });
     }
