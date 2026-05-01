@@ -4,7 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const {
-  upsertGebruiker, getGebruiker, updateGebruikerInstellingen,
+  upsertGebruiker, getGebruiker, dismissGebruiker, updateGebruikerInstellingen,
   addAanmelding, getWachtrij, removeAanmelding,
   addIndeling, getIndeling,
 } = require('./database');
@@ -1618,17 +1618,9 @@ app.post('/api/dismiss-user', async (req, res) => {
       return res.status(400).json({ error: 'Discord ID is verplicht' });
     }
     
-    // Import database functies
-    const { upsertGebruiker } = require('./database');
-    
     // Update gebruiker in database - markeer als ontslagen
-    const updateResult = upsertGebruiker.run({
+    const updateResult = dismissGebruiker.run({
       id: discordId,
-      role: 'dismissed', // Speciale rol voor ontslagen gebruikers
-      status: 10, // Status 10 = uit dienst
-      indienstStart: null,
-      voertuig: null,
-      dienstnummer: null,
       ontslagReden: reden || 'Ontslagen uit dienst',
       ontslagDatum: new Date().toISOString()
     });

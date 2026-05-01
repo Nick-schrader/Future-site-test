@@ -198,9 +198,28 @@ const upsertGebruiker = db.prepare(`
 
 const getGebruiker = db.prepare('SELECT * FROM gebruikers WHERE id = ?');
 
+// Prepared statement voor het ontslaan van gebruikers
+const dismissGebruiker = db.prepare(`
+  UPDATE gebruikers SET 
+    role = 'dismissed',
+    status = 10,
+    indienstStart = NULL,
+    voertuig = NULL,
+    dienstnummer = NULL,
+    ontslagReden = @ontslagReden,
+    ontslagDatum = @ontslagDatum
+  WHERE id = @id
+`);
+
 const updateGebruikerInstellingen = db.prepare(`
-  UPDATE gebruikers SET
-    fullname = @fullname, shortname = @shortname, dcnaam = @dcnaam, rangicoon = @rangicoon
+  UPDATE gebruikers SET 
+    fullname = @fullname,
+    dsi = @dsi,
+    dienstnummer = @dienstnummer,
+    phone = @phone,
+    refresh = @refresh,
+    streamer = @streamer,
+    naamLock = @naamLock
   WHERE id = @id
 `);
 
@@ -339,6 +358,7 @@ module.exports = {
   addLogEntry,
   upsertGebruiker,
   getGebruiker,
+  dismissGebruiker,
   updateGebruikerInstellingen,
   addAanmelding,
   getWachtrij,
