@@ -114,13 +114,13 @@ window.onload = async () => {
 });
   const u = getUser();
   
-  // DEBUG: Show user state after sync (production: disabled)
-  // console.log('🔍 POST-SYNC USER STATE:');
-  // console.log('User:', u);
-  // console.log('indienstStart:', u.indienstStart);
-  // console.log('ingedeeld:', u.ingedeeld);
-  // console.log('role:', u.role);
-  // console.log('status:', u.status);
+  // DEBUG: Show user state after sync (production: enabled for troubleshooting)
+  console.log('🔍 POST-SYNC USER STATE:');
+  console.log('User:', u);
+  console.log('indienstStart:', u.indienstStart);
+  console.log('ingedeeld:', u.ingedeeld);
+  console.log('role:', u.role);
+  console.log('status:', u.status);
   
   // Check if view was already manually updated (to prevent override)
   const manuallyUpdated = window._viewManuallyUpdated;
@@ -161,16 +161,16 @@ window.onload = async () => {
   const isAdmin = role === 'admin';
   const isOvdOpco = ['ovd', 'opco', 'oc', 'ops'].includes(role);
 
-  // DEBUG: Show screen selection logic (production: disabled)
-  // console.log('🔍 SCREEN SELECTION:');
-  // console.log('Role:', role);
-  // console.log('isOvdOpco:', isOvdOpco);
-  // console.log('isAdmin:', isAdmin);
-  // console.log('indienstStart:', u.indienstStart);
-  // console.log('ingedeeld:', u.ingedeeld);
+  // DEBUG: Show screen selection logic (production: enabled for troubleshooting)
+  console.log('🔍 SCREEN SELECTION:');
+  console.log('Role:', role);
+  console.log('isOvdOpco:', isOvdOpco);
+  console.log('isAdmin:', isAdmin);
+  console.log('indienstStart:', u.indienstStart);
+  console.log('ingedeeld:', u.ingedeeld);
 
   if (isOvdOpco) {
-    // console.log('🔍 SHOWING OVD VIEW');
+    console.log('🔍 SHOWING OVD VIEW');
     
     // Check en corrigeer roepnummer voor OVD/OPCO bij pagina load
     if (role === 'ovd' && u.dienstnummer !== '17-00') {
@@ -215,9 +215,9 @@ if (ovdView) {
       fetch(`${API_URL}/api/indeling/${u.id}`)
         .then(r => r.json())
         .then(data => {
-          // console.log('🔍 INDELING DATA:', data);
-          // console.log('🔍 data.ingedeeld:', data.ingedeeld);
-          // console.log('🔍 u.ingedeeld before:', u.ingedeeld);
+          console.log('🔍 INDELING DATA:', data);
+          console.log('🔍 data.ingedeeld:', data.ingedeeld);
+          console.log('🔍 u.ingedeeld before:', u.ingedeeld);
           
           if (data.indienstStart && !u.indienstStart) u.indienstStart = data.indienstStart;
           // NIET automatisch indienstStart zetten - alleen als database dit heeft
@@ -225,27 +225,27 @@ if (ovdView) {
           if (data.voertuig) u.voertuig = data.voertuig;
           if (data.ingedeeld !== undefined) {
             u.ingedeeld = data.ingedeeld;
-            // console.log('🔍 u.ingedeeld after update:', u.ingedeeld);
+            console.log('🔍 u.ingedeeld after update:', u.ingedeeld);
           }
           
           // Als niet ingedeeld, reset rol naar user
           if (!data.ingedeeld && ['ovd','opco','oc','ops'].includes(u.role)) {
-            // console.log('🔄 NIET INGEDEELD - Rol reset van', u.role, 'naar user');
+            console.log('🔄 NIET INGEDEELD - Rol reset van', u.role, 'naar user');
             u.role = 'user';
           }
           
           saveUser(u);
-          // console.log('🔍 After saveUser - u.ingedeeld:', u.ingedeeld);
+          console.log('🔍 After saveUser - u.ingedeeld:', u.ingedeeld);
           
           // Alleen ovd-porto-main tonen als echt ingedeeld
-          if (data.ingedeeld) {
-            // console.log('🔍 SHOWING ovd-porto-main because data.ingedeeld is true');
+          if (data.ingedeled) {
+            console.log('🔍 SHOWING ovd-porto-main because data.ingedeeld is true');
             const main = document.getElementById('ovd-porto-main');
             if (main) { main.style.display = ''; }
             startIndienstTimer('ovd-oc-tijd');
             ovdUpdateInfo();
           } else {
-            // console.log('🔍 USER NIET INGEDEELD - Porto menu niet tonen, rol reset naar user');
+            console.log('🔍 USER NIET INGEDEELD - Porto menu niet tonen, rol reset naar user');
             // Geen refresh nodig - toon gewoon user interface
           }
           if (u.status) {
@@ -847,10 +847,23 @@ function renderMeldingen() {
   const list = document.getElementById('meldingen-list');
   if (!list) return;
 
+  console.log('🔄 RENDER MELDINGEN - Starting fetch...');
+  const user = getUser();
+  console.log('🔄 RENDER MELDINGEN - User:', user.id, user.username);
+
   Promise.all([
-    fetch(`${API_URL}/api/wachtrij`).then(r => r.json()),
-    fetch(`${API_URL}/api/status-alerts`).then(r => r.json()),
+    fetch(`${API_URL}/api/wachtrij`).then(r => {
+      console.log('🔄 RENDER MELDINGEN - Wachtrij response:', r.status);
+      if (!r.ok) throw new Error('Wachtrij fetch failed: ' + r.status);
+      return r.json();
+    }),
+    fetch(`${API_URL}/api/status-alerts`).then(r => {
+      console.log('🔄 RENDER MELDINGEN - Alerts response:', r.status);
+      if (!r.ok) throw new Error('Alerts fetch failed: ' + r.status);
+      return r.json();
+    }),
   ]).then(([wachtrij, alerts]) => {
+    console.log('🔄 RENDER MELDINGEN - Data loaded:', { wachtrij: wachtrij.length, alerts: alerts.length });
       // Update _currentAlerts to only include relevant alerts (status 6 or 7)
       window._currentAlerts = alerts.filter(alert => {
         const status = alert.status;
@@ -984,7 +997,8 @@ function renderMeldingen() {
         </div>`;
       }).join('');
 
-  }).catch(() => {
+  }).catch(error => {
+    console.error('🔄 RENDER MELDINGEN - Error loading data:', error);
     if (list) {
       list.innerHTML = '<div style="color:#888;font-size:0.85rem">Kan aanmeldingen niet laden</div>';
     }
