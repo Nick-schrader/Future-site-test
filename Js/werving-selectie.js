@@ -422,12 +422,16 @@ function keurTicketGoedInStorage(ticketId) {
             id: Date.now().toString(),
             ingameNaam: ticket.ingameNaam,
             discordId: ticket.discordId,
+            aangemaaktDoor: ticket.aangemaaktDoor || 'Onbekend',
             goedgekeurdDoor: currentUser?.displayName || currentUser?.username || 'Onbekend',
             datum: new Date().toISOString(),
             notitie: null
         };
 
         gesprekken.push(gesprek);
+
+        // Verwijder goedgekeurd ticket uit tickets lijst
+        tickets = tickets.filter(t => t.id !== ticketId);
 
         // Sla op in localStorage
         localStorage.setItem('sollicitatie-tickets', JSON.stringify(tickets));
@@ -437,7 +441,8 @@ function keurTicketGoedInStorage(ticketId) {
         sluitTicketModal();
         displayTickets();
         displayGesprekken();
-        showToast('Ticket goedgekeurd en gesprek gepland (lokaal opgeslagen)!');
+        updateDashboardStats();
+        showToast('Ticket goedgekeurd en verplaatst naar gesprekken!');
     } catch (error) {
         console.error('Fout bij goedkeuren ticket in storage:', error);
         showToast('Fout bij goedkeuren ticket', 'error');
