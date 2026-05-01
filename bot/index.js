@@ -2182,11 +2182,18 @@ app.post('/api/personeel', async (req, res) => {
   try {
     const { naam, discordId, rang, roepnummer } = req.body;
     
+    console.log('[PERSONEEL POST] Received data:', { naam, discordId, rang, roepnummer });
+    
     if (!naam || !discordId || !rang) {
       return res.status(400).json({ error: 'Verplichte velden missen' });
     }
     
     const { db } = require('./database');
+    
+    // Controleer of de personeel tabel de juiste kolommen heeft
+    const tableInfo = db.prepare("PRAGMA table_info(personeel)").all();
+    console.log('[PERSONEEL POST] Table info:', tableInfo.map(col => ({ name: col.name, type: col.type })));
+    
     const stmt = db.prepare(`
       INSERT INTO personeel (naam, discord_id, rang, roepnummer, datum)
       VALUES (?, ?, ?, ?, ?)
@@ -2194,11 +2201,13 @@ app.post('/api/personeel', async (req, res) => {
     
     const result = stmt.run(
       naam,
-      discordId,
+      discordId,  // Gebruik discordId direct - dit moet overeenkomen met frontend
       rang,
       roepnummer || '',
       new Date().toISOString()
     );
+    
+    console.log('[PERSONEEL POST] Successfully inserted:', result.lastInsertRowid);
     
     res.json({ 
       success: true, 
@@ -2208,6 +2217,7 @@ app.post('/api/personeel', async (req, res) => {
     
   } catch (err) {
     console.error('[PERSONEEL] Fout bij toevoegen personeel:', err);
+    console.error('[PERSONEEL] Error details:', err.message, err.stack);
     res.status(500).json({ error: err.message });
   }
 });
