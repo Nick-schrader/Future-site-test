@@ -255,89 +255,102 @@
           </div>
         </div>
       </main>
+    </div>
 
-      <!-- Sollicitant Formulier Popup -->
-      <div id="sollicitant-popup" class="popup-overlay hidden">
-        <div class="popup">
-          <div class="popup-content">
-            <h3>Sollicitant Toevoegen</h3>
-            <div class="form-group">
-              <label>Ingame naam *</label>
-              <input type="text" id="ingame-naam" class="input-field" placeholder="Voer ingame naam in..." required>
-            </div>
-            <div class="form-group">
-              <label>Discord ID *</label>
-              <input type="text" id="discord-id" class="input-field" placeholder="Voer Discord ID in..." required>
-            </div>
-            <div class="form-group">
-              <label>Geboortedatum *</label>
-              <input type="date" id="geboortedatum" class="input-field" required>
-            </div>
-            <div class="form-group">
-              <label>Sollicitatie Nummer *</label>
-              <input type="text" id="sollicitatie-nummer" class="input-field" placeholder="Voer sollicitatie nummer in..." required>
-            </div>
-            <div class="popup-buttons">
-              <button class="btn-purple" onclick="voegSollicitantToe()">Sollicitant Toevoegen</button>
-              <button class="btn-ghost" onclick="sluitSollicitantPopup()">Annuleren</button>
-            </div>
+    <!-- Sollicitant Formulier Popup -->
+    <div id="sollicitant-popup" class="popup-overlay hidden">
+      <div class="popup">
+        <div class="popup-content">
+          <h3>Sollicitant Toevoegen</h3>
+          <div class="form-group">
+            <label>Ingame naam *</label>
+            <input type="text" id="ingame-naam" class="input-field" placeholder="Voer ingame naam in..." required>
           </div>
-        <div id="blacklist-result">
-          <p>Bezig met controleren...</p>
+          <div class="form-group">
+            <label>Discord ID *</label>
+            <input type="text" id="discord-id" class="input-field" placeholder="Voer Discord ID in..." required>
+          </div>
+          <div class="form-group">
+            <label>Geboortedatum *</label>
+            <input type="date" id="geboortedatum" class="input-field" required>
+          </div>
+          <div class="form-group">
+            <label>Sollicitatie Nummer *</label>
+            <input type="text" id="sollicitatie-nummer" class="input-field" placeholder="Voer sollicitatie nummer in..." required>
+          </div>
+          <div class="popup-buttons">
+            <button class="btn-purple" onclick="voegSollicitantToe()">Sollicitant Toevoegen</button>
+            <button class="btn-ghost" onclick="sluitSollicitantPopup()">Annuleren</button>
+          </div>
         </div>
-        <div style="display:flex;gap:10px;margin-top:16px">
-          <button class="btn-purple" onclick="sluitBlacklistModal()">OK</button>
+      </div>
+    </div>
+    <!-- Blacklist Popup -->
+    <div id="blacklist-modal" class="popup-overlay hidden">
+      <div class="popup">
+        <div class="popup-content">
+          <h3>Blacklist Controle</h3>
+          <div id="blacklist-result">
+            <p>Bezig met controleren...</p>
+          </div>
+          <div class="popup-buttons">
+            <button class="btn-purple" onclick="sluitBlacklistModal()">OK</button>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Ticket Beoordelen Modal -->
-    <div id="ticket-modal" class="modal hidden">
-      <div class="modal-content">
-        <h3>Sollicitatie Beoordelen</h3>
-        <div class="form-group">
-          <label>Ingame naam</label>
-          <input type="text" id="ticket-ingame-naam" class="input-field" readonly>
-        </div>
-        <div class="form-group">
-          <label>Discord ID</label>
-          <input type="text" id="ticket-discord-id" class="input-field" readonly>
-        </div>
-        <div class="form-group">
-          <label>Geboortedatum</label>
-          <input type="text" id="ticket-geboortedatum" class="input-field" readonly>
-        </div>
-        <div class="form-group">
-          <label>Sollicitatie Nummer</label>
-          <input type="text" id="ticket-sollicitatie-nummer" class="input-field" readonly>
-        </div>
-        <div style="display:flex;gap:10px;margin-top:16px">
-          <button class="btn-green" onclick="keurTicketGoed()">Goedkeuren</button>
-          <button class="btn-red" onclick="keurTicketAf()">Afkeuren</button>
-          <button class="btn-ghost" onclick="sluitTicketModal()">Annuleren</button>
+    <div id="ticket-modal" class="popup-overlay hidden">
+      <div class="popup">
+        <div class="popup-content">
+          <h3>Sollicitatie Beoordelen</h3>
+          <div class="form-group">
+            <label>Ingame naam</label>
+            <input type="text" id="ticket-ingame-naam" class="input-field" readonly>
+          </div>
+          <div class="form-group">
+            <label>Discord ID</label>
+            <input type="text" id="ticket-discord-id" class="input-field" readonly>
+          </div>
+          <div class="form-group">
+            <label>Geboortedatum</label>
+            <input type="text" id="ticket-geboortedatum" class="input-field" readonly>
+          </div>
+          <div class="form-group">
+            <label>Sollicitatie Nummer</label>
+            <input type="text" id="ticket-sollicitatie-nummer" class="input-field" readonly>
+          </div>
+          <div class="popup-buttons">
+            <button class="btn-green" onclick="keurTicketGoed()">Goedkeuren</button>
+            <button class="btn-red" onclick="keurTicketAf()">Afkeuren</button>
+            <button class="btn-ghost" onclick="sluitTicketModal()">Annuleren</button>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Gesprek Modal -->
-    <div id="gesprek-modal" class="modal hidden">
-      <div class="modal-content">
-        <h3>💬 Gesprek Plannen</h3>
-        <div class="form-group">
-          <label>Ingame naam</label>
-          <input type="text" id="gesprek-ingame-naam" class="input-field" readonly>
-        </div>
-        <div class="form-group">
-          <label>Discord ID</label>
-          <input type="text" id="gesprek-discord-id" class="input-field" readonly>
-        </div>
-        <div class="form-group">
-          <label>Notitie (optioneel)</label>
-          <textarea id="gesprek-notitie" class="input-field" rows="3" placeholder="Voeg eventueel een notitie toe..."></textarea>
-        </div>
-        <div style="display:flex;gap:10px;margin-top:16px">
-          <button class="btn-green" onclick="planGesprek()">Gesprek Plannen</button>
-          <button class="btn-ghost" onclick="sluitGesprekModal()">Annuleren</button>
+    <div id="gesprek-modal" class="popup-overlay hidden">
+      <div class="popup">
+        <div class="popup-content">
+          <h3>Gesprek Plannen</h3>
+          <div class="form-group">
+            <label>Ingame naam</label>
+            <input type="text" id="gesprek-ingame-naam" class="input-field" readonly>
+          </div>
+          <div class="form-group">
+            <label>Discord ID</label>
+            <input type="text" id="gesprek-discord-id" class="input-field" readonly>
+          </div>
+          <div class="form-group">
+            <label>Notitie (optioneel)</label>
+            <textarea id="gesprek-notitie" class="input-field" rows="3" placeholder="Voeg eventueel een notitie toe..."></textarea>
+          </div>
+          <div class="popup-buttons">
+            <button class="btn-green" onclick="planGesprek()">Gesprek Plannen</button>
+            <button class="btn-ghost" onclick="sluitGesprekModal()">Annuleren</button>
+          </div>
         </div>
       </div>
     </div>
