@@ -84,131 +84,69 @@
       </aside>
 
       <main class="content">
+        <!-- Sollicitant Toevoegen -->
         <div class="card">
-          <h3 style="margin-bottom:16px">📋 Werving en Selectie</h3>
-          <p style="color:#888;margin-bottom:20px">Beheer sollicitaties en team evaluaties.</p>
-          
-          <!-- Statistics Dashboard -->
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px">
-            <div class="stat-item" style="background:#1e293b;padding:12px;border-radius:8px;text-align:center">
-              <div class="stat-value" id="eval-totaal" style="color:#3b82f6;font-size:1.5rem;font-weight:700">0</div>
-              <div class="stat-label" style="color:#94a3b8;font-size:0.9rem">Totaal Evaluaties</div>
-            </div>
-            <div class="stat-item" style="background:#1e293b;padding:12px;border-radius:8px;text-align:center">
-              <div class="stat-value" id="eval-goedgekeurd" style="color:#10b981;font-size:1.5rem;font-weight:700">0</div>
-              <div class="stat-label" style="color:#94a3b8;font-size:0.9rem">Goedgekeurd</div>
-            </div>
-            <div class="stat-item" style="background:#1e293b;padding:12px;border-radius:8px;text-align:center">
-              <div class="stat-value" id="eval-twijfel" style="color:#f59e0b;font-size:1.5rem;font-weight:700">0</div>
-              <div class="stat-label" style="color:#94a3b8;font-size:0.9rem">Twijfelachtig</div>
-            </div>
-            <div class="stat-item" style="background:#1e293b;padding:12px;border-radius:8px;text-align:center">
-              <div class="stat-value" id="eval-blacklist" style="color:#ef4444;font-size:1.5rem;font-weight:700">0</div>
-              <div class="stat-label" style="color:#94a3b8;font-size:0.9rem">Blacklist</div>
-            </div>
+          <h3>📋 Sollicitant Toevoegen</h3>
+          <div class="form-group">
+            <label>Ingame naam *</label>
+            <input type="text" id="ingame-naam" class="input-field" placeholder="Voer ingame naam in..." required>
           </div>
-
-          <!-- Quick Add Evaluation Form -->
-          <div class="card" style="margin-bottom:16px;background:#1e293b;padding:16px">
-            <h4 style="margin-bottom:12px">⚡ Snel Evaluatie Toevoegen</h4>
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
-              <div>
-                <label style="font-size:0.9rem;color:#666">Discord Naam</label>
-                <input type="text" id="eval-discord-naam" class="input-field" placeholder="Discord naam..." style="width:100%">
-              </div>
-              <div>
-                <label style="font-size:0.9rem;color:#666">Discord ID</label>
-                <input type="text" id="eval-discord-id" class="input-field" placeholder="Discord ID..." style="width:100%">
-              </div>
-              <div>
-                <label style="font-size:0.9rem;color:#666">Roepnummer</label>
-                <input type="text" id="eval-roepnummer" class="input-field" placeholder="Roepnummer..." style="width:100%">
-              </div>
-              <div>
-                <label style="font-size:0.9rem;color:#666">Jouw Team</label>
-                <input type="text" id="eval-team" class="input-field" placeholder="Team naam..." style="width:100%">
-              </div>
-            </div>
-            <div style="margin-top:12px">
-              <label style="font-size:0.9rem;color:#666">Evaluatie</label>
-              <select id="eval-beoordeling" class="input-field" style="width:100%;margin-bottom:12px">
-                <option value="">Kies beoordeling...</option>
-                <option value="goedgekeurd">✅ Goedgekeurd</option>
-                <option value="afgekeurd">❌ Afgekeurd</option>
-                <option value="twijfelachtig">🤔 Twijfelachtig</option>
-                <option value="blacklist">🚫 Blacklist</option>
-              </select>
-              <button class="btn-purple" onclick="submitEvaluatie()">Verstuur Evaluatie</button>
-            </div>
+          <div class="form-group">
+            <label>Discord ID *</label>
+            <input type="text" id="discord-id" class="input-field" placeholder="Voer Discord ID in..." required>
           </div>
-
-          <!-- Search -->
-          <div style="display:flex;gap:8px;margin-bottom:16px">
-            <input type="text" id="eval-search" class="input-field" placeholder="Zoek sollicitant..." style="flex:1" oninput="filterEvaluaties()">
+          <div class="form-group">
+            <label>Geboortedatum *</label>
+            <input type="date" id="geboortedatum" class="input-field" required>
           </div>
+          <div class="form-group">
+            <label>Telefoonnummer *</label>
+            <input type="tel" id="telefoonnummer" class="input-field" placeholder="Voer telefoonnummer in..." required>
+          </div>
+          <button class="btn-purple" onclick="voegSollicitantToe()">Sollicitant Toevoegen</button>
         </div>
 
-        <!-- Goedgekeurde Sollicitanten -->
+        <!-- Sollicitatie Tickets -->
         <div class="card" style="margin-top:16px">
-          <h3>✅ Goedgekeurde Sollicitanten</h3>
+          <h3>🎫 Sollicitatie Tickets</h3>
           <div class="table-wrap" style="overflow-x:auto">
-            <table class="db-table" id="goedgekeurd-table" style="min-width:800px;font-size:0.9rem">
+            <table class="db-table" style="min-width:800px;font-size:0.9rem">
               <thead>
                 <tr>
-                  <th style="min-width:150px">Discord Naam</th>
+                  <th style="min-width:120px">Status</th>
+                  <th style="min-width:150px">Ingame Naam</th>
                   <th style="min-width:120px">Discord ID</th>
-                  <th style="min-width:100px">Roepnummer</th>
-                  <th style="min-width:150px">Teams</th>
-                  <th style="min-width:80px">Consensus</th>
+                  <th style="min-width:100px">Geboortedatum</th>
+                  <th style="min-width:120px">Telefoonnummer</th>
+                  <th style="min-width:150px">Aangemaakt door</th>
+                  <th style="min-width:150px">Datum</th>
                   <th style="min-width:100px">Acties</th>
                 </tr>
               </thead>
-              <tbody id="goedgekeurd-tbody">
-                <tr><td colspan="6" style="color:#555;text-align:center">Geen goedgekeurde sollicitanten</td></tr>
+              <tbody id="tickets-tbody">
+                <tr><td colspan="8" style="color:#555;text-align:center">Geen sollicitatie tickets</td></tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- Vindt Niet Iedereen Goed -->
+        <!-- Gesprekken -->
         <div class="card" style="margin-top:16px">
-          <h3>🤔 Vindt Niet Iedereen Goed</h3>
+          <h3>💬 Gesprekken</h3>
           <div class="table-wrap" style="overflow-x:auto">
-            <table class="db-table" id="twijfel-table" style="min-width:800px;font-size:0.9rem">
+            <table class="db-table" style="min-width:800px;font-size:0.9rem">
               <thead>
                 <tr>
-                  <th style="min-width:150px">Discord Naam</th>
+                  <th style="min-width:150px">Ingame Naam</th>
                   <th style="min-width:120px">Discord ID</th>
-                  <th style="min-width:100px">Roepnummer</th>
-                  <th style="min-width:150px">Teams</th>
-                  <th style="min-width:120px">Beoordelingen</th>
+                  <th style="min-width:150px">Goedgekeurd door</th>
+                  <th style="min-width:150px">Datum</th>
+                  <th style="min-width:200px">Notitie</th>
                   <th style="min-width:100px">Acties</th>
                 </tr>
               </thead>
-              <tbody id="twijfel-tbody">
-                <tr><td colspan="6" style="color:#555;text-align:center">Geen twijfelachtige sollicitanten</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Blacklist Sollicitanten -->
-        <div class="card" style="margin-top:16px">
-          <h3>🚫 Blacklist Sollicitanten</h3>
-          <div class="table-wrap" style="overflow-x:auto">
-            <table class="db-table" id="blacklist-table" style="min-width:800px;font-size:0.9rem">
-              <thead>
-                <tr>
-                  <th style="min-width:150px">Discord Naam</th>
-                  <th style="min-width:120px">Discord ID</th>
-                  <th style="min-width:100px">Roepnummer</th>
-                  <th style="min-width:150px">Teams</th>
-                  <th style="min-width:150px">Redenen</th>
-                  <th style="min-width:100px">Acties</th>
-                </tr>
-              </thead>
-              <tbody id="blacklist-tbody">
-                <tr><td colspan="6" style="color:#555;text-align:center">Geen blacklist sollicitanten</td></tr>
+              <tbody id="gesprekken-tbody">
+                <tr><td colspan="6" style="color:#555;text-align:center">Geen gesprekken</td></tr>
               </tbody>
             </table>
           </div>
@@ -216,88 +154,81 @@
       </main>
     </div>
 
-    <!-- Evaluatie Modal -->
-    <div id="evaluatie-modal" class="modal-overlay hidden">
-      <div class="modal-card" style="max-width:600px">
-        <h2>� Sollicitant Evaluatie</h2>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
-          <div>
-            <label style="font-size:0.9rem;color:#666">Discord Naam</label>
-            <input type="text" id="modal-discord-naam" class="input-field" placeholder="Discord naam..." style="width:100%">
-          </div>
-          <div>
-            <label style="font-size:0.9rem;color:#666">Discord ID</label>
-            <input type="text" id="modal-discord-id" class="input-field" placeholder="Discord ID..." style="width:100%">
-          </div>
-          <div>
-            <label style="font-size:0.9rem;color:#666">Roepnummer</label>
-            <input type="text" id="modal-roepnummer" class="input-field" placeholder="Roepnummer..." style="width:100%">
-          </div>
-          <div>
-            <label style="font-size:0.9rem;color:#666">Jouw Team</label>
-            <input type="text" id="modal-team" class="input-field" placeholder="Team naam..." style="width:100%">
-          </div>
-        </div>
-        <div style="margin-top:12px">
-          <label style="font-size:0.9rem;color:#666">Evaluatie</label>
-          <select id="modal-beoordeling" class="input-field" style="width:100%;margin-bottom:12px">
-            <option value="">Kies beoordeling...</option>
-            <option value="goedgekeurd">✅ Goedgekeurd</option>
-            <option value="afgekeurd">❌ Afgekeurd</option>
-            <option value="twijfelachtig">🤔 Twijfelachtig</option>
-            <option value="blacklist">🚫 Blacklist</option>
-          </select>
-          <label style="font-size:0.9rem;color:#666">Opmerkingen</label>
-          <textarea id="modal-opmerkingen" class="input-field" rows="3" placeholder="Voeg opmerkingen toe..." style="width:100%"></textarea>
+    <!-- Blacklist Popup Modal -->
+    <div id="blacklist-modal" class="modal hidden">
+      <div class="modal-content">
+        <h3>🚫 Blacklist Controle</h3>
+        <div id="blacklist-result">
+          <p>Bezig met controleren...</p>
         </div>
         <div style="display:flex;gap:10px;margin-top:16px">
-          <button class="btn-purple" style="flex:1" onclick="submitModalEvaluatie()">Verstuur Evaluatie</button>
-          <button class="btn-ghost" style="flex:1" onclick="closeEvaluatieModal()">Annuleren</button>
+          <button class="btn-purple" onclick="sluitBlacklistModal()">OK</button>
         </div>
       </div>
     </div>
 
-    <!-- TOAST -->
+    <!-- Ticket Beoordelen Modal -->
+    <div id="ticket-modal" class="modal hidden">
+      <div class="modal-content">
+        <h3>🎫 Sollicitatie Beoordelen</h3>
+        <div class="form-group">
+          <label>Ingame naam</label>
+          <input type="text" id="ticket-ingame-naam" class="input-field" readonly>
+        </div>
+        <div class="form-group">
+          <label>Discord ID</label>
+          <input type="text" id="ticket-discord-id" class="input-field" readonly>
+        </div>
+        <div class="form-group">
+          <label>Geboortedatum</label>
+          <input type="text" id="ticket-geboortedatum" class="input-field" readonly>
+        </div>
+        <div class="form-group">
+          <label>Telefoonnummer</label>
+          <input type="text" id="ticket-telefoonnummer" class="input-field" readonly>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:16px">
+          <button class="btn-green" onclick="keurTicketGoed()">Goedkeuren</button>
+          <button class="btn-red" onclick="keurTicketAf()">Afkeuren</button>
+          <button class="btn-ghost" onclick="sluitTicketModal()">Annuleren</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gesprek Modal -->
+    <div id="gesprek-modal" class="modal hidden">
+      <div class="modal-content">
+        <h3>💬 Gesprek Plannen</h3>
+        <div class="form-group">
+          <label>Ingame naam</label>
+          <input type="text" id="gesprek-ingame-naam" class="input-field" readonly>
+        </div>
+        <div class="form-group">
+          <label>Discord ID</label>
+          <input type="text" id="gesprek-discord-id" class="input-field" readonly>
+        </div>
+        <div class="form-group">
+          <label>Notitie (optioneel)</label>
+          <textarea id="gesprek-notitie" class="input-field" rows="3" placeholder="Voeg eventueel een notitie toe..."></textarea>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:16px">
+          <button class="btn-green" onclick="planGesprek()">Gesprek Plannen</button>
+          <button class="btn-ghost" onclick="sluitGesprekModal()">Annuleren</button>
+        </div>
+      </div>
+    </div>
+
     <div id="toast" class="toast hidden">
       <span>&#10003;</span> <span id="toast-msg"></span>
       <button onclick="hideToast()">&#10005;</button>
     </div>
-
-    <!-- SOLlicitatie MODAL -->
-    <div id="sollicitatie-modal" class="modal-overlay hidden">
-      <div class="modal-card">
-        <h2>Sollicitatie Beheren</h2>
-        <div id="sollicitatie-details" style="margin-bottom:16px">
-          <!-- Dynamische sollicitatie details -->
-        </div>
-        <div class="form-group">
-          <label>Status</label>
-          <select id="sollicitatie-status" class="input-field">
-            <option value="open">Open</option>
-            <option value="behandeling">In behandeling</option>
-            <option value="aangenomen">Aangenomen</option>
-            <option value="afgewezen">Afgewezen</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Notities</label>
-          <textarea id="sollicitatie-notities" class="input-field" rows="4" placeholder="Voeg notities toe..."></textarea>
-        </div>
-        <div style="display:flex;gap:10px;margin-top:8px">
-          <button class="btn-purple" style="flex:1" onclick="saveSollicitatie()">Opslaan</button>
-          <button class="btn-ghost" style="flex:1" onclick="closeSollicitatieModal()">Annuleren</button>
-        </div>
-      </div>
-    </div>
-
   </div>
 
-    <script src="../config.js"></script>
+  <script src="../config.js"></script>
   <script src="../Js/app.js"></script>
   <script src="../Js/berichten.js"></script>
   <script src="../Js/sidebar.js"></script>
   <script src="../Js/werving-selectie.js"></script>
-  <script src="../Js/evaluatie-systeem.js"></script>
   
   <script>
     // Update actieve navigatie

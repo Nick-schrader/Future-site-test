@@ -1,361 +1,429 @@
-// Werving en Selectie Management
+// Nieuw Werving en Selectie Systeem
 const API = window.location.origin;
 
 // Globale variabelen
-let sollicitaties = [];
-let currentFilter = '';
+let tickets = [];
+let gesprekken = [];
+let currentUser = null;
 
 // Initialiseer de pagina
 document.addEventListener('DOMContentLoaded', function() {
-    loadSollicitaties();
-    updateStatistics();
+    loadCurrentUser();
+    loadTickets();
+    loadGesprekken();
 });
 
-
-// Controleer blacklist
-async function checkBlacklist(discordId) {
-    try {
-        const response = await fetch(`${API}/api/blacklist/check/${discordId}`);
-        const result = await response.json();
-        return result.isBlacklisted;
-    } catch (error) {
-        console.error('Fout bij blacklist controle:', error);
-        return false;
+// Laad huidige gebruiker
+function loadCurrentUser() {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+        currentUser = JSON.parse(userStr);
     }
 }
 
 // Voeg sollicitant toe
-async function addSollicitant(sollicitant) {
-    try {
-        const response = await fetch(`${API}/api/werving/sollicitant`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(sollicitant)
-        });
-        
-        if (!response.ok) {
-            throw new Error('Fout bij toevoegen sollicitant');
-        }
-        
-        return await response.json();
-    } catch (error) {
-        console.error('Fout bij toevoegen sollicitant:', error);
-        throw error;
-    }
-}
+async function voegSollicitantToe() {
+    const ingameNaam = document.getElementById('ingame-naam').value.trim();
+    const discordId = document.getElementById('discord-id').value.trim();
+    const geboortedatum = document.getElementById('geboortedatum').value;
+    const telefoonnummer = document.getElementById('telefoonnummer').value.trim();
 
-// Voeg toe aan roepnummer systeem
-async function addToRoepnummer(sollicitant) {
-    try {
-        const response = await fetch(`${API}/api/personeel`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                naam: sollicitant.naam,
-                discord_id: sollicitant.discordId,
-                roepnummer: sollicitant.roepnummer,
-                team: sollicitant.team,
-                status: 'actief'
-            })
-        });
-        
-        if (!response.ok) {
-            throw new Error('Fout bij toevoegen aan roepnummer systeem');
-        }
-        
-        return await response.json();
-    } catch (error) {
-        console.error('Fout bij toevoegen aan roepnummer:', error);
-        throw error;
-    }
-}
-
-// Aannemen met blacklist controle
-async function acceptSollicitant(sollicitantId, discordId, naam) {
-    try {
-        // Controleer blacklist eerst
-        const isBlacklisted = await checkBlacklist(discordId);
-        
-        if (isBlacklisted) {
-            // Toon pop-up voor blacklist
-            const proceed = confirm(`⚠️ Waarschuwing: ${naam} (Discord ID: ${discordId}) staat op de blacklist!\n\nWil je toch doorgaan met aannemen?`);
-            if (!proceed) {
-                return; // Gebruiker heeft geannuleerd
-            }
-        }
-        
-        // Update status naar aangenomen
-        await updateSollicitantStatus(sollicitantId, 'aangenomen');
-        
-        // Haal sollicitant data op
-        const sollicitant = await getSollicitant(sollicitantId);
-        
-        // Voeg toe aan roepnummer systeem
-        await addToRoepnummer({
-            naam: sollicitant.naam,
-            discordId: sollicitant.discord_id,
-            roepnummer: sollicitant.roepnummer,
-            team: sollicitant.team
-        });
-        
-        // Herlaad data
-        loadSollicitaties();
-        alert(`${naam} is succesvol aangenomen en toegevoegd aan het roepnummer systeem!`);
-        
-    } catch (error) {
-        console.error('Fout bij aannemen sollicitant:', error);
-        alert('Fout bij aannemen van sollicitant');
-    }
-}
-
-// Get sollicitant details
-async function getSollicitant(id) {
-    try {
-        const response = await fetch(`${API}/api/werving/sollicitant/${id}`);
-        return await response.json();
-    } catch (error) {
-        console.error('Fout bij ophalen sollicitant:', error);
-        throw error;
-    }
-}
-
-// Update sollicitant status
-async function updateSollicitantStatus(id, status) {
-    try {
-        const response = await fetch(`${API}/api/werving/sollicitant/${id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ status })
-        });
-        
-        if (!response.ok) {
-            throw new Error('Fout bij updaten status');
-        }
-        
-        return await response.json();
-    } catch (error) {
-        console.error('Fout bij updaten status:', error);
-        throw error;
-    }
-}
-
-// Laad alle sollicitaties
-async function loadSollicitaties() {
-    try {
-        const response = await fetch(`${API}/api/werving/sollicitaties`);
-        sollicitaties = await response.json();
-        displaySollicitaties(sollicitaties);
-        updateStatistics();
-    } catch (error) {
-        console.error('Fout bij laden sollicitaties:', error);
-        document.getElementById('sollicitaties-tbody').innerHTML = 
-            '<tr><td colspan="6" style="color:#f87171;text-align:center">Fout bij laden data</td></tr>';
-    }
-}
-
-// Toon sollicitaties in tabel
-function displaySollicitaties(data) {
-    const tbody = document.getElementById('sollicitaties-tbody');
-    
-    if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="color:#888;text-align:center">Geen sollicitaties gevonden</td></tr>';
+    // Valideer input
+    if (!ingameNaam || !discordId || !geboortedatum || !telefoonnummer) {
+        showToast('Vul alle verplichte velden in', 'error');
         return;
     }
 
-    tbody.innerHTML = data.map(sollicitatie => {
-        const statusBadge = getStatusBadge(sollicitatie.status);
-        const aanvraagDatum = new Date(sollicitatie.aanvraagdatum).toLocaleDateString('nl-NL');
+    // Controleer blacklist
+    await checkBlacklist(discordId, {
+        ingameNaam,
+        discordId,
+        geboortedatum,
+        telefoonnummer,
+        aangemaaktDoor: currentUser?.displayName || currentUser?.username || 'Onbekend'
+    });
+}
+
+// Controleer blacklist
+async function checkBlacklist(discordId, sollicitantData) {
+    try {
+        const response = await fetch(`${API}/api/blacklist/check/${discordId}`);
+        const result = await response.json();
+        
+        // Toon blacklist popup
+        const modal = document.getElementById('blacklist-modal');
+        const resultDiv = document.getElementById('blacklist-result');
+        
+        if (result.isBlacklisted) {
+            resultDiv.innerHTML = `
+                <div style="color:#ef4444">
+                    <h4>⚠️ Persoon staat op de blacklist!</h4>
+                    <p>Reden: ${result.reason || 'Geen reden opgegeven'}</p>
+                    <p>Datum: ${result.date ? new Date(result.date).toLocaleDateString() : 'Onbekend'}</p>
+                    <p style="margin-top:12px">Sollicitatie kan niet worden voortgezet.</p>
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = `
+                <div style="color:#22c55e">
+                    <h4>✅ Persoon staat niet op de blacklist</h4>
+                    <p>De sollicitatie kan worden voortgezet.</p>
+                </div>
+            `;
+            
+            // Maak ticket aan als niet op blacklist
+            await maakTicketAan(sollicitantData);
+        }
+        
+        modal.classList.remove('hidden');
+    } catch (error) {
+        console.error('Fout bij blacklist controle:', error);
+        showToast('Fout bij blacklist controle', 'error');
+    }
+}
+
+// Maak ticket aan
+async function maakTicketAan(sollicitantData) {
+    try {
+        const ticket = {
+            ...sollicitantData,
+            id: Date.now().toString(),
+            status: 'wachtend',
+            datum: new Date().toISOString()
+        };
+
+        const response = await fetch(`${API}/api/sollicitatie-tickets`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(ticket)
+        });
+
+        if (response.ok) {
+            // Leeg formulier
+            document.getElementById('ingame-naam').value = '';
+            document.getElementById('discord-id').value = '';
+            document.getElementById('geboortedatum').value = '';
+            document.getElementById('telefoonnummer').value = '';
+            
+            // Reload tickets
+            await loadTickets();
+            showToast('Sollicitatie ticket aangemaakt!');
+        } else {
+            throw new Error('Fout bij aanmaken ticket');
+        }
+    } catch (error) {
+        console.error('Fout bij aanmaken ticket:', error);
+        showToast('Fout bij aanmaken ticket', 'error');
+    }
+}
+
+// Laad tickets
+async function loadTickets() {
+    try {
+        const response = await fetch(`${API}/api/sollicitatie-tickets`);
+        if (response.ok) {
+            tickets = await response.json();
+            displayTickets();
+        }
+    } catch (error) {
+        console.error('Fout bij laden tickets:', error);
+        // Start met lege data als API niet beschikbaar is
+        tickets = [];
+        displayTickets();
+    }
+}
+
+// Toon tickets
+function displayTickets() {
+    const tbody = document.getElementById('tickets-tbody');
+    
+    if (tickets.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="color:#555;text-align:center">Geen sollicitatie tickets</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = tickets.map(ticket => {
+        const statusBadge = getStatusBadge(ticket.status);
+        const aangemaaktOp = new Date(ticket.datum).toLocaleDateString();
         
         return `
             <tr>
-                <td>${sollicitatie.naam || '-'}</td>
-                <td>${sollicitatie.discord || '-'}</td>
                 <td>${statusBadge}</td>
-                <td>${aanvraagDatum}</td>
-                <td>${sollicitatie.behandelaar || '-'}</td>
+                <td>${ticket.ingameNaam}</td>
+                <td>${ticket.discordId}</td>
+                <td>${new Date(ticket.geboortedatum).toLocaleDateString()}</td>
+                <td>${ticket.telefoonnummer}</td>
+                <td>${ticket.aangemaaktDoor}</td>
+                <td>${aangemaaktOp}</td>
                 <td>
-                    <button class="btn-purple small" onclick="editSollicitatie('${sollicitatie.id}')">Bewerken</button>
+                    ${ticket.status === 'wachtend' ? `
+                        <button class="btn-purple" onclick="beoordeelTicket('${ticket.id}')" style="padding:4px 8px;font-size:0.8rem">Beoordeel</button>
+                    ` : ''}
                 </td>
             </tr>
         `;
     }).join('');
 }
 
-// Status badge helper
-function getStatusBadge(status) {
-    const badges = {
-        'open': '<span style="background:#a78bfa;color:white;padding:2px 8px;border-radius:4px;font-size:0.8rem">Open</span>',
-        'behandeling': '<span style="background:#60a5fa;color:white;padding:2px 8px;border-radius:4px;font-size:0.8rem">In behandeling</span>',
-        'aangenomen': '<span style="background:#34d399;color:white;padding:2px 8px;border-radius:4px;font-size:0.8rem">Aangenomen</span>',
-        'afgewezen': '<span style="background:#f87171;color:white;padding:2px 8px;border-radius:4px;font-size:0.8rem">Afgewezen</span>'
-    };
-    return badges[status] || status;
+// Laad gesprekken
+async function loadGesprekken() {
+    try {
+        const response = await fetch(`${API}/api/sollicitatie-gesprekken`);
+        if (response.ok) {
+            gesprekken = await response.json();
+            displayGesprekken();
+        }
+    } catch (error) {
+        console.error('Fout bij laden gesprekken:', error);
+        gesprekken = [];
+        displayGesprekken();
+    }
 }
 
-// Update statistieken
-function updateStatistics() {
-    const stats = {
-        open: sollicitaties.filter(s => s.status === 'open').length,
-        behandeling: sollicitaties.filter(s => s.status === 'behandeling').length,
-        aangenomen: sollicitaties.filter(s => s.status === 'aangenomen').length,
-        afgewezen: sollicitaties.filter(s => s.status === 'afgewezen').length
-    };
-
-    document.getElementById('open-sollicitaties').textContent = stats.open;
-    document.getElementById('behandeling-sollicitaties').textContent = stats.behandeling;
-    document.getElementById('aangenomen-sollicitaties').textContent = stats.aangenomen;
-    document.getElementById('afgewezen-sollicitaties').textContent = stats.afgewezen;
-}
-
-// Filter sollicitaties op status
-function filterSollicitaties() {
-    const filter = document.getElementById('status-filter').value;
-    currentFilter = filter;
+// Toon gesprekken
+function displayGesprekken() {
+    const tbody = document.getElementById('gesprekken-tbody');
     
-    const filtered = filter 
-        ? sollicitaties.filter(s => s.status === filter)
-        : sollicitaties;
-    
-    displaySollicitaties(filtered);
+    if (gesprekken.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="color:#555;text-align:center">Geen gesprekken</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = gesprekken.map(gesprek => {
+        const datum = new Date(gesprek.datum).toLocaleDateString();
+        const notitie = gesprek.notitie || 'Geen notitie';
+        
+        return `
+            <tr>
+                <td>${gesprek.ingameNaam}</td>
+                <td>${gesprek.discordId}</td>
+                <td>${gesprek.goedgekeurdDoor}</td>
+                <td>${datum}</td>
+                <td>${notitie}</td>
+                <td>
+                    <button class="btn-green" onclick="finaliseerGesprek('${gesprek.id}')" style="padding:4px 8px;font-size:0.8rem">Goedkeuren</button>
+                </td>
+            </tr>
+        `;
+    }).join('');
 }
 
-// Laad specifieke status sollicitaties
-function loadOpenSollicitaties() {
-    document.getElementById('status-filter').value = 'open';
-    filterSollicitaties();
+// Beoordeel ticket
+function beoordeelTicket(ticketId) {
+    const ticket = tickets.find(t => t.id === ticketId);
+    if (!ticket) return;
+
+    // Vul modal met ticket data
+    document.getElementById('ticket-ingame-naam').value = ticket.ingameNaam;
+    document.getElementById('ticket-discord-id').value = ticket.discordId;
+    document.getElementById('ticket-geboortedatum').value = new Date(ticket.geboortedatum).toLocaleDateString();
+    document.getElementById('ticket-telefoonnummer').value = ticket.telefoonnummer;
+
+    // Sla ticket ID op voor later gebruik
+    window.currentTicketId = ticketId;
+
+    // Open modal
+    document.getElementById('ticket-modal').classList.remove('hidden');
 }
 
-function loadBehandelingSollicitaties() {
-    document.getElementById('status-filter').value = 'behandeling';
-    filterSollicitaties();
-}
-
-function loadAangenomenSollicitaties() {
-    document.getElementById('status-filter').value = 'aangenomen';
-    filterSollicitaties();
-}
-
-function loadAfgewezenSollicitaties() {
-    document.getElementById('status-filter').value = 'afgewezen';
-    filterSollicitaties();
-}
-
-// Bewerk sollicitatie
-function editSollicitatie(id) {
-    const solicitatie = sollicitaties.find(s => s.id === id);
-    if (!solicitatie) return;
-
-    // Vul modal met data
-    const detailsDiv = document.getElementById('sollicitatie-details');
-    detailsDiv.innerHTML = `
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
-            <div>
-                <strong>Naam:</strong><br>
-                ${solicitatie.naam || '-'}
-            </div>
-            <div>
-                <strong>Discord:</strong><br>
-                ${solicitatie.discord || '-'}
-            </div>
-            <div>
-                <strong>Email:</strong><br>
-                ${solicitatie.email || '-'}
-            </div>
-            <div>
-                <strong>Telefoon:</strong><br>
-                ${solicitatie.telefoon || '-'}
-            </div>
-        </div>
-        <div style="margin-top:12px">
-            <strong>Motivatie:</strong><br>
-            ${solicitatie.motivatie || 'Geen motivatie opgegeven'}
-        </div>
-        <div style="margin-top:12px">
-            <strong>Ervaring:</strong><br>
-            ${solicitatie.ervaring || 'Geen ervaring opgegeven'}
-        </div>
-    `;
-
-    document.getElementById('sollicitatie-status').value = solicitatie.status || 'open';
-    document.getElementById('sollicitatie-notities').value = solicitatie.notities || '';
-
-    // Toon modal
-    document.getElementById('sollicitatie-modal').classList.remove('hidden');
-    
-    // Sla huidige ID op voor save functie
-    window.currentSollicitatieId = id;
-}
-
-// Sluit sollicitatie modal
-function closeSollicitatieModal() {
-    document.getElementById('sollicitatie-modal').classList.add('hidden');
-    window.currentSollicitatieId = null;
-}
-
-// Sla sollicitatie wijzigingen op
-async function saveSollicitatie() {
-    if (!window.currentSollicitatieId) return;
-
-    const status = document.getElementById('sollicitatie-status').value;
-    const notities = document.getElementById('sollicitatie-notities').value;
+// Keur ticket goed
+async function keurTicketGoed() {
+    const ticketId = window.currentTicketId;
+    if (!ticketId) return;
 
     try {
-        const response = await fetch(`${API}/api/werving/sollicitaties/${window.currentSollicitatieId}`, {
-            method: 'PUT',
+        // Update ticket status
+        await fetch(`${API}/api/sollicitatie-tickets/${ticketId}`, {
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                status,
-                notities,
-                behandelaar: window.getUser?.()?.username || 'Systeem'
+                status: 'goedgekeurd',
+                goedgekeurdDoor: currentUser?.displayName || currentUser?.username || 'Onbekend'
             })
         });
 
-        if (response.ok) {
-            showToast('Sollicitatie bijgewerkt!');
-            closeSollicitatieModal();
-            loadSollicitaties();
-        } else {
-            showToast('Fout bij bijwerken sollicitatie', 'error');
-        }
+        // Maak gesprek aan
+        const ticket = tickets.find(t => t.id === ticketId);
+        const gesprek = {
+            id: Date.now().toString(),
+            ingameNaam: ticket.ingameNaam,
+            discordId: ticket.discordId,
+            goedgekeurdDoor: currentUser?.displayName || currentUser?.username || 'Onbekend',
+            datum: new Date().toISOString(),
+            notitie: null
+        };
+
+        await fetch(`${API}/api/sollicitatie-gesprekken`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(gesprek)
+        });
+
+        // Sluit modal en reload data
+        sluitTicketModal();
+        await loadTickets();
+        await loadGesprekken();
+        showToast('Ticket goedgekeurd en gesprek gepland!');
     } catch (error) {
-        console.error('Fout bij opslaan sollicitatie:', error);
-        showToast('Fout bij opslaan', 'error');
+        console.error('Fout bij goedkeuren ticket:', error);
+        showToast('Fout bij goedkeuren ticket', 'error');
     }
 }
 
-// Nieuwe sollicitatie (placeholder functie)
-function nieuweSollicitatie() {
-    showToast('Nieuwe sollicitatie functionaliteit wordt ontwikkeld');
+// Keur ticket af
+async function keurTicketAf() {
+    const ticketId = window.currentTicketId;
+    if (!ticketId) return;
+
+    try {
+        await fetch(`${API}/api/sollicitatie-tickets/${ticketId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                status: 'afgekeurd',
+                afgekeurdDoor: currentUser?.displayName || currentUser?.username || 'Onbekend'
+            })
+        });
+
+        sluitTicketModal();
+        await loadTickets();
+        showToast('Ticket afgekeurd');
+    } catch (error) {
+        console.error('Fout bij afkeuren ticket:', error);
+        showToast('Fout bij afkeuren ticket', 'error');
+    }
 }
 
-// Toast helper
-function showToast(message, type = 'success') {
-    const toast = document.getElementById('toast');
-    const toastMsg = document.getElementById('toast-msg');
+// Plan gesprek
+async function planGesprek() {
+    const gesprekId = window.currentGesprekId;
+    if (!gesprekId) return;
+
+    const notitie = document.getElementById('gesprek-notitie').value.trim();
+
+    try {
+        await fetch(`${API}/api/sollicitatie-gesprekken/${gesprekId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                notitie: notitie || null
+            })
+        });
+
+        sluitGesprekModal();
+        await loadGesprekken();
+        showToast('Gesprek gepland met notitie!');
+    } catch (error) {
+        console.error('Fout bij plannen gesprek:', error);
+        showToast('Fout bij plannen gesprek', 'error');
+    }
+}
+
+// Finaliseer gesprek - voeg toe aan roepnummer bestand
+async function finaliseerGesprek(gesprekId) {
+    const gesprek = gesprekken.find(g => g.id === gesprekId);
+    if (!gesprek) return;
+
+    try {
+        // Genereer roepnummer (eenvoudige logica)
+        const roepnummer = genereerRoepnummer();
+
+        // Voeg toe aan roepnummer bestand
+        const personeel = {
+            id: Date.now().toString(),
+            naam: gesprek.ingameNaam,
+            discordId: gesprek.discordId,
+            roepnummer: roepnummer,
+            rang: 'Wachtmeester 3e klasse',
+            datum: new Date().toISOString(),
+            toegevoegdDoor: currentUser?.displayName || currentUser?.username || 'Onbekend'
+        };
+
+        await fetch(`${API}/api/personeel`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(personeel)
+        });
+
+        // Verwijder gesprek
+        await fetch(`${API}/api/sollicitatie-gesprekken/${gesprekId}`, {
+            method: 'DELETE'
+        });
+
+        await loadGesprekken();
+        showToast(`${gesprek.ingameNaam} is toegevoegd aan het personeelsbestand met roepnummer ${roepnummer}!`);
+    } catch (error) {
+        console.error('Fout bij finaliseren gesprek:', error);
+        showToast('Fout bij finaliseren gesprek', 'error');
+    }
+}
+
+// Genereer roepnummer
+function genereerRoepnummer() {
+    // Eenvoudige roepnummer generatie - kan later worden verbeterd
+    const nummer = Math.floor(Math.random() * 9000) + 1000;
+    return `55-${nummer}`;
+}
+
+// Helper functies
+function getStatusBadge(status) {
+    const badges = {
+        'wachtend': '<span style="background:#f59e0b;color:white;padding:2px 6px;border-radius:4px;font-size:0.7rem">⏳ Wachtend</span>',
+        'goedgekeurd': '<span style="background:#22c55e;color:white;padding:2px 6px;border-radius:4px;font-size:0.7rem">✅ Goedgekeurd</span>',
+        'afgekeurd': '<span style="background:#ef4444;color:white;padding:2px 6px;border-radius:4px;font-size:0.7rem">❌ Afgekeurd</span>'
+    };
+    return badges[status] || status;
+}
+
+// Modal functies
+function sluitBlacklistModal() {
+    document.getElementById('blacklist-modal').classList.add('hidden');
+}
+
+function sluitTicketModal() {
+    document.getElementById('ticket-modal').classList.add('hidden');
+    window.currentTicketId = null;
+}
+
+function sluitGesprekModal() {
+    document.getElementById('gesprek-modal').classList.add('hidden');
+    window.currentGesprekId = null;
+}
+
+// Toast notificatie
+function showToast(bericht, type = 'success') {
+    let toast = document.getElementById('toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        toast.className = 'toast hidden';
+        document.body.appendChild(toast);
+    }
     
-    toastMsg.textContent = message;
+    const icon = type === 'success' ? '✅' : '❌';
+    toast.innerHTML = `<span>${icon}</span> <span>${bericht}</span>`;
     toast.classList.remove('hidden');
-    
-    if (type === 'error') {
-        toast.style.background = '#f87171';
-    } else {
-        toast.style.background = '#34d399';
-    }
     
     setTimeout(() => {
         toast.classList.add('hidden');
     }, 3000);
 }
 
-// Hide toast
 function hideToast() {
-    document.getElementById('toast').classList.add('hidden');
+    const toast = document.getElementById('toast');
+    if (toast) {
+        toast.classList.add('hidden');
+    }
 }
