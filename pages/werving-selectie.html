@@ -204,28 +204,32 @@
             </div>
           </div>
 
-        <!-- Sollicitant Formulier (Verborgen tot op knop geklikt) -->
-        <div id="sollicitant-form" class="card" style="margin-top:16px;display:none">
-          <h3>📋 Sollicitant Toevoegen</h3>
-          <div class="form-group">
-            <label>Ingame naam *</label>
-            <input type="text" id="ingame-naam" class="input-field" placeholder="Voer ingame naam in..." required>
-          </div>
-          <div class="form-group">
-            <label>Discord ID *</label>
-            <input type="text" id="discord-id" class="input-field" placeholder="Voer Discord ID in..." required>
-          </div>
-          <div class="form-group">
-            <label>Geboortedatum *</label>
-            <input type="date" id="geboortedatum" class="input-field" required>
-          </div>
-          <div class="form-group">
-            <label>Sollicitatie Nummer *</label>
-            <input type="text" id="sollicitatie-nummer" class="input-field" placeholder="Voer sollicitatie nummer in..." required>
-          </div>
-          <div style="display:flex;gap:10px">
-            <button class="btn-purple" onclick="voegSollicitantToe()">Sollicitant Toevoegen</button>
-            <button class="btn-ghost" onclick="closeSollicitantForm()">Annuleren</button>
+        <!-- Sollicitant Formulier Popup -->
+        <div id="sollicitant-popup" class="popup-overlay hidden">
+          <div class="popup">
+            <div class="popup-content">
+              <h3>📋 Sollicitant Toevoegen</h3>
+              <div class="form-group">
+                <label>Ingame naam *</label>
+                <input type="text" id="ingame-naam" class="input-field" placeholder="Voer ingame naam in..." required>
+              </div>
+              <div class="form-group">
+                <label>Discord ID *</label>
+                <input type="text" id="discord-id" class="input-field" placeholder="Voer Discord ID in..." required>
+              </div>
+              <div class="form-group">
+                <label>Geboortedatum *</label>
+                <input type="date" id="geboortedatum" class="input-field" required>
+              </div>
+              <div class="form-group">
+                <label>Sollicitatie Nummer *</label>
+                <input type="text" id="sollicitatie-nummer" class="input-field" placeholder="Voer sollicitatie nummer in..." required>
+              </div>
+              <div class="popup-buttons">
+                <button class="btn-purple" onclick="voegSollicitantToe()">Sollicitant Toevoegen</button>
+                <button class="btn-ghost" onclick="sluitSollicitantPopup()">Annuleren</button>
+              </div>
+            </div>
           </div>
         </div>
 

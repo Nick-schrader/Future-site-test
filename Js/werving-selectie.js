@@ -29,16 +29,14 @@ function updateDashboardStats() {
     document.getElementById('gesprekken-badge').textContent = gesprekken;
 }
 
-// Open sollicitant formulier
+// Open sollicitant formulier popup
 function openSollicitantForm() {
-    document.getElementById('sollicitant-form').style.display = 'block';
-    // Scroll naar formulier
-    document.getElementById('sollicitant-form').scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('sollicitant-popup').classList.remove('hidden');
 }
 
-// Sluit sollicitant formulier
-function closeSollicitantForm() {
-    document.getElementById('sollicitant-form').style.display = 'none';
+// Sluit sollicitant formulier popup
+function sluitSollicitantPopup() {
+    document.getElementById('sollicitant-popup').classList.add('hidden');
     // Leeg formulier
     document.getElementById('ingame-naam').value = '';
     document.getElementById('discord-id').value = '';
