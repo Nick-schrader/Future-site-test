@@ -1932,7 +1932,20 @@ app.get('/api/sollicitatie-tickets', async (_req, res) => {
     const { db } = require('./database');
     const tickets = db.prepare('SELECT * FROM sollicitatie_tickets ORDER BY datum DESC').all();
     
-    res.json(tickets);
+    // Map database velden naar frontend veldnamen
+    const mappedTickets = tickets.map(ticket => ({
+      id: ticket.id,
+      ingameNaam: ticket.ingame_naam,
+      discordId: ticket.discord_id,
+      geboortedatum: ticket.geboortedatum,
+      sollicitatieNummer: ticket.sollicitatie_nummer,
+      status: ticket.status,
+      aangemaaktDoor: ticket.aangemaakt_door,
+      datum: ticket.datum
+    }));
+    
+    console.log('[SOLLICITATIE] Tickets mapped:', mappedTickets.length);
+    res.json(mappedTickets);
     
   } catch (err) {
     console.error('[SOLLICITATIE] Fout bij ophalen tickets:', err);
@@ -1965,10 +1978,24 @@ app.post('/api/sollicitatie-tickets', async (req, res) => {
       new Date().toISOString()
     );
     
+    // Return de gemapte ticket data voor consistentie
+    const createdTicket = {
+      id: Date.now().toString(),
+      ingameNaam: ingameNaam,
+      discordId: discordId,
+      geboortedatum: geboortedatum || '',
+      sollicitatieNummer: sollicitatieNummer || '',
+      status: 'wachtend',
+      aangemaaktDoor: aangemaaktDoor || 'Systeem',
+      datum: new Date().toISOString()
+    };
+    
+    console.log('[SOLLICITATIE] Ticket created:', createdTicket);
+    
     res.json({ 
       success: true, 
       message: 'Sollicitatie ticket aangemaakt',
-      id: result.lastInsertRowid
+      ticket: createdTicket
     });
     
   } catch (err) {
