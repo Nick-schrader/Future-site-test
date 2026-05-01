@@ -427,6 +427,23 @@ async function keurTicketGoed() {
                 body: JSON.stringify(personeelData)
             });
 
+            // Voeg toe aan logs
+            const logData = {
+                actie: 'Sollicitant goedgekeurd',
+                details: `${ticket.ingameNaam} (${ticket.discordId}) is goedgekeurd door ${currentUser?.displayName || currentUser?.username || 'Onbekend'} en toegevoegd als 4e klasse met roepnummer`,
+                timestamp: new Date().toISOString(),
+                gebruiker: currentUser?.displayName || currentUser?.username || 'Onbekend',
+                categorie: 'Werving & Selectie'
+            };
+
+            await fetch(`${API}/api/logs`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(logData)
+            });
+
             // Update displays
             sluitTicketModal();
             await loadTickets();
