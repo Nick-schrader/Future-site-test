@@ -212,12 +212,39 @@ async function loadTickets() {
 function loadTicketsFromStorage() {
     try {
         const opgeslagen = localStorage.getItem('sollicitatie-tickets');
-        tickets = opgeslagen ? JSON.parse(opgeslagen) : [];
+        tickets = opgeslagen ? JSON.parse(opgeslagen) : [
+            // Test sollicitant voor testing
+            {
+                id: 'test-1',
+                ingameNaam: 'Test Sollicitant',
+                discordId: '123456789',
+                geboortedatum: '2000-01-01',
+                sollicitatieNummer: 'TEST001',
+                status: 'wachtend',
+                aangemaaktDoor: 'Test User',
+                datum: new Date().toISOString()
+            }
+        ];
+        console.log('Tickets geladen uit storage:', tickets);
         displayTickets();
+        updateDashboardStats();
     } catch (error) {
         console.error('Fout bij laden tickets uit storage:', error);
-        tickets = [];
+        tickets = [
+            // Test sollicitant voor testing
+            {
+                id: 'test-1',
+                ingameNaam: 'Test Sollicitant',
+                discordId: '123456789',
+                geboortedatum: '2000-01-01',
+                sollicitatieNummer: 'TEST001',
+                status: 'wachtend',
+                aangemaaktDoor: 'Test User',
+                datum: new Date().toISOString()
+            }
+        ];
         displayTickets();
+        updateDashboardStats();
     }
 }
 
