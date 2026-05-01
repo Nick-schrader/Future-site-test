@@ -550,20 +550,32 @@ async function keurTicketAf() {
     if (!ticketId) return;
 
     try {
-        await fetch(`${API}/api/sollicitatie-tickets/${ticketId}`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                status: 'afgekeurd',
-                afgekeurdDoor: currentUser?.displayName || currentUser?.username || 'Onbekend'
-            })
+        console.log('[TICKET] Afkeuren ticket:', ticketId);
+        
+        // Verwijder ticket direct uit API (geen status update nodig)
+        const response = await fetch(`${API}/api/sollicitatie-tickets/${ticketId}`, {
+            method: 'DELETE'
         });
 
-        sluitTicketModal();
-        await loadTickets();
-        showToast('Ticket afgekeurd');
+        if (response.ok) {
+            console.log('[TICKET] Ticket succesvol verwijderd na afkeuring');
+            
+            // Verwijder ook uit lokale array voor directe update
+            const index = tickets.findIndex(t => t.id === ticketId);
+            if (index > -1) {
+                tickets.splice(index, 1);
+                console.log('[TICKET] Ticket uit lokale array verwijderd');
+            }
+            
+            // Update localStorage
+            localStorage.setItem('sollicitatie-tickets', JSON.stringify(tickets));
+            
+            sluitTicketModal();
+            displayTickets(); // Directe update zonder reload
+            showToast('Ticket afgekeurd en verwijderd');
+        } else {
+            throw new Error('Failed to delete ticket');
+        }
     } catch (error) {
         console.error('Fout bij afkeuren ticket:', error);
         showToast('Fout bij afkeuren ticket', 'error');
