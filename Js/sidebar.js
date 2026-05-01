@@ -91,7 +91,7 @@ function toggleCategory(categoryElement) {
 // Initialiseer zodra DOM ready is
 document.addEventListener('DOMContentLoaded', function() {
   // Wacht even op volledige DOM
-  setTimeout(initializeSidebarState, 100);
+  setTimeout(initializeSidebarState, 50);
 });
 
 // Fallback: initialiseer ook als DOM al geladen is
@@ -100,13 +100,16 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializeSidebarState);
 } else {
   // DOM is al geladen
-  setTimeout(initializeSidebarState, 100);
+  setTimeout(initializeSidebarState, 50);
 }
 
 // Extra fallback: initialiseer bij window load
 window.addEventListener('load', function() {
-  setTimeout(initializeSidebarState, 200);
+  setTimeout(initializeSidebarState, 100);
 });
+
+// Extra fallback: initialiseer na een korte vertraging
+setTimeout(initializeSidebarState, 200);
 
 // Maak functie globaal beschikbaar
 window.toggleCategory = toggleCategory;
