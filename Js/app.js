@@ -1,10 +1,8 @@
 // ---- API URL ----
-const API_URL = window.CONFIG?.API_URL || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+// Maak API_URL globaal beschikbaar voor alle bestanden
+window.API_URL = window.CONFIG?.API_URL || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://localhost:3001'
   : window.location.origin);
-
-// Maak API_URL globaal beschikbaar
-window.API_URL = API_URL;
 
 // ---- GEDEELDE STATE (via sessionStorage) ----
 const defaultUser = {
