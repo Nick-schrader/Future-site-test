@@ -304,7 +304,8 @@ async function displayEvaluaties() {
                 <td>${teams}</td>
                 <td>${Math.round(consensus.consensus)}%</td>
                 <td>
-                    <button class="btn-ghost" onclick="toonDetails('${sollicitant.discordId}')" style="padding:4px 8px;font-size:0.8rem">Details</button>
+                    <button class="btn-ghost" onclick="toonDetails('${sollicitant.discordId}')" style="padding:4px 8px;font-size:0.8rem;margin-right:4px">Details</button>
+                    <button class="btn-purple" onclick="beoordeelSollicitant('${sollicitant.discordId}', '${sollicitant.discordNaam}')" style="padding:4px 8px;font-size:0.8rem">Beoordeel</button>
                 </td>
             </tr>
         `;
@@ -338,6 +339,23 @@ function toonDetails(discordId) {
     });
     
     alert(details);
+}
+
+// Beoordeel sollicitant
+function beoordeelSollicitant(discordId, discordNaam) {
+    const gegroepeerd = groepeerEvaluatiesPerSollicitant();
+    const sollicitant = Object.values(gegroepeerd).find(s => s.discordId === discordId);
+    
+    if (!sollicitant) return;
+    
+    // Vul modal met sollicitant data
+    document.getElementById('modal-discord-naam').value = sollicitant.discordNaam;
+    document.getElementById('modal-discord-id').value = sollicitant.discordId;
+    document.getElementById('modal-roepnummer').value = sollicitant.roepnummer;
+    document.getElementById('modal-team').value = currentUser?.displayName || currentUser?.username || 'Onbekend';
+    
+    // Open modal
+    openEvaluatieModal();
 }
 
 // Filter evaluaties
