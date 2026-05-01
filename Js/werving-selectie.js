@@ -127,11 +127,17 @@ async function checkBlacklist(discordId, sollicitantData) {
 async function maakTicketAan(sollicitantData) {
     try {
         const ticket = {
-            ...sollicitantData,
             id: Date.now().toString(),
+            ingameNaam: sollicitantData.ingameNaam,
+            discordId: sollicitantData.discordId,
+            geboortedatum: sollicitantData.geboortedatum,
+            sollicitatieNummer: sollicitantData.sollicitatieNummer,
+            aangemaaktDoor: sollicitantData.aangemaaktDoor,
             status: 'wachtend',
             datum: new Date().toISOString()
         };
+        
+        console.log('[TICKET] Creating ticket with data:', ticket);
 
         const response = await fetch(`${API}/api/sollicitatie-tickets`, {
             method: 'POST',
@@ -168,6 +174,8 @@ async function maakTicketAan(sollicitantData) {
 // Sla ticket op in localStorage
 function saveTicketToStorage(ticket) {
     try {
+        console.log('[TICKET] Saving ticket to storage:', ticket);
+        
         // Voeg ticket toe aan lokale array
         tickets.push(ticket);
         
@@ -254,19 +262,23 @@ function loadTicketsFromStorage() {
 function displayTickets() {
     const tbody = document.getElementById('tickets-tbody');
     
+    console.log('[TICKET] Displaying tickets:', tickets);
+    
     if (tickets.length === 0) {
         tbody.innerHTML = '<tr><td colspan="8" style="color:#555;text-align:center">Geen sollicitatie tickets</td></tr>';
     } else {
         tbody.innerHTML = tickets.map(ticket => {
+            console.log('[TICKET] Rendering ticket:', ticket);
+            
             const statusBadge = getStatusBadge(ticket.status);
             const aangemaaktOp = new Date(ticket.datum).toLocaleDateString();
             
             return `
                 <tr>
                     <td>${statusBadge}</td>
-                    <td>${ticket.ingameNaam}</td>
-                    <td>${ticket.discordId}</td>
-                    <td>${ticket.sollicitatieNummer}</td>
+                    <td>${ticket.ingameNaam || 'undefined'}</td>
+                    <td>${ticket.discordId || 'undefined'}</td>
+                    <td>${ticket.sollicitatieNummer || 'undefined'}</td>
                     <td>
                         ${ticket.status === 'wachtend' ? `
                             <button class="btn-purple" onclick="beoordeelTicket('${ticket.id}')" style="padding:4px 8px;font-size:0.8rem">Beoordeel</button>
