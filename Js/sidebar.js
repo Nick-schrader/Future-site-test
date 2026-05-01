@@ -22,12 +22,13 @@ function initializeSidebarState() {
     const sidebarState = opgeslagen ? JSON.parse(opgeslagen) : {};
     console.log('🔧 Loaded sidebar state:', sidebarState);
     
-    // Pas state toe op alle sidebar categories
+    // Pas state toe op alle sidebar categories met gestandaardiseerde namen
     categories.forEach(category => {
       const categoryName = category.textContent.trim();
-      const isCollapsed = sidebarState[categoryName] || false;
+      const standardizedCategory = getStandardCategoryName(categoryName);
+      const isCollapsed = sidebarState[standardizedCategory] || false;
       
-      console.log(`🔧 Category "${categoryName}": ${isCollapsed ? 'collapsed' : 'expanded'}`);
+      console.log(`🔧 Category "${categoryName}" (${standardizedCategory}): ${isCollapsed ? 'collapsed' : 'expanded'}`);
       
       if (isCollapsed) {
         category.classList.add('collapsed');
@@ -50,11 +51,28 @@ function initializeSidebarState() {
   }
 }
 
+// Functie om gestandaardiseerde category namen te krijgen
+function getStandardCategoryName(categoryName) {
+  const categoryMap = {
+    'Main': 'Main',
+    'Taken': 'Taken', 
+    'Kader': 'Kader',
+    'Hoofdmenu': 'Main',
+    'Werk': 'Taken',
+    'Management': 'Kader'
+  };
+  
+  return categoryMap[categoryName] || categoryName;
+}
+
 // Toggle sidebar category met persistentie
 function toggleCategory(categoryElement) {
   const itemsContainer = categoryElement.nextElementSibling;
   const categoryName = categoryElement.textContent.trim();
+  const standardizedCategory = getStandardCategoryName(categoryName);
   const isCollapsed = categoryElement.classList.contains('collapsed');
+  
+  console.log(`🔄 Toggling category "${categoryName}" (${standardizedCategory})`);
   
   // Laad huidige state
   let sidebarState = {};
@@ -71,18 +89,19 @@ function toggleCategory(categoryElement) {
     if (itemsContainer) {
       itemsContainer.classList.remove('collapsed');
     }
-    sidebarState[categoryName] = false;
+    sidebarState[standardizedCategory] = false;
   } else {
     categoryElement.classList.add('collapsed');
     if (itemsContainer) {
       itemsContainer.classList.add('collapsed');
     }
-    sidebarState[categoryName] = true;
+    sidebarState[standardizedCategory] = true;
   }
   
   // Sla state op in localStorage
   try {
     localStorage.setItem('sidebarState', JSON.stringify(sidebarState));
+    console.log(`💾 Saved sidebar state:`, sidebarState);
   } catch (error) {
     console.error('Fout bij opslaan sidebar state:', error);
   }
