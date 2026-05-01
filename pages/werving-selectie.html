@@ -11,14 +11,14 @@
       margin: 0 auto;
     }
     .stat-card {
-      background: white;
-      color: #1f2937;
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+      color: white;
       padding: 12px;
       border-radius: 8px;
       text-align: center;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       transition: transform 0.2s ease;
-      border: 1px solid #e5e7eb;
+      border: 1px solid #7c3aed;
     }
     .stat-card:hover {
       transform: translateY(-1px);
@@ -171,37 +171,39 @@
         <div class="compact-layout">
           <!-- Dashboard Overzicht -->
           <div class="card">
-            <h3>Werving & Selectie Dashboard</h3>
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px">
-              <div class="stat-card">
-                <div class="stat-number" id="wachtend-count">0</div>
-                <div class="stat-label">Wachtend</div>
+            <div style="display:flex;align-items:center;gap:20px;margin-bottom:16px">
+              <h3 style="margin:0">Werving & Selectie Dashboard</h3>
+              <div style="display:flex;gap:12px;align-items:center">
+                <div class="stat-card">
+                  <div class="stat-number" id="wachtend-count">0</div>
+                  <div class="stat-label">Wachtend</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-number" id="gesprekken-count">0</div>
+                  <div class="stat-label">Gesprekken</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-number" id="afgekeurd-count">0</div>
+                  <div class="stat-label">Afgekeurd</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-number" id="totaal-count">0</div>
+                  <div class="stat-label">Totaal</div>
+                </div>
               </div>
-              <div class="stat-card">
-                <div class="stat-number" id="gesprekken-count">0</div>
-                <div class="stat-label">Gesprekken</div>
+              
+              <!-- Actie Knoppen -->
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn-purple" onclick="openSollicitantForm()" style="font-size:0.8rem;padding:6px 10px">
+                  Sollicitant Toevoegen
+                </button>
+                <button class="btn-blue" onclick="scrollToSection('tickets-section')" style="font-size:0.8rem;padding:6px 10px">
+                  Wachtend (<span id="wachtend-badge">0</span>)
+                </button>
+                <button class="btn-green" onclick="scrollToSection('gesprekken-section')" style="font-size:0.8rem;padding:6px 10px">
+                  Gesprekken (<span id="gesprekken-badge">0</span>)
+                </button>
               </div>
-              <div class="stat-card">
-                <div class="stat-number" id="afgekeurd-count">0</div>
-                <div class="stat-label">Afgekeurd</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-number" id="totaal-count">0</div>
-                <div class="stat-label">Totaal</div>
-              </div>
-            </div>
-            
-            <!-- Actie Knoppen -->
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button class="btn-purple" onclick="openSollicitantForm()" style="font-size:0.8rem;padding:6px 10px">
-                Sollicitant Toevoegen
-              </button>
-              <button class="btn-blue" onclick="scrollToSection('tickets-section')" style="font-size:0.8rem;padding:6px 10px">
-                Wachtend (<span id="wachtend-badge">0</span>)
-              </button>
-              <button class="btn-green" onclick="scrollToSection('gesprekken-section')" style="font-size:0.8rem;padding:6px 10px">
-                Gesprekken (<span id="gesprekken-badge">0</span>)
-              </button>
             </div>
           </div>
 
