@@ -1710,28 +1710,30 @@ app.delete('/api/blacklist/:id', async (req, res) => {
     const { id } = req.params;
     
     const { db } = require('./database');
-    const stmt = db.prepare('DELETE FROM blacklist WHERE id = ?');
-    const result = stmt.run(id);
     
-    if (result.changes === 0) {
+    // Haal item info op VOORDAT je verwijdert
+    const getItemStmt = db.prepare('SELECT naam, discord_id FROM blacklist WHERE id = ?');
+    const item = getItemStmt.get(id);
+    
+    if (!item) {
       return res.status(404).json({ error: 'Blacklist item niet gevonden' });
     }
     
-    // Haal item info voor logging
-    const getItemStmt = db.prepare('SELECT naam, discord_id FROM blacklist WHERE id = ?');
-    const item = getItemStmt.get(id);
+    // Verwijder het item
+    const stmt = db.prepare('DELETE FROM blacklist WHERE id = ?');
+    const result = stmt.run(id);
     
     // Voeg toe aan logs
     const { addLogEntry } = require('./database');
     addLogEntry({
       actie: 'blacklist_verwijderd',
       door: 'Systeem', // TODO: Haal huidige gebruiker op
-      doelwit: item ? `${item.naam} (${item.discord_id})` : `ID: ${id}`,
+      doelwit: `${item.naam} (${item.discord_id})`,
       details: `Blacklist item verwijderd`,
       extra: `Verwijderd ID: ${id}`
     });
     
-    console.log(`[BLACKLIST] Item ${id} verwijderd uit blacklist`);
+    console.log(`[BLACKLIST] Item ${id} (${item.naam}) verwijderd uit blacklist`);
     
     res.json({ 
       success: true, 
