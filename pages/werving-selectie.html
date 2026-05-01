@@ -7,30 +7,71 @@
   <link rel="stylesheet" href="../Css/style.css" />
   <style>
     .compact-layout {
-      max-width: 900px;
+      max-width: 1200px;
       margin: 0 auto;
     }
+    
+    .dashboard-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 20px;
+    }
+    
+    .dashboard-title {
+      flex-shrink: 0;
+      min-width: 200px;
+    }
+    
+    .dashboard-title h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      white-space: nowrap;
+    }
+    
+    .dashboard-stats {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    
+    .dashboard-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    
     .stat-card {
       background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
       color: white;
-      padding: 12px;
+      padding: 8px;
       border-radius: 8px;
       text-align: center;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       transition: transform 0.2s ease;
       border: 1px solid #7c3aed;
+      min-width: 70px;
     }
     .stat-card:hover {
       transform: translateY(-1px);
     }
     .stat-number {
-      font-size: 1.8rem;
+      font-size: 1.5rem;
       font-weight: bold;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
     .stat-label {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       opacity: 0.9;
+    }
+    
+    .dashboard-actions button {
+      font-size: 0.7rem;
+      padding: 4px 8px;
+      white-space: nowrap;
     }
     .btn-blue {
       background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
@@ -171,42 +212,34 @@
         <div class="compact-layout">
           <!-- Dashboard Overzicht -->
           <div class="card">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:20px;padding:20px">
-              <div style="flex-shrink:0">
-                <h3 style="margin:0;white-space:nowrap;font-size:1.1rem">Werving & Selectie Dashboard</h3>
+            <div class="dashboard-header">
+              <div class="dashboard-title">
+                <h3>Werving & Selectie Dashboard</h3>
               </div>
               
-              <!-- Statistieken -->
-              <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
-                <div class="stat-card" style="min-width:70px;padding:8px">
-                  <div class="stat-number" id="wachtend-count" style="font-size:1.5rem">0</div>
-                  <div class="stat-label" style="font-size:0.7rem">Wachtend</div>
+              <div class="dashboard-stats">
+                <div class="stat-card">
+                  <div class="stat-number" id="wachtend-count">0</div>
+                  <div class="stat-label">Wachtend</div>
                 </div>
-                <div class="stat-card" style="min-width:70px;padding:8px">
-                  <div class="stat-number" id="gesprekken-count" style="font-size:1.5rem">0</div>
-                  <div class="stat-label" style="font-size:0.7rem">Gesprekken</div>
+                <div class="stat-card">
+                  <div class="stat-number" id="gesprekken-count">0</div>
+                  <div class="stat-label">Gesprekken</div>
                 </div>
-                <div class="stat-card" style="min-width:70px;padding:8px">
-                  <div class="stat-number" id="afgekeurd-count" style="font-size:1.5rem">0</div>
-                  <div class="stat-label" style="font-size:0.7rem">Afgekeurd</div>
+                <div class="stat-card">
+                  <div class="stat-number" id="afgekeurd-count">0</div>
+                  <div class="stat-label">Afgekeurd</div>
                 </div>
-                <div class="stat-card" style="min-width:70px;padding:8px">
-                  <div class="stat-number" id="totaal-count" style="font-size:1.5rem">0</div>
-                  <div class="stat-label" style="font-size:0.7rem">Totaal</div>
+                <div class="stat-card">
+                  <div class="stat-number" id="totaal-count">0</div>
+                  <div class="stat-label">Totaal</div>
                 </div>
               </div>
               
-              <!-- Actie Knoppen -->
-              <div style="display:flex;gap:4px;align-items:center;flex-shrink:0">
-                <button class="btn-purple" onclick="openSollicitantForm()" style="font-size:0.7rem;padding:3px 6px;white-space:nowrap">
-                  Sollicitant Toevoegen
-                </button>
-                <button class="btn-blue" onclick="scrollToSection('tickets-section')" style="font-size:0.7rem;padding:3px 6px;white-space:nowrap">
-                  Wachtend (<span id="wachtend-badge">0</span>)
-                </button>
-                <button class="btn-green" onclick="scrollToSection('gesprekken-section')" style="font-size:0.7rem;padding:3px 6px;white-space:nowrap">
-                  Gesprekken (<span id="gesprekken-badge">0</span>)
-                </button>
+              <div class="dashboard-actions">
+                <button class="btn-purple" onclick="openSollicitantForm()">Sollicitant Toevoegen</button>
+                <button class="btn-blue" onclick="scrollToSection('tickets-section')">Wachtend (<span id="wachtend-badge">0</span>)</button>
+                <button class="btn-green" onclick="scrollToSection('gesprekken-section')">Gesprekken (<span id="gesprekken-badge">0</span>)</button>
               </div>
             </div>
           </div>
