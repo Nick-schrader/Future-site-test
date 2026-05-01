@@ -74,10 +74,28 @@ let _kandidatenLijst = [];
 
 // Helper functions to clear specific ping timers
 function clearWachtrijTimer() {
-  if (window._pingHerhaalTimer) {
-    clearInterval(window._pingHerhaalTimer);
-    window._pingHerhaalTimer = null;
+  // Globale variabelen voor interval management
+  let wachtrijInterval = null;
+  let alertPingTimer = null;
+  let pingHerhaalTimer = null;
+
+  // Interval management voor memory leak prevention
+  const activeIntervals = new Set();
+
+  function createManagedInterval(callback, interval) {
+    const intervalId = setInterval(callback, interval);
+    activeIntervals.add(intervalId);
+    return intervalId;
   }
+
+  function clearAllIntervals() {
+    console.log('[MEMORY] Clearing', activeIntervals.size, 'active intervals');
+    activeIntervals.forEach(intervalId => clearInterval(intervalId));
+    activeIntervals.clear();
+  }
+
+  // Clear intervals bij page unload
+  window.addEventListener('beforeunload', clearAllIntervals);
 }
 
 function clearAlertTimer() {
@@ -204,11 +222,16 @@ window.onload = async () => {
     }
     laadEenheden();
     renderMeldingen();
-    setInterval(() => { laadEenheden(); renderMeldingen(); }, 3000);
-    setInterval(() => { ovdUpdateInfo(); }, 10000); // Elke 10 seconden ipv elke 3
-    setInterval(renderLeaderboard, 1000);
+    
+    // Clear existing intervals before creating new ones
+    clearAllIntervals();
+    
+    // Create managed intervals to prevent memory leaks
+    createManagedInterval(() => { laadEenheden(); renderMeldingen(); }, 3000);
+    createManagedInterval(() => { ovdUpdateInfo(); }, 10000); // Elke 10 seconden ipv elke 3
+    createManagedInterval(renderLeaderboard, 1000);
     // Live specialisaties update (zonder hele tabel refresh)
-    setInterval(updateSpecialisatiesLive, 10000); // elke 10 seconden
+    createManagedInterval(updateSpecialisatiesLive, 10000); // elke 10 seconden
 
     // Altijd DB checken voor status/voertuig/indienstStart
     if (u.id) {
@@ -271,9 +294,11 @@ window.onload = async () => {
     if (content) content.scrollTop = 0;
     // Laad eenheden voor leaderboard ook in user view
     laadEenheden();
-    setInterval(laadEenheden, 5000);
-    setInterval(updateOCInfo, 3000);
-    setInterval(renderLeaderboard, 1000);
+    
+    // Create managed intervals for user view
+    createManagedInterval(laadEenheden, 5000);
+    createManagedInterval(updateOCInfo, 3000);
+    createManagedInterval(renderLeaderboard, 1000);
 
     // Verberg inloggen knoppen op basis van DC rollen
     const rollen = (u.rollen || []).map(r => r.naam || r);
@@ -896,7 +921,7 @@ function renderMeldingen() {
           const interval = (window._pingInterval || 30) * 1000;
           console.log('PING INTERVAL - Starting wachtrij timer with interval:', interval/1000, 'seconds');
 
-          window._pingHerhaalTimer = setInterval(() => {
+          window._pingHerhaalTimer = createManagedInterval(() => {
             if (!window._wachtrij || window._wachtrij.length === 0) {
               console.log('PING INTERVAL - Wachtrij empty, stopping timer');
               clearInterval(window._pingHerhaalTimer);
@@ -918,7 +943,7 @@ function renderMeldingen() {
         if (!window._alertPingTimer) {
           const alertInterval = (window._pingInterval || 30) * 1000;
 
-          window._alertPingTimer = setInterval(() => {
+          window._alertPingTimer = createManagedInterval(() => {
             // Check if we have any alerts to process
             if (!window._currentAlerts || window._currentAlerts.length === 0) {
               clearInterval(window._alertPingTimer);
@@ -1747,7 +1772,7 @@ async function aanmeldenDirect() {
 function startWachtrijPolling(userId) {
   if (wachtrijInterval) clearInterval(wachtrijInterval); // oude interval stoppen als die bestaat
 
-  wachtrijInterval = setInterval(async () => {
+  wachtrijInterval = createManagedInterval(async () => {
     try {
       const resp = await fetch(`${API_URL}/api/indeling/${userId}`);
       const data = await resp.json();
@@ -1889,7 +1914,7 @@ function startIndienstTimer(elId) {
   const targetId = elId || 'oc-tijd';
   const u = getUser();
   if (!u.indienstStart) return;
-  setInterval(() => {
+  createManagedInterval(() => {
     const diff = Date.now() - u.indienstStart;
     const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
     const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
