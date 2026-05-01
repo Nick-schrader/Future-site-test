@@ -6,6 +6,49 @@ let tickets = [];
 let gesprekken = [];
 let currentUser = null;
 
+// Get volgende roepnummer functie (zelfde als roepnummer.js)
+async function getVolgendeRoepnummerForRang(rang) {
+    try {
+        // Haal bestaande personeel op om gebruikte roepnummers te checken
+        const response = await fetch(`${API}/api/roepnummer/personeel`);
+        const bestaandPersoneel = response.ok ? await response.json() : [];
+        
+        const rangDefinities = {
+            '1e klasse': { min: '56-01', max: '56-20' },
+            '2e klasse': { min: '56-21', max: '56-40' },
+            '3e klasse': { min: '56-41', max: '56-80' },
+            '4e klasse': { min: '56-81', max: '56-140' }
+        };
+        
+        const definitie = rangDefinities[rang];
+        if (!definitie) {
+            console.error('[WERING] Onbekende rang:', rang);
+            return null;
+        }
+        
+        const minNum = parseInt(definitie.min.split('-')[1]);
+        const maxNum = parseInt(definitie.max.split('-')[1]);
+        
+        // Haal bestaande roepnummers op voor deze rang
+        const gebruikteNummers = bestaandPersoneel
+            .filter(p => p.rang === rang && p.roepnummer)
+            .map(p => parseInt(p.roepnummer.split('-')[1]));
+        
+        // Vind eerste beschikbare nummer
+        for (let i = minNum; i <= maxNum; i++) {
+            if (!gebruikteNummers.includes(i)) {
+                return `56-${i.toString().padStart(2, '0')}`;
+            }
+        }
+        
+        console.warn('[WERING] Geen beschikbaar roepnummer voor rang:', rang);
+        return null;
+    } catch (error) {
+        console.error('[WERING] Fout bij vinden roepnummer:', error);
+        return null;
+    }
+}
+
 // Initialiseer de pagina
 document.addEventListener('DOMContentLoaded', function() {
     loadCurrentUser();
@@ -425,39 +468,19 @@ async function keurTicketGoed() {
                 return volledigeNaam; // Als er geen tweede deel is, return volledige naam
             }
 
-            // Vind beschikbaar roepnummer voor 4e klasse (range: 56-81 tot 56-140)
-            async function vindBeschikbaarRoepnummer() {
-                try {
-                    // Haal bestaande personeel op om gebruikte roepnummers te checken
-                    const response = await fetch(`${API}/api/roepnummer/personeel`);
-                    const bestaandPersoneel = response.ok ? await response.json() : [];
-                    
-                    const gebruikteNummers = bestaandPersoneel
-                        .filter(p => p.rang === '4e klasse' && p.roepnummer)
-                        .map(p => parseInt(p.roepnummer.split('-')[1]));
-                    
-                    // Vind eerste beschikbare nummer in range 81-140
-                    for (let i = 81; i <= 140; i++) {
-                        if (!gebruikteNummers.includes(i)) {
-                            return `56-${i.toString().padStart(2, '0')}`;
-                        }
-                    }
-                    return null; // Geen beschikbaar nummer
-                } catch (error) {
-                    console.error('Fout bij vinden roepnummer:', error);
-                    return null;
-                }
-            }
-
-            const beschikbaarRoepnummer = await vindBeschikbaarRoepnummer();
+            // Gebruik dezelfde roepnummer logica als voegPersoneelToe
+            // Importeer de getVolgendeRoepnummer functie van roepnummer.js
+            const roepnummer = await getVolgendeRoepnummerForRang('4e klasse');
             
             // Voeg personeel toe aan roepnummer systeem als 4e klasse
             const personeelData = {
                 naam: afkortNaam(ticket.ingameNaam),
                 discordId: ticket.discordId,
                 rang: '4e klasse',
-                roepnummer: beschikbaarRoepnummer
+                roepnummer: roepnummer
             };
+            
+            console.log('[WERING] Personeel data voor roepnummer systeem:', personeelData);
 
             await fetch(`${API}/api/roepnummer/personeel`, {
                 method: 'POST',
