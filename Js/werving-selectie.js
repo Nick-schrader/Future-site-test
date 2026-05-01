@@ -402,9 +402,18 @@ async function keurTicketGoed() {
                 body: JSON.stringify(gesprek)
             });
 
+            // Functie om naam af te korten (eerste deel + eerste letter van tweede deel)
+            function afkortNaam(volledigeNaam) {
+                const delen = volledigeNaam.split(' ');
+                if (delen.length >= 2) {
+                    return delen[0] + ' ' + delen[1].charAt(0) + '.';
+                }
+                return volledigeNaam; // Als er geen tweede deel is, return volledige naam
+            }
+
             // Voeg personeel toe aan roepnummer systeem als 4e klasse
             const personeelData = {
-                naam: ticket.ingameNaam,
+                naam: afkortNaam(ticket.ingameNaam),
                 discordId: ticket.discordId,
                 rang: '4e klasse',
                 roepnummer: null // Laat systeem automatisch toewijzen
