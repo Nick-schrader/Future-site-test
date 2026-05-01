@@ -1201,21 +1201,30 @@ app.get('/api/debug/logs', (_req, res) => {
 
 app.post('/api/logs', (req, res) => {
   try {
-    const { actie, door, doelwit, details, tijd } = req.body;
+    const { actie, door, doelwit, details, tijd, timestamp } = req.body;
+    
+    // Gebruik timestamp of tijd fallback
+    const logTime = timestamp || tijd || new Date().toISOString();
     
     // Valideer verplichte velden
-    if (!actie || !door || !tijd) {
-      return res.status(400).json({ error: 'Missing required fields: actie, door, tijd' });
+    if (!actie || !logTime) {
+      return res.status(400).json({ error: 'Missing required fields: actie, timestamp/tijd' });
     }
     
-    // Insert log into database
-    const stmt = db.prepare(`
-      INSERT INTO logs (actie, door, doelwit, details, tijd)
-      VALUES (?, ?, ?, ?, ?)
-    `);
+    console.log('[LOGS POST] Received log data:', { actie, door, doelwit, details, timestamp: logTime });
     
-    stmt.run(actie, door, doelwit || '', details || '', tijd);
+    // Gebruik addLogEntry functie voor consistentie
+    const { addLogEntry } = require('./database');
+    addLogEntry({
+      actie: actie,
+      door: door || 'Systeem',
+      doelwit: doelwit || '',
+      details: details || '',
+      extra: '',
+      timestamp: logTime
+    });
     
+    console.log('[LOGS POST] Log entry successfully saved');
     res.json({ success: true, message: 'Log successfully saved' });
   } catch (error) {
     console.error('[LOGS] Error saving log:', error);
@@ -1769,13 +1778,19 @@ app.delete('/api/blacklist/:id', async (req, res) => {
     
     // Voeg toe aan logs
     const { addLogEntry } = require('./database');
-    addLogEntry({
+    console.log('[BLACKLIST DELETE] addLogEntry functie beschikbaar:', typeof addLogEntry);
+    
+    const logData = {
       actie: 'blacklist_verwijderd',
       door: 'Systeem', // TODO: Haal huidige gebruiker op
       doelwit: `${item.naam} (${item.discord_id})`,
       details: `Blacklist item verwijderd`,
       extra: `Verwijderd ID: ${id}`
-    });
+    };
+    
+    console.log('[BLACKLIST DELETE] Log data:', logData);
+    addLogEntry(logData);
+    console.log('[BLACKLIST DELETE] Log entry toegevoegd');
     
     console.log(`[BLACKLIST] Item ${id} (${item.naam}) verwijderd uit blacklist`);
     
