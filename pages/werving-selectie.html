@@ -171,38 +171,40 @@
         <div class="compact-layout">
           <!-- Dashboard Overzicht -->
           <div class="card">
-            <div style="display:flex;align-items:center;gap:24px;padding:16px 0">
-              <h3 style="margin:0;white-space:nowrap;font-size:1.1rem;min-width:200px">Werving & Selectie Dashboard</h3>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:20px;padding:20px">
+              <div style="flex-shrink:0">
+                <h3 style="margin:0;white-space:nowrap;font-size:1.1rem">Werving & Selectie Dashboard</h3>
+              </div>
               
               <!-- Statistieken -->
-              <div style="display:flex;gap:8px;align-items:center">
-                <div class="stat-card" style="min-width:80px">
-                  <div class="stat-number" id="wachtend-count">0</div>
-                  <div class="stat-label">Wachtend</div>
+              <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
+                <div class="stat-card" style="min-width:70px;padding:8px">
+                  <div class="stat-number" id="wachtend-count" style="font-size:1.5rem">0</div>
+                  <div class="stat-label" style="font-size:0.7rem">Wachtend</div>
                 </div>
-                <div class="stat-card" style="min-width:80px">
-                  <div class="stat-number" id="gesprekken-count">0</div>
-                  <div class="stat-label">Gesprekken</div>
+                <div class="stat-card" style="min-width:70px;padding:8px">
+                  <div class="stat-number" id="gesprekken-count" style="font-size:1.5rem">0</div>
+                  <div class="stat-label" style="font-size:0.7rem">Gesprekken</div>
                 </div>
-                <div class="stat-card" style="min-width:80px">
-                  <div class="stat-number" id="afgekeurd-count">0</div>
-                  <div class="stat-label">Afgekeurd</div>
+                <div class="stat-card" style="min-width:70px;padding:8px">
+                  <div class="stat-number" id="afgekeurd-count" style="font-size:1.5rem">0</div>
+                  <div class="stat-label" style="font-size:0.7rem">Afgekeurd</div>
                 </div>
-                <div class="stat-card" style="min-width:80px">
-                  <div class="stat-number" id="totaal-count">0</div>
-                  <div class="stat-label">Totaal</div>
+                <div class="stat-card" style="min-width:70px;padding:8px">
+                  <div class="stat-number" id="totaal-count" style="font-size:1.5rem">0</div>
+                  <div class="stat-label" style="font-size:0.7rem">Totaal</div>
                 </div>
               </div>
               
               <!-- Actie Knoppen -->
-              <div style="display:flex;gap:6px;align-items:center;margin-left:auto">
-                <button class="btn-purple" onclick="openSollicitantForm()" style="font-size:0.75rem;padding:4px 8px">
+              <div style="display:flex;gap:4px;align-items:center;flex-shrink:0">
+                <button class="btn-purple" onclick="openSollicitantForm()" style="font-size:0.7rem;padding:3px 6px;white-space:nowrap">
                   Sollicitant Toevoegen
                 </button>
-                <button class="btn-blue" onclick="scrollToSection('tickets-section')" style="font-size:0.75rem;padding:4px 8px">
+                <button class="btn-blue" onclick="scrollToSection('tickets-section')" style="font-size:0.7rem;padding:3px 6px;white-space:nowrap">
                   Wachtend (<span id="wachtend-badge">0</span>)
                 </button>
-                <button class="btn-green" onclick="scrollToSection('gesprekken-section')" style="font-size:0.75rem;padding:4px 8px">
+                <button class="btn-green" onclick="scrollToSection('gesprekken-section')" style="font-size:0.7rem;padding:3px 6px;white-space:nowrap">
                   Gesprekken (<span id="gesprekken-badge">0</span>)
                 </button>
               </div>
