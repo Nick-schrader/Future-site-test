@@ -364,7 +364,7 @@ async function keurTicketGoed() {
     if (!ticketId) return;
 
     try {
-        // Update ticket status
+        // Update ticket status via API
         const response = await fetch(`${API}/api/sollicitatie-tickets/${ticketId}`, {
             method: 'PATCH',
             headers: {
@@ -377,12 +377,18 @@ async function keurTicketGoed() {
         });
 
         if (response.ok) {
-            // Maak gesprek aan
+            // Verwijder ticket via API
+            await fetch(`${API}/api/sollicitatie-tickets/${ticketId}`, {
+                method: 'DELETE'
+            });
+
+            // Maak gesprek aan via API
             const ticket = tickets.find(t => t.id === ticketId);
             const gesprek = {
                 id: Date.now().toString(),
                 ingameNaam: ticket.ingameNaam,
                 discordId: ticket.discordId,
+                aangemaaktDoor: ticket.aangemaaktDoor || 'Onbekend',
                 goedgekeurdDoor: currentUser?.displayName || currentUser?.username || 'Onbekend',
                 datum: new Date().toISOString(),
                 notitie: null
@@ -395,6 +401,13 @@ async function keurTicketGoed() {
                 },
                 body: JSON.stringify(gesprek)
             });
+
+            // Update displays
+            sluitTicketModal();
+            await loadTickets();
+            await loadGesprekken();
+            updateDashboardStats();
+            showToast('Ticket goedgekeurd en verplaatst naar gesprekken!');
         } else {
             // Fallback naar localStorage
             keurTicketGoedInStorage(ticketId);
