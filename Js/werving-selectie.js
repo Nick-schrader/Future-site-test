@@ -146,6 +146,9 @@ async function maakTicketAan(sollicitantData) {
             document.getElementById('geboortedatum').value = '';
             document.getElementById('sollicitatie-nummer').value = '';
             
+            // Sluit popup
+            sluitSollicitantPopup();
+            
             // Reload tickets
             await loadTickets();
             showToast('Sollicitatie ticket aangemaakt!');
@@ -174,6 +177,9 @@ function saveTicketToStorage(ticket) {
         document.getElementById('discord-id').value = '';
         document.getElementById('geboortedatum').value = '';
         document.getElementById('sollicitatie-nummer').value = '';
+        
+        // Sluit popup
+        sluitSollicitantPopup();
         
         // Update display
         displayTickets();
