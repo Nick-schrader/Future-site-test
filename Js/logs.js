@@ -20,10 +20,10 @@ window.onload = () => {
 
 function laadLogs() {
   console.log('[LOGS] Laden van logs...');
-  const API_URL = window.location.origin;
-  console.log('[LOGS] API URL:', API_URL);
+  const logsApiUrl = window.location.origin;
+  console.log('[LOGS] API URL:', logsApiUrl);
   
-  fetch(`${API_URL}/api/logs`)
+  fetch(`${logsApiUrl}/api/logs`)
     .then(r => {
       console.log('[LOGS] Response status:', r.status);
       return r.json();

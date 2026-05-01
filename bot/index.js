@@ -1133,15 +1133,42 @@ app.put('/api/roepnummer/personeel/:personeelId', (req, res) => {
   }
 });
 
+// ---- API: Delete Personeel ----
+app.delete('/api/roepnummer/personeel/:personeelId', (req, res) => {
+  try {
+    const personeelId = req.params.personeelId;
+    console.log('[ROEPNUMMER] Deleting personeel:', personeelId);
+    
+    // Verwijder personeel uit database
+    const stmt = db.prepare('DELETE FROM gebruikers WHERE id = ?');
+    const result = stmt.run(personeelId);
+    
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Personeel niet gevonden' });
+    }
+    
+    console.log('[ROEPNUMMER] Successfully deleted personeel:', personeelId);
+    res.json({ success: true, message: 'Personeel succesvol verwijderd' });
+    
+  } catch (err) {
+    console.error('[ROEPNUMMER] Error deleting personeel:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // ---- API: Logs ----
 app.get('/api/logs', (_req, res) => {
   try {
     const logs = db.prepare('SELECT * FROM logs ORDER BY timestamp DESC LIMIT 200').all();
     console.log('[DEBUG] /api/logs - Total logs in DB:', logs.length);
     console.log('[DEBUG] /api/logs - Latest log:', logs[0]);
-    res.json(logs);
+    
+    // Zorg dat we altijd een array teruggeven
+    const responseLogs = Array.isArray(logs) ? logs : [];
+    res.json(responseLogs);
   } catch (error) {
     console.error('[LOGS] Fout bij ophalen logs:', error);
+    // Bij error, geef lege array terug met error status
     res.status(500).json({ error: error.message });
   }
 });
@@ -1581,6 +1608,9 @@ app.post('/api/dismiss-user', async (req, res) => {
     if (!discordId) {
       return res.status(400).json({ error: 'Discord ID is verplicht' });
     }
+    
+    // Import database functies
+    const { upsertGebruiker } = require('./database');
     
     // Update gebruiker in database - markeer als ontslagen
     const updateResult = upsertGebruiker.run({
