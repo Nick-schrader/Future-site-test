@@ -463,7 +463,15 @@ function renderEenheden() {
   const u = getUser();
   const canEdit = ['ovd', 'opco', 'oc', 'ops'].includes(u.role);
 
-  if (!window._groepIngeklapt) window._groepIngeklapt = {};
+  if (!window._groepIngeklapt) {
+    // Probeer de staat uit localStorage te laden
+    try {
+      const opgeslagen = localStorage.getItem('groepIngeklapt');
+      window._groepIngeklapt = opgeslagen ? JSON.parse(opgeslagen) : {};
+    } catch (e) {
+      window._groepIngeklapt = {};
+    }
+  }
 
   const GROEPEN = ['17', '18', '20'];
   const groepen = {};
@@ -705,6 +713,10 @@ function formatDuur(ms) {
 function toggleGroep(label) {
   if (!window._groepIngeklapt) window._groepIngeklapt = {};
   window._groepIngeklapt[label] = !window._groepIngeklapt[label];
+  
+  // Sla de staat op in localStorage voor persistentie
+  localStorage.setItem('groepIngeklapt', JSON.stringify(window._groepIngeklapt));
+  
   renderEenheden();
 }
 function dragEenheid(event, userId) {
