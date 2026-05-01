@@ -1658,7 +1658,7 @@ app.post('/api/blacklist', async (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
     
-    stmt.run(
+    const result = stmt.run(
       discord_id,
       naam,
       roepnummer || '',
