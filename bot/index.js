@@ -2059,7 +2059,20 @@ app.get('/api/sollicitatie-gesprekken', async (_req, res) => {
     const { db } = require('./database');
     const gesprekken = db.prepare('SELECT * FROM sollicitatie_gesprekken ORDER BY datum DESC').all();
     
-    res.json(gesprekken);
+    // Map database velden naar frontend veldnamen
+    const mappedGesprekken = gesprekken.map(gesprek => ({
+      id: gesprek.id,
+      ingameNaam: gesprek.ingame_naam,
+      discordId: gesprek.discord_id,
+      aangemaaktDoor: gesprek.aangemaakt_door,
+      goedgekeurdDoor: gesprek.goedgekeurd_door,
+      datum: gesprek.datum,
+      notitie: gesprek.notitie,
+      status: gesprek.status
+    }));
+    
+    console.log('[SOLLICITATIE] Gesprekken mapped:', mappedGesprekken.length);
+    res.json(mappedGesprekken);
     
   } catch (err) {
     console.error('[SOLLICITATIE] Fout bij ophalen gesprekken:', err);
@@ -2092,10 +2105,24 @@ app.post('/api/sollicitatie-gesprekken', async (req, res) => {
       notitie || ''
     );
     
+    // Return de gemapte gesprek data voor consistentie
+    const createdGesprek = {
+      id: Date.now().toString(),
+      ingameNaam: ingameNaam,
+      discordId: discordId,
+      aangemaaktDoor: aangemaaktDoor || '',
+      goedgekeurdDoor: goedgekeurdDoor || '',
+      datum: new Date().toISOString(),
+      notitie: notitie || '',
+      status: 'wachtend'
+    };
+    
+    console.log('[SOLLICITATIE] Gesprek created:', createdGesprek);
+    
     res.json({ 
       success: true, 
       message: 'Sollicitatie gesprek aangemaakt',
-      id: result.lastInsertRowid
+      gesprek: createdGesprek
     });
     
   } catch (err) {
