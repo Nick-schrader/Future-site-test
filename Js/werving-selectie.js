@@ -402,12 +402,28 @@ async function keurTicketGoed() {
                 body: JSON.stringify(gesprek)
             });
 
+            // Voeg personeel toe aan roepnummer systeem als 4e klasse
+            const personeelData = {
+                naam: ticket.ingameNaam,
+                discordId: ticket.discordId,
+                rang: '4e klasse',
+                roepnummer: null // Laat systeem automatisch toewijzen
+            };
+
+            await fetch(`${API}/api/roepnummer/personeel`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(personeelData)
+            });
+
             // Update displays
             sluitTicketModal();
             await loadTickets();
             await loadGesprekken();
             updateDashboardStats();
-            showToast('Ticket goedgekeurd en verplaatst naar gesprekken!');
+            showToast('Ticket goedgekeurd! Personeel toegevoegd als 4e klasse met roepnummer.');
         } else {
             // Fallback naar localStorage
             keurTicketGoedInStorage(ticketId);
