@@ -1200,6 +1200,13 @@ function setStatus(s) {
   console.log('🔄 Previous status:', previousStatus, 'New status:', s);
   console.log('🔄 Before change - Current alerts:', window._currentAlerts?.length || 0);
   
+  // Controleer of gebruiker geldig is voor status wijziging
+  if (!u || !u.id) {
+    console.error('🔄 STATUS CHANGE - Geen geldige gebruiker gevonden');
+    showToast('Fout: niet ingelogd');
+    return;
+  }
+  
   if (s === 10) {
     document.getElementById('uitdienst-modal').classList.remove('hidden');
     return;
@@ -1333,6 +1340,13 @@ function latRolVallen() {
 function bevestigUitdienst() {
   document.getElementById('uitdienst-modal').classList.add('hidden');
   const u = getUser();
+  
+  // Controleer of gebruiker geldig is
+  if (!u || !u.id) {
+    console.error('🔄 UITDIENST - Geen geldige gebruiker gevonden');
+    showToast('Fout: geen geldige gebruiker');
+    return;
+  }
 
   // Eerst rol resetten in database
   console.log('🔄 UITDIENST - Rol resetten van', u.role, 'naar user');

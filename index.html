@@ -107,9 +107,13 @@
             indienstStart: null,
             status: null,
             voertuig: null,
+            ingedeeld: false, // Zorg dat dit correct is geïnitialiseerd
           }));
 
-          window.location.href = 'pages/porto.html';
+          // Kleine vertraging om ervoor te zorgen dat localStorage is bijgewerkt
+          setTimeout(() => {
+            window.location.href = 'pages/porto.html';
+          }, 100);
         }).catch(err => {
           console.error('Database reset failed:', err);
           // Fallback: sla toch op zonder reset
@@ -130,8 +134,14 @@
             refresh: 200,
             streamer: false,
             naamLock: false,
+            indienstStart: null,
+            status: null,
+            voertuig: null,
+            ingedeeld: false, // Zorg dat dit correct is geïnitialiseerd
           }));
-          window.location.href = 'pages/porto.html';
+          setTimeout(() => {
+            window.location.href = 'pages/porto.html';
+          }, 100);
         });
 
       } catch (e) {
