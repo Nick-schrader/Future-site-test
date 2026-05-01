@@ -20,20 +20,32 @@ function loadCurrentUser() {
     }
 }
 
+// Controleer blacklist
+async function checkBlacklist(discordId) {
+    try {
+        const response = await fetch(`${API}/api/blacklist/check/${discordId}`);
+        const result = await response.json();
+        return result.isBlacklisted;
+    } catch (error) {
+        console.error('Fout bij blacklist controle:', error);
+        return false;
+    }
+}
+
 // Laad evaluaties
 async function loadEvaluaties() {
     try {
         const response = await fetch(`${API}/api/evaluaties`);
         if (response.ok) {
             evaluatieData = await response.json();
-            displayEvaluaties();
+            await displayEvaluaties();
             updateStatistics();
         }
     } catch (error) {
         console.error('Fout bij laden evaluaties:', error);
         // Start met lege data als API niet beschikbaar is
         evaluatieData = [];
-        displayEvaluaties();
+        await displayEvaluaties();
         updateStatistics();
     }
 }
@@ -261,7 +273,7 @@ function bepaalConsensus(evaluaties) {
 }
 
 // Toon evaluaties
-function displayEvaluaties() {
+async function displayEvaluaties() {
     const gegroepeerd = groepeerEvaluatiesPerSollicitant();
     
     // Lege tabellen
@@ -269,13 +281,24 @@ function displayEvaluaties() {
     document.getElementById('twijfel-tbody').innerHTML = '<tr><td colspan="6" style="color:#555;text-align:center">Geen twijfelachtige sollicitanten</td></tr>';
     document.getElementById('blacklist-tbody').innerHTML = '<tr><td colspan="6" style="color:#555;text-align:center">Geen blacklist sollicitanten</td></tr>';
     
-    Object.values(gegroepeerd).forEach(sollicitant => {
+    for (const sollicitant of Object.values(gegroepeerd)) {
         const consensus = bepaalConsensus(sollicitant.evaluaties);
         const teams = Array.from(sollicitant.teams).join(', ');
         
+        // Check blacklist status
+        let blacklistStatus = '';
+        try {
+            const isBlacklisted = await checkBlacklist(sollicitant.discordId);
+            if (isBlacklisted) {
+                blacklistStatus = '<span style="background:#ef4444;color:white;padding:2px 6px;border-radius:4px;font-size:0.7rem">🚫 BLACKLIST</span>';
+            }
+        } catch (error) {
+            console.error('Fout bij blacklist controle:', error);
+        }
+        
         const row = `
             <tr>
-                <td>${sollicitant.discordNaam}</td>
+                <td>${sollicitant.discordNaam}${blacklistStatus ? '<br>' + blacklistStatus : ''}</td>
                 <td>${sollicitant.discordId}</td>
                 <td>${sollicitant.roepnummer}</td>
                 <td>${teams}</td>
@@ -293,7 +316,7 @@ function displayEvaluaties() {
         } else if (consensus.status === 'blacklist') {
             document.getElementById('blacklist-tbody').innerHTML = row + document.getElementById('blacklist-tbody').innerHTML;
         }
-    });
+    }
 }
 
 // Toon details van sollicitant
@@ -318,7 +341,7 @@ function toonDetails(discordId) {
 }
 
 // Filter evaluaties
-function filterEvaluaties() {
+async function filterEvaluaties() {
     const searchTerm = document.getElementById('eval-search').value.toLowerCase();
     
     // Filter op basis van zoekterm
@@ -332,7 +355,7 @@ function filterEvaluaties() {
     // Update display met gefilterde data
     const origineleData = evaluatieData;
     evaluatieData = gefilterd;
-    displayEvaluaties();
+    await displayEvaluaties();
     evaluatieData = origineleData;
 }
 
