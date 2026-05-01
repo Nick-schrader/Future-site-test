@@ -1692,13 +1692,18 @@ app.post('/api/blacklist', async (req, res) => {
 // Haal blacklist op
 app.get('/api/blacklist', async (_req, res) => {
   try {
+    console.log('[BLACKLIST GET] Request received');
     const { db } = require('./database');
+    console.log('[BLACKLIST GET] Database connection established');
+    
     const blacklist = db.prepare('SELECT * FROM blacklist ORDER BY datum DESC').all();
+    console.log('[BLACKLIST GET] Query executed, results:', blacklist.length, 'items');
     
     res.json(blacklist);
     
   } catch (err) {
     console.error('[BLACKLIST] Fout bij ophalen blacklist:', err);
+    console.error('[BLACKLIST] Error stack:', err.stack);
     res.status(500).json({ error: err.message });
   }
 });
