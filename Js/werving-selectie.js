@@ -97,8 +97,10 @@ async function checkBlacklist(discordId, sollicitantData) {
             resultDiv.innerHTML = `
                 <div style="color:#ef4444">
                     <h4>⚠️ Persoon staat op de blacklist!</h4>
-                    <p>Reden: ${result.reason || 'Geen reden opgegeven'}</p>
-                    <p>Datum: ${result.date ? new Date(result.date).toLocaleDateString() : 'Onbekend'}</p>
+                    <p><strong>Reden:</strong> ${result.reason || 'Geen reden opgegeven'}</p>
+                    ${result.beschrijving ? `<p><strong>Beschrijving:</strong> ${result.beschrijving}</p>` : ''}
+                    <p><strong>Datum:</strong> ${result.date ? new Date(result.date).toLocaleDateString('nl-NL') : 'Onbekend'}</p>
+                    ${result.blacklisted_by ? `<p><strong>Blacklisted door:</strong> ${result.blacklisted_by}</p>` : ''}
                     <p style="margin-top:12px">Sollicitatie kan niet worden voortgezet.</p>
                 </div>
             `;

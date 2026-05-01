@@ -1843,12 +1843,20 @@ app.get('/api/blacklist/check/:discordId', (req, res) => {
     const { discordId } = req.params;
     
     const { db } = require('./database');
-    const stmt = db.prepare('SELECT COUNT(*) as count FROM blacklist WHERE discord_id = ?');
+    const stmt = db.prepare('SELECT * FROM blacklist WHERE discord_id = ?');
     const result = stmt.get(discordId);
     
-    const isBlacklisted = result.count > 0;
-    
-    res.json({ isBlacklisted });
+    if (result) {
+      res.json({ 
+        isBlacklisted: true,
+        reason: result.reden,
+        date: result.datum,
+        beschrijving: result.beschrijving,
+        blacklisted_by: result.blacklisted_by
+      });
+    } else {
+      res.json({ isBlacklisted: false });
+    }
     
   } catch (err) {
     console.error('[BLACKLIST] Fout bij controle:', err);

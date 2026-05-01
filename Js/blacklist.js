@@ -45,8 +45,7 @@ function displayBlacklist(data) {
                 <td>${blacklistDatum}</td>
                 <td>${item.blacklisted_by || '-'}</td>
                 <td>
-                    <button class="btn-ghost" onclick="editBlacklist('${item.id}')" style="padding:4px 8px;font-size:0.8rem">✏️</button>
-                    <button class="btn-ghost" onclick="verwijderUitBlacklist('${item.id}')" style="padding:4px 8px;font-size:0.8rem;background:#dc2626">🗑️</button>
+                    <button class="btn-ghost" onclick="verwijderUitBlacklist('${item.id}')" style="padding:4px 8px;font-size:0.8rem;background:#dc2626">🗑️ Verwijder</button>
                 </td>
             </tr>
         `;
@@ -256,28 +255,38 @@ async function saveBlacklistBewerken() {
 }
 
 // Verwijder uit blacklist
-async function verwijderUitBlacklist() {
-    if (!window.currentBlacklistId) return;
-
+async function verwijderUitBlacklist(id) {
     if (!confirm('Weet je zeker dat je deze persoon wilt verwijderen uit de blacklist?')) {
         return;
     }
 
     try {
-        const response = await fetch(`${API}/api/blacklist/${window.currentBlacklistId}`, {
+        const response = await fetch(`${API}/api/blacklist/${id}`, {
             method: 'DELETE'
         });
 
         if (response.ok) {
             showToast('Persoon verwijderd uit blacklist!');
-            closeBlacklistBewerkenModal();
             loadBlacklist();
         } else {
-            showToast('Fout bij verwijderen', 'error');
+            const errorData = await response.json();
+            showToast(`Fout bij verwijderen: ${errorData.error || 'Onbekende fout'}`, 'error');
         }
     } catch (error) {
         console.error('Fout bij verwijderen blacklist:', error);
-        showToast('Fout bij verwijderen', 'error');
+        
+        // Fallback naar localStorage
+        try {
+            const blacklist = JSON.parse(localStorage.getItem('blacklist') || '[]');
+            const updatedBlacklist = blacklist.filter(item => item.id !== id);
+            localStorage.setItem('blacklist', JSON.stringify(updatedBlacklist));
+            
+            showToast('Persoon verwijderd uit blacklist (lokaal opgeslagen)!');
+            loadBlacklist();
+        } catch (localError) {
+            console.error('Fout bij lokale opslag:', localError);
+            showToast('Fout bij verwijderen - probeer het opnieuw', 'error');
+        }
     }
 }
 
