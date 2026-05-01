@@ -231,10 +231,7 @@ function displayTickets() {
                     <td>${statusBadge}</td>
                     <td>${ticket.ingameNaam}</td>
                     <td>${ticket.discordId}</td>
-                    <td>${new Date(ticket.geboortedatum).toLocaleDateString()}</td>
                     <td>${ticket.sollicitatieNummer}</td>
-                    <td>${ticket.aangemaaktDoor}</td>
-                    <td>${aangemaaktOp}</td>
                     <td>
                         ${ticket.status === 'wachtend' ? `
                             <button class="btn-purple" onclick="beoordeelTicket('${ticket.id}')" style="padding:4px 8px;font-size:0.8rem">Beoordeel</button>
@@ -297,7 +294,6 @@ function displayGesprekken() {
                     <td>${gesprek.discordId}</td>
                     <td>${gesprek.goedgekeurdDoor}</td>
                     <td>${datum}</td>
-                    <td>${notitie}</td>
                     <td>
                         <button class="btn-green" onclick="finaliseerGesprek('${gesprek.id}')" style="padding:4px 8px;font-size:0.8rem">Goedkeuren</button>
                     </td>

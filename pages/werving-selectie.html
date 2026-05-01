@@ -11,13 +11,14 @@
       margin: 0 auto;
     }
     .stat-card {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
+      background: white;
+      color: #1f2937;
       padding: 12px;
       border-radius: 8px;
       text-align: center;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       transition: transform 0.2s ease;
+      border: 1px solid #e5e7eb;
     }
     .stat-card:hover {
       transform: translateY(-1px);
@@ -170,122 +171,113 @@
         <div class="compact-layout">
           <!-- Dashboard Overzicht -->
           <div class="card">
-            <h3>📊 Werving & Selectie Dashboard</h3>
+            <h3>Werving & Selectie Dashboard</h3>
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px">
               <div class="stat-card">
                 <div class="stat-number" id="wachtend-count">0</div>
-                <div class="stat-label">⏳ Wachtend</div>
+                <div class="stat-label">Wachtend</div>
               </div>
               <div class="stat-card">
                 <div class="stat-number" id="gesprekken-count">0</div>
-                <div class="stat-label">💬 Gesprekken</div>
+                <div class="stat-label">Gesprekken</div>
               </div>
               <div class="stat-card">
                 <div class="stat-number" id="afgekeurd-count">0</div>
-                <div class="stat-label">❌ Afgekeurd</div>
+                <div class="stat-label">Afgekeurd</div>
               </div>
               <div class="stat-card">
                 <div class="stat-number" id="totaal-count">0</div>
-                <div class="stat-label">📋 Totaal</div>
+                <div class="stat-label">Totaal</div>
               </div>
             </div>
             
             <!-- Actie Knoppen -->
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button class="btn-purple" onclick="openSollicitantForm()" style="font-size:0.8rem;padding:6px 10px">
-                📋 Sollicitant Toevoegen
+                Sollicitant Toevoegen
               </button>
               <button class="btn-blue" onclick="scrollToSection('tickets-section')" style="font-size:0.8rem;padding:6px 10px">
-                🎫 Wachtend (<span id="wachtend-badge">0</span>)
+                Wachtend (<span id="wachtend-badge">0</span>)
               </button>
               <button class="btn-green" onclick="scrollToSection('gesprekken-section')" style="font-size:0.8rem;padding:6px 10px">
-                💬 Gesprekken (<span id="gesprekken-badge">0</span>)
+                Gesprekken (<span id="gesprekken-badge">0</span>)
               </button>
             </div>
           </div>
 
-        <!-- Sollicitant Formulier Popup -->
-        <div id="sollicitant-popup" class="popup-overlay hidden">
-          <div class="popup">
-            <div class="popup-content">
-              <h3>📋 Sollicitant Toevoegen</h3>
-              <div class="form-group">
-                <label>Ingame naam *</label>
-                <input type="text" id="ingame-naam" class="input-field" placeholder="Voer ingame naam in..." required>
+          <!-- Sollicitatie Tickets en Gesprekken naast elkaar -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
+            <!-- Sollicitatie Tickets -->
+            <div id="tickets-section" class="card">
+              <h3>Sollicitatie Tickets</h3>
+              <div class="table-wrap" style="overflow-x:auto">
+                <table class="db-table" style="min-width:600px;font-size:0.8rem">
+                  <thead>
+                    <tr>
+                      <th style="min-width:100px">Status</th>
+                      <th style="min-width:120px">Ingame Naam</th>
+                      <th style="min-width:100px">Discord ID</th>
+                      <th style="min-width:80px">Nummer</th>
+                      <th style="min-width:80px">Acties</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tickets-tbody">
+                    <tr><td colspan="5" style="color:#555;text-align:center">Geen sollicitatie tickets</td></tr>
+                  </tbody>
+                </table>
               </div>
-              <div class="form-group">
-                <label>Discord ID *</label>
-                <input type="text" id="discord-id" class="input-field" placeholder="Voer Discord ID in..." required>
-              </div>
-              <div class="form-group">
-                <label>Geboortedatum *</label>
-                <input type="date" id="geboortedatum" class="input-field" required>
-              </div>
-              <div class="form-group">
-                <label>Sollicitatie Nummer *</label>
-                <input type="text" id="sollicitatie-nummer" class="input-field" placeholder="Voer sollicitatie nummer in..." required>
-              </div>
-              <div class="popup-buttons">
-                <button class="btn-purple" onclick="voegSollicitantToe()">Sollicitant Toevoegen</button>
-                <button class="btn-ghost" onclick="sluitSollicitantPopup()">Annuleren</button>
+            </div>
+
+            <!-- Gesprekken -->
+            <div id="gesprekken-section" class="card">
+              <h3>Gesprekken</h3>
+              <div class="table-wrap" style="overflow-x:auto">
+                <table class="db-table" style="min-width:600px;font-size:0.8rem">
+                  <thead>
+                    <tr>
+                      <th style="min-width:120px">Ingame Naam</th>
+                      <th style="min-width:100px">Discord ID</th>
+                      <th style="min-width:120px">Goedgekeurd door</th>
+                      <th style="min-width:120px">Datum</th>
+                      <th style="min-width:80px">Acties</th>
+                    </tr>
+                  </thead>
+                  <tbody id="gesprekken-tbody">
+                    <tr><td colspan="5" style="color:#555;text-align:center">Geen gesprekken</td></tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
         </div>
-
-        <!-- Sollicitatie Tickets -->
-        <div id="tickets-section" class="card" style="margin-top:16px">
-          <h3>Sollicitaties</h3>
-          <div class="table-wrap" style="overflow-x:auto">
-            <table class="db-table" style="min-width:800px;font-size:0.9rem">
-              <thead>
-                <tr>
-                  <th style="min-width:120px">Status</th>
-                  <th style="min-width:150px">Ingame Naam</th>
-                  <th style="min-width:120px">Discord ID</th>
-                  <th style="min-width:100px">Geboortedatum</th>
-                  <th style="min-width:120px">Sollicitatie Nummer</th>
-                  <th style="min-width:150px">Aangemaakt door</th>
-                  <th style="min-width:150px">Datum</th>
-                  <th style="min-width:100px">Acties</th>
-                </tr>
-              </thead>
-              <tbody id="tickets-tbody">
-                <tr><td colspan="8" style="color:#555;text-align:center">Geen sollicitatie tickets</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Gesprekken -->
-        <div id="gesprekken-section" class="card" style="margin-top:16px">
-          <h3>Gesprekken</h3>
-          <div class="table-wrap" style="overflow-x:auto">
-            <table class="db-table" style="min-width:700px;font-size:0.8rem">
-              <thead>
-                <tr>
-                  <th style="min-width:120px">Ingame Naam</th>
-                  <th style="min-width:100px">Discord ID</th>
-                  <th style="min-width:120px">Goedgekeurd door</th>
-                  <th style="min-width:120px">Datum</th>
-                  <th style="min-width:150px">Notitie</th>
-                  <th style="min-width:80px">Acties</th>
-                </tr>
-              </thead>
-              <tbody id="gesprekken-tbody">
-                <tr><td colspan="6" style="color:#555;text-align:center">Geen gesprekken</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        </div>
       </main>
-    </div>
 
-    <!-- Blacklist Popup Modal -->
-    <div id="blacklist-modal" class="modal hidden">
-      <div class="modal-content">
-        <h3>Blacklist Controle</h3>
+      <!-- Sollicitant Formulier Popup -->
+      <div id="sollicitant-popup" class="popup-overlay hidden">
+        <div class="popup">
+          <div class="popup-content">
+            <h3>Sollicitant Toevoegen</h3>
+            <div class="form-group">
+              <label>Ingame naam *</label>
+              <input type="text" id="ingame-naam" class="input-field" placeholder="Voer ingame naam in..." required>
+            </div>
+            <div class="form-group">
+              <label>Discord ID *</label>
+              <input type="text" id="discord-id" class="input-field" placeholder="Voer Discord ID in..." required>
+            </div>
+            <div class="form-group">
+              <label>Geboortedatum *</label>
+              <input type="date" id="geboortedatum" class="input-field" required>
+            </div>
+            <div class="form-group">
+              <label>Sollicitatie Nummer *</label>
+              <input type="text" id="sollicitatie-nummer" class="input-field" placeholder="Voer sollicitatie nummer in..." required>
+            </div>
+            <div class="popup-buttons">
+              <button class="btn-purple" onclick="voegSollicitantToe()">Sollicitant Toevoegen</button>
+              <button class="btn-ghost" onclick="sluitSollicitantPopup()">Annuleren</button>
+            </div>
+          </div>
         <div id="blacklist-result">
           <p>Bezig met controleren...</p>
         </div>
