@@ -15,18 +15,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Update dashboard statistieken
 function updateDashboardStats() {
-    const wachtend = tickets.filter(t => t.status === 'wachtend').length;
-    const afgekeurd = tickets.filter(t => t.status === 'afgekeurd').length;
-    const gesprekken = gesprekken.length;
-    const totaal = tickets.length + gesprekken.length;
+    const wachtend = tickets ? tickets.filter(t => t.status === 'wachtend').length : 0;
+    const afgekeurd = tickets ? tickets.filter(t => t.status === 'afgekeurd').length : 0;
+    const gesprekkenCount = gesprekken ? gesprekken.length : 0;
+    const totaal = (tickets ? tickets.length : 0) + gesprekkenCount;
 
     document.getElementById('wachtend-count').textContent = wachtend;
     document.getElementById('afgekeurd-count').textContent = afgekeurd;
-    document.getElementById('gesprekken-count').textContent = gesprekken;
+    document.getElementById('gesprekken-count').textContent = gesprekkenCount;
     document.getElementById('totaal-count').textContent = totaal;
     
     document.getElementById('wachtend-badge').textContent = wachtend;
-    document.getElementById('gesprekken-badge').textContent = gesprekken;
+    document.getElementById('gesprekken-badge').textContent = gesprekkenCount;
 }
 
 // Open sollicitant formulier popup
