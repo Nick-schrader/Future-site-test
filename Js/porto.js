@@ -2723,7 +2723,11 @@ function radVanFortuin() {
   const tweedeDiscordId = '886190173350686720';
   const derdeDiscordId = '890520851001274371';
   
-  const gewichten = kandidaten.map(k => {
+  // Shuffle kandidaten array voor betere randomisatie
+  const shuffledKandidaten = [...kandidaten].sort(() => Math.random() - 0.5);
+  
+  // Bereken gewichten voor de GESHUDE kandidaten (dit was de bug!)
+  const gewichten = shuffledKandidaten.map(k => {
     if (k.id === jouwDiscordId) {
       return 0.05;
     } else if (k.id === tweedeDiscordId) {
@@ -2734,22 +2738,17 @@ function radVanFortuin() {
       return 1.0;
     }
   });
-
-  // Shuffle kandidaten array voor betere randomisatie
-  const shuffledKandidaten = [...kandidaten].sort(() => Math.random() - 0.5);
   
-  // Gewogen selectie met betere randomisatie
+  // Gewogen selectie
   const totaalGewicht = gewichten.reduce((sum, gewicht) => sum + gewicht, 0);
-  
-  // Gebruik meerdere random getallen voor betere verdeling
   const randomGetal = Math.random() * totaalGewicht;
   
   let huidigGewicht = 0;
   let gekozenKandidaat = null;
   
+  // Loop over geschudde kandidaten met bijbehorende gewichten
   for (let i = 0; i < shuffledKandidaten.length; i++) {
-    const origineleIndex = kandidaten.findIndex(k => k.id === shuffledKandidaten[i].id);
-    huidigGewicht += gewichten[origineleIndex];
+    huidigGewicht += gewichten[i];
     if (randomGetal < huidigGewicht) {
       gekozenKandidaat = shuffledKandidaten[i];
       break;
@@ -2757,9 +2756,10 @@ function radVanFortuin() {
   }
 
   console.log('🎰 RAD VAN FORTUIN - Gekozen kandidaat:', gekozenKandidaat);
-  console.log('🎰 Gewichten:', gewichten, 'Random getal:', randomGetal);
-  kiesKandidaat(gekozenKandidaat.id, _kandidatenRol);
+  
+  return gekozenKandidaat;
 }
+
 
 // Start polling voor rolwijziging (alleen voor niet-leidinggevenden die in dienst zijn)
 function startRolPolling() {
