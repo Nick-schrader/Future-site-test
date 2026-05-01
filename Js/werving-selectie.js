@@ -146,16 +146,42 @@ async function maakTicketAan(sollicitantData) {
             document.getElementById('ingame-naam').value = '';
             document.getElementById('discord-id').value = '';
             document.getElementById('geboortedatum').value = '';
-            document.getElementById('telefoonnummer').value = '';
+            document.getElementById('sollicitatie-nummer').value = '';
             
             // Reload tickets
             await loadTickets();
             showToast('Sollicitatie ticket aangemaakt!');
         } else {
-            throw new Error('Fout bij aanmaken ticket');
+            // Fallback naar localStorage als API niet beschikbaar is
+            saveTicketToStorage(ticket);
         }
     } catch (error) {
         console.error('Fout bij aanmaken ticket:', error);
+        // Fallback naar localStorage
+        saveTicketToStorage(ticket);
+    }
+}
+
+// Sla ticket op in localStorage
+function saveTicketToStorage(ticket) {
+    try {
+        // Voeg ticket toe aan lokale array
+        tickets.push(ticket);
+        
+        // Sla op in localStorage
+        localStorage.setItem('sollicitatie-tickets', JSON.stringify(tickets));
+        
+        // Leeg formulier
+        document.getElementById('ingame-naam').value = '';
+        document.getElementById('discord-id').value = '';
+        document.getElementById('geboortedatum').value = '';
+        document.getElementById('sollicitatie-nummer').value = '';
+        
+        // Update display
+        displayTickets();
+        showToast('Sollicitatie ticket aangemaakt (lokaal opgeslagen)!');
+    } catch (error) {
+        console.error('Fout bij opslaan ticket in storage:', error);
         showToast('Fout bij aanmaken ticket', 'error');
     }
 }
@@ -167,10 +193,25 @@ async function loadTickets() {
         if (response.ok) {
             tickets = await response.json();
             displayTickets();
+        } else {
+            // Fallback naar localStorage als API niet beschikbaar is
+            loadTicketsFromStorage();
         }
     } catch (error) {
         console.error('Fout bij laden tickets:', error);
-        // Start met lege data als API niet beschikbaar is
+        // Fallback naar localStorage
+        loadTicketsFromStorage();
+    }
+}
+
+// Laad tickets uit localStorage
+function loadTicketsFromStorage() {
+    try {
+        const opgeslagen = localStorage.getItem('sollicitatie-tickets');
+        tickets = opgeslagen ? JSON.parse(opgeslagen) : [];
+        displayTickets();
+    } catch (error) {
+        console.error('Fout bij laden tickets uit storage:', error);
         tickets = [];
         displayTickets();
     }
@@ -217,9 +258,25 @@ async function loadGesprekken() {
         if (response.ok) {
             gesprekken = await response.json();
             displayGesprekken();
+        } else {
+            // Fallback naar localStorage als API niet beschikbaar is
+            loadGesprekkenFromStorage();
         }
     } catch (error) {
         console.error('Fout bij laden gesprekken:', error);
+        // Fallback naar localStorage
+        loadGesprekkenFromStorage();
+    }
+}
+
+// Laad gesprekken uit localStorage
+function loadGesprekkenFromStorage() {
+    try {
+        const opgeslagen = localStorage.getItem('sollicitatie-gesprekken');
+        gesprekken = opgeslagen ? JSON.parse(opgeslagen) : [];
+        displayGesprekken();
+    } catch (error) {
+        console.error('Fout bij laden gesprekken uit storage:', error);
         gesprekken = [];
         displayGesprekken();
     }
@@ -280,7 +337,7 @@ async function keurTicketGoed() {
 
     try {
         // Update ticket status
-        await fetch(`${API}/api/sollicitatie-tickets/${ticketId}`, {
+        const response = await fetch(`${API}/api/sollicitatie-tickets/${ticketId}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json'
@@ -290,6 +347,46 @@ async function keurTicketGoed() {
                 goedgekeurdDoor: currentUser?.displayName || currentUser?.username || 'Onbekend'
             })
         });
+
+        if (response.ok) {
+            // Maak gesprek aan
+            const ticket = tickets.find(t => t.id === ticketId);
+            const gesprek = {
+                id: Date.now().toString(),
+                ingameNaam: ticket.ingameNaam,
+                discordId: ticket.discordId,
+                goedgekeurdDoor: currentUser?.displayName || currentUser?.username || 'Onbekend',
+                datum: new Date().toISOString(),
+                notitie: null
+            };
+
+            await fetch(`${API}/api/sollicitatie-gesprekken`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(gesprek)
+            });
+        } else {
+            // Fallback naar localStorage
+            keurTicketGoedInStorage(ticketId);
+        }
+    } catch (error) {
+        console.error('Fout bij goedkeuren ticket:', error);
+        // Fallback naar localStorage
+        keurTicketGoedInStorage(ticketId);
+    }
+}
+
+// Keur ticket goed in localStorage
+function keurTicketGoedInStorage(ticketId) {
+    try {
+        // Update ticket status
+        const ticketIndex = tickets.findIndex(t => t.id === ticketId);
+        if (ticketIndex !== -1) {
+            tickets[ticketIndex].status = 'goedgekeurd';
+            tickets[ticketIndex].goedgekeurdDoor = currentUser?.displayName || currentUser?.username || 'Onbekend';
+        }
 
         // Maak gesprek aan
         const ticket = tickets.find(t => t.id === ticketId);
@@ -302,21 +399,19 @@ async function keurTicketGoed() {
             notitie: null
         };
 
-        await fetch(`${API}/api/sollicitatie-gesprekken`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(gesprek)
-        });
+        gesprekken.push(gesprek);
 
-        // Sluit modal en reload data
+        // Sla op in localStorage
+        localStorage.setItem('sollicitatie-tickets', JSON.stringify(tickets));
+        localStorage.setItem('sollicitatie-gesprekken', JSON.stringify(gesprekken));
+
+        // Sluit modal en update display
         sluitTicketModal();
-        await loadTickets();
-        await loadGesprekken();
-        showToast('Ticket goedgekeurd en gesprek gepland!');
+        displayTickets();
+        displayGesprekken();
+        showToast('Ticket goedgekeurd en gesprek gepland (lokaal opgeslagen)!');
     } catch (error) {
-        console.error('Fout bij goedkeuren ticket:', error);
+        console.error('Fout bij goedkeuren ticket in storage:', error);
         showToast('Fout bij goedkeuren ticket', 'error');
     }
 }

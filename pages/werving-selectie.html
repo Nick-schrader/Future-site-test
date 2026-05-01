@@ -6,37 +6,41 @@
   <title>Porto Systeem - Werving en Selectie</title>
   <link rel="stylesheet" href="../Css/style.css" />
   <style>
+    .compact-layout {
+      max-width: 900px;
+      margin: 0 auto;
+    }
     .stat-card {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
-      padding: 20px;
-      border-radius: 12px;
+      padding: 12px;
+      border-radius: 8px;
       text-align: center;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease;
     }
     .stat-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      transform: translateY(-1px);
     }
     .stat-number {
-      font-size: 2.5rem;
+      font-size: 1.8rem;
       font-weight: bold;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
     .stat-label {
-      font-size: 0.9rem;
+      font-size: 0.75rem;
       opacity: 0.9;
     }
     .btn-blue {
       background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
       color: white;
       border: none;
-      padding: 10px 16px;
-      border-radius: 8px;
+      padding: 8px 12px;
+      border-radius: 6px;
       cursor: pointer;
       font-weight: 500;
       transition: all 0.2s ease;
+      font-size: 0.85rem;
     }
     .btn-blue:hover {
       background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
@@ -46,15 +50,42 @@
       background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
       color: white;
       border: none;
-      padding: 10px 16px;
-      border-radius: 8px;
+      padding: 8px 12px;
+      border-radius: 6px;
       cursor: pointer;
       font-weight: 500;
       transition: all 0.2s ease;
+      font-size: 0.85rem;
     }
     .btn-green:hover {
       background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
       transform: translateY(-1px);
+    }
+    .card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+    }
+    .form-group {
+      margin-bottom: 12px;
+    }
+    .form-group label {
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+    }
+    .input-field {
+      padding: 6px 10px;
+      font-size: 0.85rem;
+    }
+    .db-table {
+      font-size: 0.8rem;
+    }
+    .db-table th {
+      padding: 8px;
+      font-size: 0.8rem;
+    }
+    .db-table td {
+      padding: 6px 8px;
+      font-size: 0.8rem;
     }
   </style>
 </head>
@@ -136,41 +167,42 @@
       </aside>
 
       <main class="content">
-        <!-- Dashboard Overzicht -->
-        <div class="card">
-          <h3>📊 Werving & Selectie Dashboard</h3>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px">
-            <div class="stat-card">
-              <div class="stat-number" id="wachtend-count">0</div>
-              <div class="stat-label">⏳ Wachtende Tickets</div>
+        <div class="compact-layout">
+          <!-- Dashboard Overzicht -->
+          <div class="card">
+            <h3>📊 Werving & Selectie Dashboard</h3>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px">
+              <div class="stat-card">
+                <div class="stat-number" id="wachtend-count">0</div>
+                <div class="stat-label">⏳ Wachtend</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number" id="gesprekken-count">0</div>
+                <div class="stat-label">💬 Gesprekken</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number" id="afgekeurd-count">0</div>
+                <div class="stat-label">❌ Afgekeurd</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number" id="totaal-count">0</div>
+                <div class="stat-label">📋 Totaal</div>
+              </div>
             </div>
-            <div class="stat-card">
-              <div class="stat-number" id="gesprekken-count">0</div>
-              <div class="stat-label">💬 Geplande Gesprekken</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-number" id="afgekeurd-count">0</div>
-              <div class="stat-label">❌ Afgekeurd</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-number" id="totaal-count">0</div>
-              <div class="stat-label">📋 Totaal Sollicitanten</div>
+            
+            <!-- Actie Knoppen -->
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn-purple" onclick="openSollicitantForm()" style="font-size:0.8rem;padding:6px 10px">
+                📋 Sollicitant Toevoegen
+              </button>
+              <button class="btn-blue" onclick="scrollToSection('tickets-section')" style="font-size:0.8rem;padding:6px 10px">
+                🎫 Wachtend (<span id="wachtend-badge">0</span>)
+              </button>
+              <button class="btn-green" onclick="scrollToSection('gesprekken-section')" style="font-size:0.8rem;padding:6px 10px">
+                💬 Gesprekken (<span id="gesprekken-badge">0</span>)
+              </button>
             </div>
           </div>
-          
-          <!-- Actie Knoppen -->
-          <div style="display:flex;gap:12px;flex-wrap:wrap">
-            <button class="btn-purple" onclick="openSollicitantForm()">
-              📋 Nieuwe Sollicitant Toevoegen
-            </button>
-            <button class="btn-blue" onclick="scrollToSection('tickets-section')">
-              🎫 Bekijk Wachtende Tickets (<span id="wachtend-badge">0</span>)
-            </button>
-            <button class="btn-green" onclick="scrollToSection('gesprekken-section')">
-              💬 Bekijk Gesprekken (<span id="gesprekken-badge">0</span>)
-            </button>
-          </div>
-        </div>
 
         <!-- Sollicitant Formulier (Verborgen tot op knop geklikt) -->
         <div id="sollicitant-form" class="card" style="margin-top:16px;display:none">
@@ -225,15 +257,15 @@
         <div id="gesprekken-section" class="card" style="margin-top:16px">
           <h3>💬 Gesprekken</h3>
           <div class="table-wrap" style="overflow-x:auto">
-            <table class="db-table" style="min-width:800px;font-size:0.9rem">
+            <table class="db-table" style="min-width:700px;font-size:0.8rem">
               <thead>
                 <tr>
-                  <th style="min-width:150px">Ingame Naam</th>
-                  <th style="min-width:120px">Discord ID</th>
-                  <th style="min-width:150px">Goedgekeurd door</th>
-                  <th style="min-width:150px">Datum</th>
-                  <th style="min-width:200px">Notitie</th>
-                  <th style="min-width:100px">Acties</th>
+                  <th style="min-width:120px">Ingame Naam</th>
+                  <th style="min-width:100px">Discord ID</th>
+                  <th style="min-width:120px">Goedgekeurd door</th>
+                  <th style="min-width:120px">Datum</th>
+                  <th style="min-width:150px">Notitie</th>
+                  <th style="min-width:80px">Acties</th>
                 </tr>
               </thead>
               <tbody id="gesprekken-tbody">
@@ -241,6 +273,7 @@
               </tbody>
             </table>
           </div>
+        </div>
         </div>
       </main>
     </div>
