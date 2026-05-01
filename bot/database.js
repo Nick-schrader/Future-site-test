@@ -199,15 +199,14 @@ const upsertGebruiker = db.prepare(`
 const getGebruiker = db.prepare('SELECT * FROM gebruikers WHERE id = ?');
 
 // Prepared statement voor het ontslaan van gebruikers
+// Alleen kolommen gebruiken die bestaan in de gebruikers tabel
 const dismissGebruiker = db.prepare(`
   UPDATE gebruikers SET 
     role = 'dismissed',
     status = 10,
     indienst_start = NULL,
     voertuig = NULL,
-    dienstnummer = NULL,
-    ontslagReden = @ontslagReden,
-    ontslagDatum = @ontslagDatum
+    dienstnummer = NULL
   WHERE id = @id
 `);
 

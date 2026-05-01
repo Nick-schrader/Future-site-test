@@ -1622,9 +1622,7 @@ app.post('/api/dismiss-user', async (req, res) => {
     
     // Update gebruiker in database - markeer als ontslagen
     const updateResult = dismissGebruiker.run({
-      id: discordId,
-      ontslagReden: reden || 'Ontslagen uit dienst',
-      ontslagDatum: new Date().toISOString()
+      id: discordId
     });
     
     console.log(`[DISMISS] Gebruiker ${discordId} gemarkeerd als ontslagen: ${reden}`);
