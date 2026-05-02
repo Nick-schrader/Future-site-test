@@ -2192,16 +2192,15 @@ app.post('/api/personeel', async (req, res) => {
     console.log('[PERSONEEL POST] Table info:', tableInfo.map(col => ({ name: col.name, type: col.type })));
     
     const stmt = db.prepare(`
-      INSERT INTO personeel (naam, discord_id, rang, roepnummer, datum)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO personeel (naam, discord_id, rang, roepnummer)
+      VALUES (?, ?, ?, ?)
     `);
     
     const result = stmt.run(
       naam,
       discordId,  // Gebruik discordId direct - dit moet overeenkomen met frontend
       rang,
-      roepnummer || '',
-      new Date().toISOString()
+      roepnummer || ''
     );
     
     console.log('[PERSONEEL POST] Successfully inserted:', result.lastInsertRowid);
