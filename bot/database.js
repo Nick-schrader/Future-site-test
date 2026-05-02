@@ -333,13 +333,19 @@ if (!logsKolommen.includes('timestamp')) {
 
 // Logging functie
 function addLogEntry(logData) {
+  console.log('[DATABASE] ===== ADD LOG ENTRY START =====');
+  console.log('[DATABASE] addLogEntry aangeroepen met:', logData);
+  console.log('[DATABASE] Timestamp:', new Date().toISOString());
+  
   try {
     const stmt = db.prepare(`
       INSERT INTO logs (actie, door, doelwit, details, extra, timestamp)
       VALUES (?, ?, ?, ?, ?, ?)
     `);
     
-    stmt.run(
+    console.log('[DATABASE] Statement prepared, executing...');
+    
+    const result = stmt.run(
       logData.actie || '',
       logData.door || '',
       logData.doelwit || '',
@@ -347,9 +353,17 @@ function addLogEntry(logData) {
       logData.extra || '',
       new Date().toISOString()
     );
+    
+    console.log('[DATABASE] Log entry SUCCESS toegevoegd:', result);
+    console.log('[DATABASE] Last insert rowid:', result.lastInsertRowid);
+    console.log('[DATABASE] Changes made:', result.changes);
+    
   } catch (error) {
     console.error('[DATABASE] Fout bij toevoegen log entry:', error);
+    console.error('[DATABASE] Error stack:', error.stack);
   }
+  
+  console.log('[DATABASE] ===== ADD LOG ENTRY END =====');
 }
 
 module.exports = {

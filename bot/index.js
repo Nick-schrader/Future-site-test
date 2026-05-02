@@ -1747,7 +1747,9 @@ app.get('/api/blacklist', async (_req, res) => {
 // ---- API: Delete from Blacklist ----
 // Verwijder uit blacklist
 app.delete('/api/blacklist/:id', (req, res) => {
-  console.log(`[BLACKLIST DELETE] ===== BLACKLIST DELETE CALLED =====`);
+  // Simpele counter om te zien of endpoint wordt bereikt
+  global.blacklistDeleteCount = (global.blacklistDeleteCount || 0) + 1;
+  console.log(`[BLACKLIST DELETE] ===== BLACKLIST DELETE CALLED #${global.blacklistDeleteCount} =====`);
   console.log(`[BLACKLIST DELETE] Timestamp: ${new Date().toISOString()}`);
   
   try {
@@ -1814,7 +1816,8 @@ app.delete('/api/blacklist/:id', (req, res) => {
       success: true, 
       message: 'Item succesvol verwijderd uit blacklist',
       timestamp: new Date().toISOString(),
-      debug: 'Backend DELETE endpoint was reached'
+      debug: 'Backend DELETE endpoint was reached',
+      deleteCount: global.blacklistDeleteCount
     });
     
   } catch (err) {

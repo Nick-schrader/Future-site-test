@@ -272,6 +272,10 @@ async function verwijderUitBlacklist(id) {
 
         console.log('DELETE response status:', response.status);
         
+        // Log de volledige response om backend debug info te zien
+        const responseData = await response.json();
+        console.log('[BLACKLIST FRONTEND] Response data:', responseData);
+        
         if (response.ok) {
             showToast('Persoon verwijderd uit blacklist!');
             loadBlacklist();
