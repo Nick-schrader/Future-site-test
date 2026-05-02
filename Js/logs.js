@@ -23,13 +23,31 @@ window.onload = () => {
     console.log('[LOGS] logsUpdated event ontvangen:', event.detail);
     console.log('[LOGS] Event type:', event.type);
     console.log('[LOGS] Current _alleLogs length:', _alleLogs.length);
+    console.log('[LOGS] Page visibility:', document.visibilityState);
+    console.log('[LOGS] Page URL:', window.location.href);
     
     if (event.detail && Array.isArray(event.detail)) {
       console.log('[LOGS] Nieuwe logs ontvangen:', event.detail.length, 'items');
+      console.log('[LOGS] Nieuwe logs data:', event.detail);
+      
+      // Update de globale logs array
       _alleLogs = event.detail;
       console.log('[LOGS] _alleLogs bijgewerkt, nieuwe length:', _alleLogs.length);
-      filterLogs();
-      console.log('[LOGS] filterLogs() aangeroepen');
+      
+      // Forceer een directe update van de UI
+      setTimeout(() => {
+        console.log('[LOGS] Forceer UI update...');
+        filterLogs();
+        console.log('[LOGS] filterLogs() aangeroepen');
+        
+        // Controleer of de UI is bijgewerkt
+        const tbody = document.getElementById('logs-tbody');
+        if (tbody) {
+          console.log('[LOGS] Tbody gevonden met', tbody.children.length, 'rijen');
+        } else {
+          console.log('[LOGS] Tbody niet gevonden!');
+        }
+      }, 100);
     } else {
       console.log('[LOGS] Ongeldig event detail:', event.detail);
     }
