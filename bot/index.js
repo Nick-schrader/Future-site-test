@@ -1746,10 +1746,13 @@ app.get('/api/blacklist', async (_req, res) => {
 
 // ---- API: Delete from Blacklist ----
 // Verwijder uit blacklist
-app.delete('/api/blacklist/:id', async (req, res) => {
+app.delete('/api/blacklist/:id', (req, res) => {
   try {
     const { id } = req.params;
+    console.log(`[BLACKLIST DELETE] ===== BLACKLIST DELETE START =====`);
     console.log(`[BLACKLIST DELETE] Request received for ID: ${id}`);
+    console.log(`[BLACKLIST DELETE] Request params:`, req.params);
+    console.log(`[BLACKLIST DELETE] Request body:`, req.body);
     
     const { db } = require('./database');
     
