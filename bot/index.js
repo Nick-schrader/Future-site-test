@@ -1776,15 +1776,32 @@ app.delete('/api/blacklist/:id', (req, res) => {
     const stmt = db.prepare('DELETE FROM blacklist WHERE id = ?');
     const result = stmt.run(id);
     
-    // Universele logging voor blacklist verwijdering
-    const { addLogEntry } = require('./database');
-    addLogEntry({
-      actie: 'blacklist_verwijderd',
-      door: 'Systeem',
-      doelwit: `${item.naam} (${item.discord_id})`,
-      details: `Blacklist item verwijderd`,
-      extra: `Verwijderd ID: ${id}`
-    });
+    // Radicale andere aanpak - directe database logging
+    try {
+      const directLogStmt = db.prepare(`
+        INSERT INTO logs (actie, door, doelwit, details, extra, timestamp)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `);
+      
+      const directResult = directLogStmt.run(
+        'blacklist_verwijderd',
+        'Systeem',
+        `${item.naam} (${item.discord_id})`,
+        `Blacklist item verwijderd`,
+        `Verwijderd ID: ${id}`,
+        new Date().toISOString()
+      );
+      
+      console.log(`[BLACKLIST] Directe logging succesvol: ${directResult.lastInsertRowid}`);
+      
+      // Verifieer direct
+      const verifyStmt = db.prepare('SELECT * FROM logs WHERE actie = ? ORDER BY id DESC LIMIT 1');
+      const verifyResult = verifyStmt.get('blacklist_verwijderd');
+      console.log(`[BLACKLIST] Verificatie:`, verifyResult ? 'GEVONDEN' : 'NIET GEVONDEN');
+      
+    } catch (directError) {
+      console.error('[BLACKLIST] Directe logging fout:', directError);
+    }
     
     console.log(`[BLACKLIST] Item ${id} (${item.naam}) verwijderd uit blacklist`);
     
