@@ -1779,16 +1779,15 @@ app.delete('/api/blacklist/:id', (req, res) => {
     // Directe database logging - fix kolomnamen
     try {
       const directLogStmt = db.prepare(`
-        INSERT INTO logs (actie, door, doelwit, details, extra, tijd)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO logs (actie, door, doelwit, details, tijd)
+        VALUES (?, ?, ?, ?, ?)
       `);
       
       const directResult = directLogStmt.run(
         'blacklist_verwijderd',
         'Systeem',
         `${item.naam} (${item.discord_id})`,
-        `Blacklist item verwijderd`,
-        `Verwijderd ID: ${id}`,
+        `Blacklist item verwijderd - ID: ${id}`,
         new Date().toISOString()
       );
       

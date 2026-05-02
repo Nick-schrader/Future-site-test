@@ -335,8 +335,8 @@ if (!logsKolommen.includes('timestamp')) {
 function addLogEntry(logData) {
   try {
     const stmt = db.prepare(`
-      INSERT INTO logs (actie, door, doelwit, details, extra, tijd)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO logs (actie, door, doelwit, details, tijd)
+      VALUES (?, ?, ?, ?, ?)
     `);
     
     const result = stmt.run(
@@ -344,7 +344,6 @@ function addLogEntry(logData) {
       logData.door || '',
       logData.doelwit || '',
       logData.details || '',
-      logData.extra || '',
       new Date().toISOString()
     );
     
