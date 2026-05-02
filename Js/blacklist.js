@@ -277,8 +277,17 @@ async function verwijderUitBlacklist(id) {
             loadBlacklist();
             
             // Ververs logs om nieuwe blacklist verwijdering log te tonen
+            console.log('[BLACKLIST FRONTEND] Proberen logs te verversen...');
+            console.log('[BLACKLIST FRONTEND] loadLogs functie beschikbaar:', typeof loadLogs);
+            
             if (typeof loadLogs === 'function') {
-                setTimeout(() => loadLogs(), 1000);
+                console.log('[BLACKLIST FRONTEND] loadLogs() aanroepen na 1 seconde vertraging...');
+                setTimeout(() => {
+                    console.log('[BLACKLIST FRONTEND] loadLogs() nu aanroepen');
+                    loadLogs();
+                }, 1000);
+            } else {
+                console.log('[BLACKLIST FRONTEND] loadLogs functie niet beschikbaar!');
             }
         } else {
             const errorData = await response.json();
