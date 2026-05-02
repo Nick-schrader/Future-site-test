@@ -19,9 +19,22 @@ window.onload = () => {
   
   // Luister naar logsUpdated events van andere pagina's
   window.addEventListener('logsUpdated', (event) => {
+    console.log('[LOGS] ===== LOGS UPDATED EVENT START =====');
     console.log('[LOGS] logsUpdated event ontvangen:', event.detail);
-    _alleLogs = event.detail;
-    filterLogs();
+    console.log('[LOGS] Event type:', event.type);
+    console.log('[LOGS] Current _alleLogs length:', _alleLogs.length);
+    
+    if (event.detail && Array.isArray(event.detail)) {
+      console.log('[LOGS] Nieuwe logs ontvangen:', event.detail.length, 'items');
+      _alleLogs = event.detail;
+      console.log('[LOGS] _alleLogs bijgewerkt, nieuwe length:', _alleLogs.length);
+      filterLogs();
+      console.log('[LOGS] filterLogs() aangeroepen');
+    } else {
+      console.log('[LOGS] Ongeldig event detail:', event.detail);
+    }
+    
+    console.log('[LOGS] ===== LOGS UPDATED EVENT END =====');
   });
 };
 
