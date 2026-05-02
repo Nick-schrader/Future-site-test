@@ -275,6 +275,11 @@ async function verwijderUitBlacklist(id) {
         if (response.ok) {
             showToast('Persoon verwijderd uit blacklist!');
             loadBlacklist();
+            
+            // Ververs logs om nieuwe blacklist verwijdering log te tonen
+            if (typeof loadLogs === 'function') {
+                setTimeout(() => loadLogs(), 1000);
+            }
         } else {
             const errorData = await response.json();
             console.log('DELETE error response:', errorData);
