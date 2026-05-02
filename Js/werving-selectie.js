@@ -631,18 +631,24 @@ async function finaliseerGesprek(gesprekId) {
     if (!gesprek) return;
 
     try {
-        // Genereer roepnummer (eenvoudige logica)
-        const roepnummer = genereerRoepnummer();
+        // Gebruik zelfde roepnummer logica als voegPersoneelToe
+        const roepnummer = await getVolgendeRoepnummerForRang('4e klasse');
 
-        // Voeg toe aan roepnummer bestand
-        const personeel = {
-            id: Date.now().toString(),
-            naam: gesprek.ingameNaam,
+        // Functie om naam af te korten (eerste deel + eerste letter van tweede deel)
+        function afkortNaam(volledigeNaam) {
+            const delen = volledigeNaam.split(' ');
+            if (delen.length >= 2) {
+                return delen[0] + ' ' + delen[1].charAt(0) + '.';
+            }
+            return volledigeNaam;
+        }
+
+        // Voeg toe aan personeel met juiste data structuur
+        const personeelData = {
+            naam: afkortNaam(gesprek.ingameNaam),
             discordId: gesprek.discordId,
-            roepnummer: roepnummer,
             rang: '4e klasse',
-            datum: new Date().toISOString(),
-            toegevoegdDoor: currentUser?.displayName || currentUser?.username || 'Onbekend'
+            roepnummer: roepnummer
         };
 
         await fetch(`${API}/api/personeel`, {
@@ -650,7 +656,7 @@ async function finaliseerGesprek(gesprekId) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(personeel)
+            body: JSON.stringify(personeelData)
         });
 
         // Verwijder gesprek

@@ -1781,8 +1781,13 @@ app.delete('/api/blacklist/:id', async (req, res) => {
     };
     
     console.log('[BLACKLIST DELETE] Log data:', logData);
-    addLogEntry(logData);
-    console.log('[BLACKLIST DELETE] Log entry toegevoegd');
+    
+    try {
+      addLogEntry(logData);
+      console.log('[BLACKLIST DELETE] Log entry SUCCESS toegevoegd');
+    } catch (logError) {
+      console.error('[BLACKLIST DELETE] Fout bij toevoegen log entry:', logError);
+    }
     
     console.log(`[BLACKLIST] Item ${id} (${item.naam}) verwijderd uit blacklist`);
     
