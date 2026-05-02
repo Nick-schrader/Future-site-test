@@ -1747,6 +1747,9 @@ app.get('/api/blacklist', async (_req, res) => {
 // ---- API: Delete from Blacklist ----
 // Verwijder uit blacklist
 app.delete('/api/blacklist/:id', (req, res) => {
+  console.log(`[BLACKLIST DELETE] ===== BLACKLIST DELETE CALLED =====`);
+  console.log(`[BLACKLIST DELETE] Timestamp: ${new Date().toISOString()}`);
+  
   try {
     const { id } = req.params;
     console.log(`[BLACKLIST DELETE] ===== BLACKLIST DELETE START =====`);
