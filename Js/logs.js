@@ -16,6 +16,13 @@ let _alleLogs = [];
 window.onload = () => {
   if (!localStorage.getItem('loggedIn')) { window.location.href = '../index.html'; return; }
   laadLogs();
+  
+  // Luister naar logsUpdated events van andere pagina's
+  window.addEventListener('logsUpdated', (event) => {
+    console.log('[LOGS] logsUpdated event ontvangen:', event.detail);
+    _alleLogs = event.detail;
+    filterLogs();
+  });
 };
 
 function laadLogs() {

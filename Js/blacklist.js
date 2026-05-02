@@ -277,18 +277,28 @@ async function verwijderUitBlacklist(id) {
             loadBlacklist();
             
             // Ververs logs om nieuwe blacklist verwijdering log te tonen
-            console.log('[BLACKLIST FRONTEND] Proberen logs te verversen...');
-            console.log('[BLACKLIST FRONTEND] loadLogs functie beschikbaar:', typeof loadLogs);
+            console.log('[BLACKLIST FRONTEND] Proberen logs te verversen via API...');
             
-            if (typeof loadLogs === 'function') {
-                console.log('[BLACKLIST FRONTEND] loadLogs() aanroepen na 1 seconde vertraging...');
-                setTimeout(() => {
-                    console.log('[BLACKLIST FRONTEND] loadLogs() nu aanroepen');
-                    loadLogs();
-                }, 1000);
-            } else {
-                console.log('[BLACKLIST FRONTEND] loadLogs functie niet beschikbaar!');
-            }
+            setTimeout(async () => {
+                try {
+                    console.log('[BLACKLIST FRONTEND] Logs API call maken...');
+                    const response = await fetch(`${API}/api/logs`);
+                    
+                    if (response.ok) {
+                        const logs = await response.json();
+                        console.log('[BLACKLIST FRONTEND] Logs ontvangen:', logs.length, 'items');
+                        
+                        // Trigger logs pagina refresh via custom event
+                        const event = new CustomEvent('logsUpdated', { detail: logs });
+                        window.dispatchEvent(event);
+                        console.log('[BLACKLIST FRONTEND] LogsUpdated event verzonden');
+                    } else {
+                        console.log('[BLACKLIST FRONTEND] Logs API call failed:', response.status);
+                    }
+                } catch (error) {
+                    console.error('[BLACKLIST FRONTEND] Fout bij verversen logs:', error);
+                }
+            }, 1000);
         } else {
             const errorData = await response.json();
             console.log('DELETE error response:', errorData);
