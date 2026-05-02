@@ -1807,9 +1807,14 @@ app.delete('/api/blacklist/:id', (req, res) => {
     
     console.log(`[BLACKLIST] Item ${id} (${item.naam}) verwijderd uit blacklist`);
     
+    console.log(`[BLACKLIST DELETE] ===== SENDING RESPONSE =====`);
+    console.log(`[BLACKLIST DELETE] Response timestamp: ${new Date().toISOString()}`);
+    
     res.json({ 
       success: true, 
-      message: 'Item succesvol verwijderd uit blacklist'
+      message: 'Item succesvol verwijderd uit blacklist',
+      timestamp: new Date().toISOString(),
+      debug: 'Backend DELETE endpoint was reached'
     });
     
   } catch (err) {
