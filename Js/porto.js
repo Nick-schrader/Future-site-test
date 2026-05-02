@@ -72,30 +72,35 @@ window.dbHelp = showDatabaseCommands;
 let _kandidatenRol = null;
 let _kandidatenLijst = [];
 
+// Globale variabelen voor interval management
+let wachtrijInterval = null;
+let alertPingTimer = null;
+let pingHerhaalTimer = null;
+
+// Interval management voor memory leak prevention
+const activeIntervals = new Set();
+
+function createManagedInterval(callback, interval) {
+  const intervalId = setInterval(callback, interval);
+  activeIntervals.add(intervalId);
+  return intervalId;
+}
+
+function clearAllIntervals() {
+  console.log('[MEMORY] Clearing', activeIntervals.size, 'active intervals');
+  activeIntervals.forEach(intervalId => clearInterval(intervalId));
+  activeIntervals.clear();
+}
+
+// Clear intervals bij page unload
+window.addEventListener('beforeunload', clearAllIntervals);
+
 // Helper functions to clear specific ping timers
 function clearWachtrijTimer() {
-  // Globale variabelen voor interval management
-  let wachtrijInterval = null;
-  let alertPingTimer = null;
-  let pingHerhaalTimer = null;
-
-  // Interval management voor memory leak prevention
-  const activeIntervals = new Set();
-
-  function createManagedInterval(callback, interval) {
-    const intervalId = setInterval(callback, interval);
-    activeIntervals.add(intervalId);
-    return intervalId;
+  if (window._pingHerhaalTimer) {
+    clearInterval(window._pingHerhaalTimer);
+    window._pingHerhaalTimer = null;
   }
-
-  function clearAllIntervals() {
-    console.log('[MEMORY] Clearing', activeIntervals.size, 'active intervals');
-    activeIntervals.forEach(intervalId => clearInterval(intervalId));
-    activeIntervals.clear();
-  }
-
-  // Clear intervals bij page unload
-  window.addEventListener('beforeunload', clearAllIntervals);
 }
 
 function clearAlertTimer() {
@@ -1649,8 +1654,6 @@ function overnemen(type) {
   showToast(type.toUpperCase() + ' overgenomen');
   setTimeout(() => window.location.reload(), 800);
 }
-
-let wachtrijInterval = null;
 
 async function aanmeldenDirect() {
   const u = getUser();
