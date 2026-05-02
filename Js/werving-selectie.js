@@ -387,6 +387,7 @@ function displayGesprekken() {
                     <td>${datum}</td>
                     <td>
                         <button class="btn-green" onclick="finaliseerGesprek('${gesprek.id}')" style="padding:4px 8px;font-size:0.8rem">Goedkeuren</button>
+                        <button class="btn-red" onclick="keurGesprekAf('${gesprek.id}')" style="padding:4px 8px;font-size:0.8rem;margin-left:4px">Afkeuren</button>
                     </td>
                 </tr>
             `;
@@ -583,18 +584,10 @@ async function keurTicketAf() {
         if (response.ok) {
             console.log('[TICKET] Ticket succesvol verwijderd na afkeuring');
             
-            // Verwijder ook uit lokale array voor directe update
-            const index = tickets.findIndex(t => t.id === ticketId);
-            if (index > -1) {
-                tickets.splice(index, 1);
-                console.log('[TICKET] Ticket uit lokale array verwijderd');
-            }
-            
-            // Update localStorage
-            localStorage.setItem('sollicitatie-tickets', JSON.stringify(tickets));
+            // Laad tickets opnieuw van API om data consistent te houden
+            await loadTickets();
             
             sluitTicketModal();
-            displayTickets(); // Directe update zonder reload
             showToast('Ticket afgekeurd en verwijderd');
         } else {
             throw new Error('Failed to delete ticket');
@@ -665,11 +658,73 @@ async function finaliseerGesprek(gesprekId) {
             method: 'DELETE'
         });
 
+        // Voeg toe aan logs
+        const logData = {
+            actie: 'Gesprek goedgekeurd',
+            details: `${gesprek.ingameNaam} (${gesprek.discordId}) is goedgekeurd na gesprek en toegevoegd als 4e klasse met roepnummer ${roepnummer}`,
+            timestamp: new Date().toISOString(),
+            gebruiker: currentUser?.displayName || currentUser?.username || 'Onbekend',
+            categorie: 'Werving & Selectie'
+        };
+
+        await fetch(`${API}/api/logs`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(logData)
+        });
+
         await loadGesprekken();
         showToast(`${gesprek.ingameNaam} is toegevoegd aan het personeelsbestand met roepnummer ${roepnummer}!`);
     } catch (error) {
         console.error('Fout bij finaliseren gesprek:', error);
         showToast('Fout bij finaliseren gesprek', 'error');
+    }
+}
+
+// Keur gesprek af
+async function keurGesprekAf(gesprekId) {
+    const gesprek = gesprekken.find(g => g.id === gesprekId);
+    if (!gesprek) return;
+
+    try {
+        console.log('[GESPREK] Afkeuren gesprek:', gesprekId);
+        
+        // Verwijder gesprek direct uit API
+        const response = await fetch(`${API}/api/sollicitatie-gesprekken/${gesprekId}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            console.log('[GESPREK] Gesprek succesvol verwijderd na afkeuring');
+            
+            // Voeg toe aan logs
+            const logData = {
+                actie: 'Gesprek afgekeurd',
+                details: `${gesprek.ingameNaam} (${gesprek.discordId}) is afgekeurd na gesprek`,
+                timestamp: new Date().toISOString(),
+                gebruiker: currentUser?.displayName || currentUser?.username || 'Onbekend',
+                categorie: 'Werving & Selectie'
+            };
+
+            await fetch(`${API}/api/logs`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(logData)
+            });
+            
+            // Laad gesprekken opnieuw van API om data consistent te houden
+            await loadGesprekken();
+            showToast('Gesprek afgekeurd en verwijderd');
+        } else {
+            throw new Error('Failed to delete gesprek');
+        }
+    } catch (error) {
+        console.error('Fout bij afkeuren gesprek:', error);
+        showToast('Fout bij afkeuren gesprek', 'error');
     }
 }
 
