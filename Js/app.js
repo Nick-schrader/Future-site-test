@@ -5,35 +5,66 @@ window.API_URL = window.CONFIG?.API_URL || (window.location.hostname === 'localh
   : window.location.origin);
 
 // ---- GEDEELDE STATE (via sessionStorage) ----
-const APP_DEFAULT_USER_STATE = {
-  username: 'gwnboxerjur.',
-  id: '1196035736823156790',
-  dienst: 'KMAR',
-  role: 'user',
-  isAdmin: false,
-  fullname: 'GwnBoxerJur',
-  shortname: 'Jur B.',
-  dsi: '',
-  dienstnummer: '',
-  phone: '',
-  refresh: 200,
-  streamer: false,
-  naamLock: false,
-  role: 'user',
-  status: null,
-  voertuig: null,
-};
 
 function getUser() {
   const saved = localStorage.getItem('user');
   if (!saved || saved === 'null' || saved === 'undefined') {
-    return { ...APP_DEFAULT_USER_STATE };
+    return {
+      username: 'gwnboxerjur.',
+      id: '1196035736823156790',
+      dienst: 'KMAR',
+      role: 'user',
+      isAdmin: false,
+      fullname: 'GwnBoxerJur',
+      shortname: 'Jur B.',
+      dsi: '',
+      dienstnummer: '',
+      phone: '',
+      refresh: 200,
+      streamer: false,
+      naamLock: false,
+      status: null,
+      voertuig: null,
+    };
   }
   try {
     const parsed = JSON.parse(saved);
-    return { ...APP_DEFAULT_USER_STATE, ...parsed };
+    const defaultData = {
+      username: 'gwnboxerjur.',
+      id: '1196035736823156790',
+      dienst: 'KMAR',
+      role: 'user',
+      isAdmin: false,
+      fullname: 'GwnBoxerJur',
+      shortname: 'Jur B.',
+      dsi: '',
+      dienstnummer: '',
+      phone: '',
+      refresh: 200,
+      streamer: false,
+      naamLock: false,
+      status: null,
+      voertuig: null,
+    };
+    return { ...defaultData, ...parsed };
   } catch (e) {
-    return { ...APP_DEFAULT_USER_STATE };
+    return {
+      username: 'gwnboxerjur.',
+      id: '1196035736823156790',
+      dienst: 'KMAR',
+      role: 'user',
+      isAdmin: false,
+      fullname: 'GwnBoxerJur',
+      shortname: 'Jur B.',
+      dsi: '',
+      dienstnummer: '',
+      phone: '',
+      refresh: 200,
+      streamer: false,
+      naamLock: false,
+      status: null,
+      voertuig: null,
+    };
   }
 }
 
