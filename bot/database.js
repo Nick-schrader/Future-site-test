@@ -218,7 +218,7 @@ const updateGebruikerInstellingen = db.prepare(`
     phone = @phone,
     refresh = @refresh,
     streamer = @streamer,
-    naamLock = @naamLock
+    naam_lock = @naamLock
   WHERE id = @id
 `);
 
