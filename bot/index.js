@@ -1815,6 +1815,22 @@ app.delete('/api/blacklist/:id', (req, res) => {
   }
 });
 
+// ---- API: Test Endpoint ----
+// Simpele test om backend functionaliteit te verifiëren
+app.get('/api/test', (req, res) => {
+  console.log('[TEST] Backend test endpoint aangeroepen');
+  console.log('[TEST] Timestamp:', new Date().toISOString());
+  console.log('[TEST] Headers:', req.headers);
+  console.log('[TEST] Query params:', req.query);
+  
+  res.json({ 
+    success: true, 
+    message: 'Backend werkt correct',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  });
+});
+
 // Werving en Selectie API Endpoints
 app.get('/api/werving/sollicitaties', (req, res) => {
   try {
