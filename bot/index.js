@@ -1831,6 +1831,57 @@ app.get('/api/test', (req, res) => {
   });
 });
 
+// ---- API: Log Test Endpoint ----
+// Test om blacklist logging direct te verifiëren
+app.get('/api/test-logging', (req, res) => {
+  console.log('[TEST LOGGING] ===== BLACKLIST LOGGING TEST START =====');
+  console.log('[TEST LOGGING] Timestamp:', new Date().toISOString());
+  
+  try {
+    const { db } = require('./database');
+    
+    // Haal laatste blacklist_verwijderd logs op
+    const stmt = db.prepare('SELECT * FROM logs WHERE actie = ? ORDER BY id DESC LIMIT 5');
+    const blacklistLogs = stmt.all('blacklist_verwijderd');
+    
+    console.log('[TEST LOGGING] Blacklist verwijderd logs gevonden:', blacklistLogs.length);
+    blacklistLogs.forEach((log, index) => {
+      console.log(`[TEST LOGGING] Log ${index + 1}:`, {
+        id: log.id,
+        actie: log.actie,
+        doelwit: log.doelwit,
+        details: log.details,
+        timestamp: log.timestamp
+      });
+    });
+    
+    // Haal alle logs op voor totaal overzicht
+    const allLogsStmt = db.prepare('SELECT COUNT(*) as total FROM logs');
+    const totalLogs = allLogsStmt.get();
+    
+    console.log('[TEST LOGGING] Totaal aantal logs in database:', totalLogs.total);
+    
+    res.json({
+      success: true,
+      message: 'Blacklist logging test voltooid',
+      blacklistLogs: blacklistLogs.length,
+      totalLogs: totalLogs.total,
+      latestLogs: blacklistLogs,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('[TEST LOGGING] Fout bij testen logging:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+  
+  console.log('[TEST LOGGING] ===== BLACKLIST LOGGING TEST END =====');
+});
+
 // Werving en Selectie API Endpoints
 app.get('/api/werving/sollicitaties', (req, res) => {
   try {
