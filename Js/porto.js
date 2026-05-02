@@ -431,8 +431,8 @@ function laadEenheden() {
       verwerkteIds.add(e.id);
     });
     
-    // Converteer naar appData.eenheden formaat
-    appData.eenheden = Object.entries(gegroepeerd).map(([roepnummer, gebruikers]) => {
+    // Converteer naar (window.appData || {}).eenheden formaat
+    (window.appData || {}).eenheden = Object.entries(gegroepeerd).map(([roepnummer, gebruikers]) => {
       if (gebruikers.length === 1) {
         // Enkele gebruiker (niet gekoppeld)
         const e = gebruikers[0];
@@ -475,7 +475,7 @@ function laadEenheden() {
       }
     });
     
-    // console.log('🔄 GEGROEPEERDE EENHEDEN:', appData.eenheden.length, 'eenheden');
+    // console.log('🔄 GEGROEPEERDE EENHEDEN:', (window.appData || {}).eenheden.length, 'eenheden');
     
     // Render eenheden en forceer directe specialisaties update
     renderEenheden();
@@ -503,17 +503,6 @@ function renderEenheden() {
     }
   }
 
-  const GROEPEN = ['17', '18', '20'];
-  const groepen = {};
-  GROEPEN.forEach(p => groepen[p] = []);
-  groepen['Wachtrij'] = [];
-
-  appData.eenheden.forEach((e, index) => {
-    
-    if (!e.id || e.id === '-') {
-      groepen['Wachtrij'].push(e);
-      return;
-    }
     const prefix = e.id.trim().length >= 2 ? e.id.trim().substring(0, 2) : null;
     
     if (prefix && groepen[prefix] !== undefined) {

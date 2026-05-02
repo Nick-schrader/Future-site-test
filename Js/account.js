@@ -120,8 +120,8 @@ function testAudioVolume() {
 function renderTrainingen() {
   const grid = document.getElementById('trainingen-grid');
   if (!grid) return;
-  grid.innerHTML = appData.trainingen.map(t =>
-    `<div class="training-item">
+  grid.innerHTML = (window.appData || {}).trainingen?.map(t => `
+    <div class="training-item">
       <div class="dot ${t.actief ? 'dot-green' : 'dot-red'}"></div>
       <span>${t.naam}</span>
     </div>`).join('');

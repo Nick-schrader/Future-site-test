@@ -121,34 +121,6 @@ async function syncUserFromDB() {
 })();
 
 // ---- GEDEELDE DATA ----
-const appData = {
-  eenheden: [],
-  meldingen: [],
-  trainingen: [
-    { naam: 'Basistraining', actief: true }, { naam: 'IBT Training', actief: true },
-    { naam: 'Surveillantentraining', actief: true }, { naam: 'Sleepwagen Training', actief: true },
-    { naam: 'Wetskennistoets', actief: true }, { naam: 'OVD Training', actief: true },
-    { naam: 'Offroad Training', actief: true }, { naam: 'SIV Training', actief: true },
-    { naam: 'Motor Training', actief: true }, { naam: 'Unmarked Training', actief: true },
-    { naam: 'Zulu Training', actief: false },
-  ],
-  discordRollen: [
-    { naam: 'POLITIE', actief: true, kleur: 'blue' }, { naam: 'Invite permissies', actief: false, kleur: 'white' },
-    { naam: 'DJI', actief: true, kleur: 'green' }, { naam: 'POLITIE in opleiding', actief: true, kleur: 'blue' },
-    { naam: 'POLITIE TRAINER', actief: true, kleur: 'purple' }, { naam: 'Inspecteur+', actief: true, kleur: 'blue' },
-    { naam: 'OPCO', actief: true, kleur: 'blue' }, { naam: 'POLITIE OC', actief: true, kleur: 'blue' },
-    { naam: 'ACCESSROLE DELTA', actief: false, kleur: 'gray' }, { naam: 'IBT-training', actief: false, kleur: 'gray' },
-    { naam: 'OvD-P', actief: true, kleur: 'blue' },
-  ],
-  tijden: {
-    porto: [],
-    opco:  [],
-    ovd:   [],
-    oc:    [],
-  },
-  opco: 'Mark J.',
-  ovd: 'Alex S.',
-};
 
 // ---- TOPBAR SHARED ----
 function toggleProfileMenu(e) {
