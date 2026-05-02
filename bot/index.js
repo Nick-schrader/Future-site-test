@@ -1776,10 +1776,10 @@ app.delete('/api/blacklist/:id', (req, res) => {
     const stmt = db.prepare('DELETE FROM blacklist WHERE id = ?');
     const result = stmt.run(id);
     
-    // Radicale andere aanpak - directe database logging
+    // Directe database logging - fix kolomnamen
     try {
       const directLogStmt = db.prepare(`
-        INSERT INTO logs (actie, door, doelwit, details, extra, timestamp)
+        INSERT INTO logs (actie, door, doelwit, details, extra, tijd)
         VALUES (?, ?, ?, ?, ?, ?)
       `);
       
