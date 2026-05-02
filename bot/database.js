@@ -198,7 +198,7 @@ const upsertGebruiker = db.prepare(`
 
 const getGebruiker = db.prepare('SELECT * FROM gebruikers WHERE id = ?');
 
-// Prepared statement voor het ontslaan van gebruikers
+// Prepared statement voor het ontslaan van gebruikers - WORKING VERSION 2
 // Alleen kolommen gebruiken die bestaan in de gebruikers tabel
 const dismissGebruiker = db.prepare(`
   UPDATE gebruikers SET 
