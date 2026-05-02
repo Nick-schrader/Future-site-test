@@ -1776,36 +1776,15 @@ app.delete('/api/blacklist/:id', (req, res) => {
     const stmt = db.prepare('DELETE FROM blacklist WHERE id = ?');
     const result = stmt.run(id);
     
-    // Voeg toe aan logs
+    // Universele logging voor blacklist verwijdering
     const { addLogEntry } = require('./database');
-    console.log('[BLACKLIST DELETE] addLogEntry functie beschikbaar:', typeof addLogEntry);
-    
-    const logData = {
+    addLogEntry({
       actie: 'blacklist_verwijderd',
-      door: 'Systeem', // TODO: Haal huidige gebruiker op
+      door: 'Systeem',
       doelwit: `${item.naam} (${item.discord_id})`,
       details: `Blacklist item verwijderd`,
       extra: `Verwijderd ID: ${id}`
-    };
-    
-    console.log('[BLACKLIST DELETE] Log data:', logData);
-    
-    try {
-      console.log('[BLACKLIST DELETE] addLogEntry aanroepen met data:', JSON.stringify(logData, null, 2));
-      addLogEntry(logData);
-      console.log('[BLACKLIST DELETE] Log entry SUCCESS toegevoegd');
-      
-      // Verifieer dat de log is toegevoegd
-      setTimeout(() => {
-        const verifyStmt = db.prepare('SELECT * FROM logs WHERE actie = ? ORDER BY id DESC LIMIT 1');
-        const verifyResult = verifyStmt.get('blacklist_verwijderd');
-        console.log('[BLACKLIST DELETE] Log verification result:', verifyResult);
-      }, 500);
-      
-    } catch (logError) {
-      console.error('[BLACKLIST DELETE] Fout bij toevoegen log entry:', logError);
-      console.error('[BLACKLIST DELETE] Error stack:', logError.stack);
-    }
+    });
     
     console.log(`[BLACKLIST] Item ${id} (${item.naam}) verwijderd uit blacklist`);
     
@@ -1814,10 +1793,7 @@ app.delete('/api/blacklist/:id', (req, res) => {
     
     res.json({ 
       success: true, 
-      message: 'Item succesvol verwijderd uit blacklist',
-      timestamp: new Date().toISOString(),
-      debug: 'Backend DELETE endpoint was reached',
-      deleteCount: global.blacklistDeleteCount
+      message: 'Item succesvol verwijderd uit blacklist'
     });
     
   } catch (err) {
