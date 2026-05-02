@@ -5,10 +5,12 @@ window.API_URL = window.CONFIG?.API_URL || (window.location.hostname === 'localh
   : window.location.origin);
 
 // ---- GEDEELDE STATE (via sessionStorage) ----
-const _defaultUser = {
+const DEFAULT_USER_STATE = {
   username: 'gwnboxerjur.',
   id: '1196035736823156790',
   dienst: 'KMAR',
+  role: 'user',
+  isAdmin: false,
   fullname: 'GwnBoxerJur',
   shortname: 'Jur B.',
   dsi: '',
@@ -25,13 +27,13 @@ const _defaultUser = {
 function getUser() {
   const saved = localStorage.getItem('user');
   if (!saved || saved === 'null' || saved === 'undefined') {
-    return { ..._defaultUser };
+    return { ...DEFAULT_USER_STATE };
   }
   try {
     const parsed = JSON.parse(saved);
-    return { ..._defaultUser, ...parsed };
+    return { ...DEFAULT_USER_STATE, ...parsed };
   } catch (e) {
-    return { ..._defaultUser };
+    return { ...DEFAULT_USER_STATE };
   }
 }
 
