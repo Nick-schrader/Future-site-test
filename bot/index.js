@@ -1835,6 +1835,73 @@ app.get('/api/test', (req, res) => {
   });
 });
 
+// ---- API: Database Schema Test ----
+// Test om database schema te controleren
+app.get('/api/test-schema', (req, res) => {
+  console.log('[SCHEMA TEST] Database schema test aangeroepen');
+  
+  try {
+    const { db } = require('./database');
+    
+    // Check database pad
+    const dbPath = db.filename || 'onbekend';
+    console.log('[SCHEMA TEST] Database pad:', dbPath);
+    
+    // Check logs tabel schema
+    const logsSchema = db.prepare("PRAGMA table_info(logs)").all();
+    console.log('[SCHEMA TEST] Logs tabel schema:', logsSchema);
+    
+    // Check aantal logs
+    const logCount = db.prepare('SELECT COUNT(*) as count FROM logs').get();
+    console.log('[SCHEMA TEST] Aantal logs:', logCount.count);
+    
+    // Check laatste logs
+    const latestLogs = db.prepare('SELECT * FROM logs ORDER BY id DESC LIMIT 5').all();
+    console.log('[SCHEMA TEST] Laatste logs:', latestLogs);
+    
+    // Test directe insert
+    const testInsert = db.prepare(`
+      INSERT INTO logs (actie, door, doelwit, details, extra, tijd)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
+    
+    const insertResult = testInsert.run(
+      'test_actie',
+      'test_door',
+      'test_doelwit',
+      'test_details',
+      'test_extra',
+      new Date().toISOString()
+    );
+    
+    console.log('[SCHEMA TEST] Test insert resultaat:', insertResult);
+    
+    // Verifieer test insert
+    const verifyTest = db.prepare('SELECT * FROM logs WHERE actie = ? ORDER BY id DESC LIMIT 1').get('test_actie');
+    console.log('[SCHEMA TEST] Test insert verificatie:', verifyTest);
+    
+    res.json({
+      success: true,
+      message: 'Database schema test voltooid',
+      dbPath: dbPath,
+      logsSchema: logsSchema,
+      logCount: logCount.count,
+      latestLogs: latestLogs,
+      testInsert: insertResult,
+      verifyTest: verifyTest ? 'GEVONDEN' : 'NIET GEVONDEN',
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('[SCHEMA TEST] Fout:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // ---- API: Log Test Endpoint ----
 // Test om blacklist logging direct te verifiëren
 app.get('/api/test-logging', (req, res) => {
