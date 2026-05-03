@@ -22,16 +22,21 @@ class BerichtenSysteem {
     // Haal user data op
     this.user = this.getUser();
     
+    console.log('[BERICHTEN] User data loaded:', this.user);
+    console.log('[BERICHTEN] User ID:', this.user?.id);
+    
     if (this.user && this.user.id) {
       await this.loadBerichten();
-      
-            
       this.updateBerichtenMenu();
+    } else {
+      console.log('[BERICHTEN] No user data found, retrying in 1 second...');
+      // Retry after 1 second in case user data is still loading
+      setTimeout(() => this.setup(), 1000);
     }
   }
 
   getUser() {
-    const saved = sessionStorage.getItem('user');
+    const saved = localStorage.getItem('user');
     if (!saved || saved === 'null' || saved === 'undefined') {
       return null;
     }
@@ -46,16 +51,33 @@ class BerichtenSysteem {
     try {
       // Haal berichten op voor deze gebruiker via Discord ID
       const apiUrl = window.location.origin;
+      console.log('[BERICHTEN] Loading berichten from database for user:', this.user.id);
+      
       const response = await fetch(`${apiUrl}/api/berichten/${this.user.id}`);
+      
+      if (!response.ok) {
+        throw new Error(`API response status: ${response.status}`);
+      }
+      
       const data = await response.json();
+      console.log('[BERICHTEN] Successfully loaded berichten from database:', data.length, 'items');
       this.berichten = data || [];
+      
+      // Sync localStorage with database data
+      localStorage.setItem(`berichten_${this.user.id}`, JSON.stringify(this.berichten));
+      
     } catch (error) {
-      console.log('[BERICHTEN] Fout bij laden berichten, gebruik fallback:', error);
-      console.log('[BERICHTEN] Fout bij laden berichten:', error);
-      // Fallback naar localStorage
+      console.error('[BERICHTEN] CRITICAL: Database loading failed:', error);
+      console.error('[BERICHTEN] This means the berichten systeem cannot connect to the database!');
+      
+      // Only use localStorage as emergency fallback
       const saved = localStorage.getItem(`berichten_${this.user.id}`);
       if (saved) {
+        console.warn('[BERICHTEN] Using localStorage fallback - this is NOT ideal!');
         this.berichten = JSON.parse(saved);
+      } else {
+        console.error('[BERICHTEN] No localStorage backup found - berichten systeem is not working');
+        this.berichten = [];
       }
     }
   }
@@ -285,14 +307,14 @@ class BerichtenSysteem {
       gelezen: false
     };
 
-    console.log('[BERICHTEN] Bericht versturen naar:', discordId);
+    console.log('[BERICHTEN] Bericht versturen naar database:', discordId);
     console.log('[BERICHTEN] Bericht type:', type);
     console.log('[BERICHTEN] Bericht tekst:', bericht);
     console.log('[BERICHTEN] API URL:', window.location.origin);
     console.log('[BERICHTEN] Nieuw bericht object:', nieuwBericht);
 
     try {
-      // Probeer naar API te sturen
+      // Verstuur naar database API
       const apiUrl = window.location.origin;
       const response = await fetch(`${apiUrl}/api/berichten`, {
         method: 'POST',
@@ -302,16 +324,32 @@ class BerichtenSysteem {
         body: JSON.stringify(nieuwBericht)
       });
       
-      console.log('[BERICHTEN] API response status:', response.status);
+      console.log('[BERICHTEN] Database API response status:', response.status);
+      
       if (response.ok) {
-        console.log('[BERICHTEN] Bericht succesvol verstuurd');
+        const result = await response.json();
+        console.log('[BERICHTEN] Bericht succesvol opgeslagen in database:', result);
+        
+        // Update berichten in real-time for recipient if they're online
+        if (berichtenSysteem.user && berichtenSysteem.user.id === discordId) {
+          setTimeout(async () => {
+            await berichtenSysteem.loadBerichten();
+            berichtenSysteem.updateBerichtenMenu();
+          }, 500);
+        }
+        
+        return true;
       } else {
-        console.error('[BERICHTEN] API error:', response.status, response.statusText);
+        const errorData = await response.json();
+        console.error('[BERICHTEN] Database API error:', response.status, errorData);
+        throw new Error(`Database error: ${errorData.error || response.statusText}`);
       }
     } catch (error) {
-      console.log('[BERICHTEN] Fout bij versturen bericht, sla lokaal op:', error);
+      console.error('[BERICHTEN] CRITICAL: Database storage failed:', error);
+      console.error('[BERICHTEN] Bericht could not be saved to database - this is a serious issue!');
       
-      // Fallback: sla op in localStorage van de gebruiker
+      // Emergency fallback: sla op in localStorage (NOT ideal)
+      console.warn('[BERICHTEN] Using localStorage fallback - bericht will NOT be synced!');
       const saved = localStorage.getItem(`berichten_${discordId}`);
       const berichten = saved ? JSON.parse(saved) : [];
       berichten.push(nieuwBericht);
@@ -319,9 +357,11 @@ class BerichtenSysteem {
       
       // Forceer directe update van berichten menu
       setTimeout(() => {
-        console.log('[BERICHTEN] Forcing berichten menu update...');
+        console.log('[BERICHTEN] Forcing berichten menu update from localStorage...');
         berichtenSysteem.updateBerichtenMenu();
       }, 100);
+      
+      return false;
     }
   }
 }
@@ -392,7 +432,41 @@ window.verwijderBericht = function(berichtId, event) {
 // Test function - direct bericht sturen
 window.testBericht = function() {
     console.log('[TEST] Direct bericht test...');
-    berichtenSysteem.stuurBericht('1196035736823156790', 'test', 'Dit is een testbericht');
+    const user = berichtenSysteem.getUser();
+    console.log('[TEST] Current user:', user);
+    console.log('[TEST] User ID:', user?.id);
+    
+    if (user && user.id) {
+        berichtenSysteem.stuurBericht(user.id, 'test', 'Dit is een testbericht om het berichten systeem te testen');
+    } else {
+        console.log('[TEST] Geen user gevonden, gebruik test ID');
+        berichtenSysteem.stuurBericht('1196035736823156790', 'test', 'Dit is een testbericht om het berichten systeem te testen');
+    }
+};
+
+// Test function - check berichten systeem status
+window.checkBerichtenSysteem = function() {
+    console.log('[BERICHTEN CHECK] Systeem status:');
+    console.log('- User:', berichtenSysteem.user);
+    console.log('- User ID:', berichtenSysteem.user?.id);
+    console.log('- Berichten count:', berichtenSysteem.berichten.length);
+    console.log('- Berichten:', berichtenSysteem.berichten);
+    
+    // Test API connection
+    const apiUrl = window.location.origin;
+    console.log('[BERICHTEN CHECK] Testing API connection to:', `${apiUrl}/api/berichten`);
+    
+    fetch(`${apiUrl}/api/berichten/test-user`)
+        .then(response => {
+            console.log('[BERICHTEN CHECK] API response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('[BERICHTEN CHECK] API response data:', data);
+        })
+        .catch(error => {
+            console.error('[BERICHTEN CHECK] API error:', error);
+        });
 };
 
 console.log('[BERICHTEN] Test functie beschikbaar:', typeof window.testBericht);

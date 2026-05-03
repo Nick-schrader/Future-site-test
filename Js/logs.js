@@ -9,7 +9,8 @@ const ACTIE_LABELS = {
   blacklist_toegevoegd: 'Toegevoegd aan blacklist',
   blacklist_verwijderd: 'Verwijderd uit blacklist',
   BLACKLIST: 'Blacklist',
-  
+  sollicitant_goedgekeurd: 'Sollicitant goedgekeurd',
+  gesprek_goedgekeurd: 'Gesprek goedgekeurd'
 };
 
 let _alleLogs = [];
@@ -181,6 +182,16 @@ function filterLogs() {
         wie = l.doelwit || '-';
         // Gebruik details veld voor reden
         reden = l.details || '-';
+      } else if (l.actie === 'blacklist_toegevoegd' || l.actie === 'blacklist_verwijderd') {
+        // Speciale parsing voor blacklist acties
+        // Gebruik doelwit veld direct voor wie
+        wie = l.doelwit || '-';
+        // Gebruik details veld voor reden
+        reden = l.details || '-';
+        // Gebruik extra veld voor uren kolom (ID)
+        if (l.extra) {
+          uren = l.extra;
+        }
       } else {
         // Normale parsing voor andere acties
         // Als details " | " bevat, splits het

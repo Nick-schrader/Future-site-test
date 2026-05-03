@@ -179,57 +179,18 @@ async function laadPersoneel() {
             });
             
             renderPersoneel();
+            // Sync localStorage with database data (for UI state only)
             localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
         } else {
-            const storedData = localStorage.getItem('roepnummerData');
-            if (storedData) {
-                personeelData = JSON.parse(storedData);
-                console.log('Personeelsdata van localStorage geladen:', personeelData);
-                personeelData.forEach(p => {
-                    console.log(`Personeel ${p.naam} - Discord ID: ${p.discordId}`);
-                });
-                renderPersoneel();
-            } else {
-                // Voeg test data toe om admin click te testen
-                personeelData = [
-                    {
-                        id: '1',
-                        naam: 'Test Personeel 1',
-                        discordId: '1196035736823156790', // Gebruiker's Discord ID
-                        rang: '4e klasse',
-                        roepnummer: '57-01'
-                    },
-                    {
-                        id: '2',
-                        naam: 'Test Personeel 2',
-                        discordId: '1196035736823156790', // Gebruiker's Discord ID
-                        rang: '3e klasse',
-                        roepnummer: '56-41'
-                    }
-                ];
-                console.log('Test personeelsdata geladen:', personeelData);
-                renderPersoneel();
-            }
+            console.error('[ROEPNUMMER] CRITICAL: Database not available for personeel data');
+            showToast('Database niet beschikbaar - kan geen personeelsdata laden', 'error');
+            personeelData = [];
+            renderPersoneel();
         }
     } catch (error) {
-        console.error('Fout bij laden personeel:', error);
-        // Voeg test data toe bij error
-        personeelData = [
-            {
-                id: '1',
-                naam: 'Test Personeel 1',
-                discordId: '1196035736823156790', // Gebruiker's Discord ID
-                rang: '4e klasse',
-                roepnummer: '57-01'
-            },
-            {
-                id: '2',
-                naam: 'Test Personeel 2',
-                discordId: '1196035736823156790', // Gebruiker's Discord ID
-                rang: '3e klasse',
-                roepnummer: '56-41'
-            }
-        ];
+        console.error('[ROEPNUMMER] CRITICAL: Database connection failed:', error);
+        showToast('Database niet bereikbaar - kan geen personeelsdata laden', 'error');
+        personeelData = [];
         renderPersoneel();
     }
 }
@@ -580,8 +541,10 @@ async function promoveerPersoneel(personeelId) {
             }
         } catch (error) {
             console.error('[ROEPNUMMER] API fout bij promotie:', error);
+        showToast('Fout bij promotie - database niet bereikbaar', 'error');
         }
         
+        // Sync localStorage with database data (for UI state only)
         localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
         renderPersoneel();
         
@@ -653,8 +616,10 @@ async function demoteerPersoneel(personeelId) {
             }
         } catch (error) {
             console.error('[ROEPNUMMER] API fout bij demotie:', error);
+        showToast('Fout bij demotie - database niet bereikbaar', 'error');
         }
         
+        // Sync localStorage with database data (for UI state only)
         localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
         renderPersoneel();
         
@@ -705,6 +670,7 @@ async function ontslaPersoneel(personeelId) {
         }
         
         personeelData = personeelData.filter(p => p.id !== personeelId);
+        // Sync localStorage with database data (for UI state only)
         localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
         renderPersoneel();
         
@@ -739,7 +705,8 @@ async function ontslaPersoneel(personeelId) {
         toonNotificatie(`${personeel.naam} is ontslagen en toegang is ingetrokken`);
         
         // Log de ontslag actie
-        logPersoneelActie('ontslag', personeel.naam, `Ontslagen uit dienst | Laatste rang: ${personeel.rang} | Toegang ingetrokken`);
+        const doelwitInfo = personeel.discordId ? `${personeel.naam} (${personeel.discordId})` : personeel.naam;
+        logPersoneelActie('ontslag', doelwitInfo, `Ontslagen uit dienst | Laatste rang: ${personeel.rang}${personeel.roepnummer ? ` | Roepnummer: ${personeel.roepnummer}` : ''} | Toegang ingetrokken`);
     }
 }
 
@@ -839,6 +806,7 @@ async function slaRoepnummerOp(personeelId, buttonElement) {
     }
     
     personeel.roepnummer = nieuwRoepnummer;
+    // Sync localStorage with database data (for UI state only)
     localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
     renderPersoneel();
     
@@ -957,6 +925,7 @@ async function voegPersoneelToe() {
         });
     }
     
+    // Sync localStorage with database data (for UI state only)
     localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
     
     sluitModal();
@@ -1142,7 +1111,7 @@ async function verplaatsPersoneelNaarRang(personeelId, nieuweRang) {
         console.error('[ROEPNUMMER] API fout bij rang verandering:', error);
     }
     
-    // Sla data op
+    // Sync localStorage with database data (for UI state only)
     localStorage.setItem('roepnummerData', JSON.stringify(personeelData));
     
     // Re-render

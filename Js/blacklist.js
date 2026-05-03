@@ -144,32 +144,10 @@ async function saveBlacklistToevoegen() {
             showToast(`Fout bij toevoegen: ${errorData.error || 'Onbekende fout'}`, 'error');
         }
     } catch (error) {
-        console.error('Fout bij toevoegen aan blacklist:', error);
-        
-        // Fallback naar localStorage als API faalt
-        try {
-            const blacklist = JSON.parse(localStorage.getItem('blacklist') || '[]');
-            const newItem = {
-                id: Date.now().toString(),
-                discord_id: discordId,
-                naam,
-                roepnummer,
-                reden,
-                beschrijving,
-                blacklisted_by: window.getUser?.()?.username || 'Systeem',
-                datum: new Date().toISOString()
-            };
-            
-            blacklist.push(newItem);
-            localStorage.setItem('blacklist', JSON.stringify(blacklist));
-            
-            showToast('Persoon toegevoegd aan blacklist (lokaal opgeslagen)!');
-            closeBlacklistToevoegenModal();
-            loadBlacklist();
-        } catch (localError) {
-            console.error('Fout bij lokale opslag:', localError);
-            showToast('Fout bij opslaan - probeer het opnieuw', 'error');
-        }
+        console.error('[BLACKLIST] CRITICAL: Database storage failed:', error);
+        console.error('[BLACKLIST] Could not save to database - this is a serious issue!');
+        showToast('Database niet bereikbaar - kan geen blacklist item toevoegen', 'error');
+        // NO localStorage fallback - must use database
     }
 }
 
@@ -315,20 +293,10 @@ async function verwijderUitBlacklist(id) {
             showToast(`Fout bij verwijderen: ${errorData.error || 'Onbekende fout'}`, 'error');
         }
     } catch (error) {
-        console.error('Fout bij verwijderen blacklist:', error);
-        
-        // Fallback naar localStorage
-        try {
-            const blacklist = JSON.parse(localStorage.getItem('blacklist') || '[]');
-            const updatedBlacklist = blacklist.filter(item => item.id !== id);
-            localStorage.setItem('blacklist', JSON.stringify(updatedBlacklist));
-            
-            showToast('Persoon verwijderd uit blacklist (lokaal opgeslagen)!');
-            loadBlacklist();
-        } catch (localError) {
-            console.error('Fout bij lokale opslag:', localError);
-            showToast('Fout bij verwijderen - probeer het opnieuw', 'error');
-        }
+        console.error('[BLACKLIST] CRITICAL: Database operations failed:', error);
+        console.error('[BLACKLIST] Could not delete from database - this is a serious issue!');
+        showToast('Database niet bereikbaar - kan geen blacklist item verwijderen', 'error');
+        // NO localStorage fallback - must use database
     }
 }
 

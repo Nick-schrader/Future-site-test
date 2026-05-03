@@ -204,102 +204,46 @@ async function maakTicketAan(sollicitantData) {
             await loadTickets();
             showToast('Sollicitatie ticket aangemaakt!');
         } else {
-            // Fallback naar localStorage als API niet beschikbaar is
-            saveTicketToStorage(ticket);
+            console.error('[WERING] CRITICAL: API not available for ticket storage');
+            showToast('Database niet beschikbaar - kan geen ticket aanmaken', 'error');
+            // NO localStorage fallback - must use database
         }
     } catch (error) {
-        console.error('Fout bij aanmaken ticket:', error);
-        // Fallback naar localStorage
-        saveTicketToStorage(ticket);
+        console.error('[WERING] CRITICAL: Database storage failed for ticket:', error);
+        console.error('[WERING] Ticket could not be saved - this is a serious issue!');
+        showToast('Fout bij aanmaken ticket - database niet bereikbaar', 'error');
+        // NO localStorage fallback - must use database
     }
 }
 
-// Sla ticket op in localStorage
-function saveTicketToStorage(ticket) {
-    try {
-        console.log('[TICKET] Saving ticket to storage:', ticket);
-        
-        // Voeg ticket toe aan lokale array
-        tickets.push(ticket);
-        
-        // Sla op in localStorage
-        localStorage.setItem('sollicitatie-tickets', JSON.stringify(tickets));
-        
-        // Leeg formulier
-        document.getElementById('ingame-naam').value = '';
-        document.getElementById('discord-id').value = '';
-        document.getElementById('geboortedatum').value = '';
-        document.getElementById('sollicitatie-nummer').value = '';
-        
-        // Sluit popup
-        sluitSollicitantPopup();
-        
-        // Update display
-        displayTickets();
-        showToast('Sollicitatie ticket aangemaakt (lokaal opgeslagen)!');
-    } catch (error) {
-        console.error('Fout bij opslaan ticket in storage:', error);
-        showToast('Fout bij aanmaken ticket', 'error');
-    }
-}
+// localStorage storage functions removed - must use database
+// function saveTicketToStorage() - DEPRECATED: Use database API instead
 
 // Laad tickets
 async function loadTickets() {
     try {
+        console.log('[WERING] Loading tickets from database...');
         const response = await fetch(`${API}/api/sollicitatie-tickets`);
         if (response.ok) {
             tickets = await response.json();
+            console.log('[WERING] Successfully loaded tickets from database:', tickets.length, 'items');
             displayTickets();
         } else {
-            // Fallback naar localStorage als API niet beschikbaar is
-            loadTicketsFromStorage();
+            console.error('[WERING] CRITICAL: Database not available for tickets');
+            showToast('Database niet beschikbaar - kan geen tickets laden', 'error');
+            tickets = [];
+            displayTickets();
         }
     } catch (error) {
-        console.error('Fout bij laden tickets:', error);
-        // Fallback naar localStorage
-        loadTicketsFromStorage();
+        console.error('[WERING] CRITICAL: Database connection failed for tickets:', error);
+        showToast('Database niet bereikbaar - kan geen tickets laden', 'error');
+        tickets = [];
+        displayTickets();
     }
 }
 
-// Laad tickets uit localStorage
-function loadTicketsFromStorage() {
-    try {
-        const opgeslagen = localStorage.getItem('sollicitatie-tickets');
-        tickets = opgeslagen ? JSON.parse(opgeslagen) : [
-            // Test sollicitant voor testing
-            {
-                id: 'test-1',
-                ingameNaam: 'Test Sollicitant',
-                discordId: '123456789',
-                geboortedatum: '2000-01-01',
-                sollicitatieNummer: 'TEST001',
-                status: 'wachtend',
-                aangemaaktDoor: 'Test User',
-                datum: new Date().toISOString()
-            }
-        ];
-        console.log('Tickets geladen uit storage:', tickets);
-        displayTickets();
-        updateDashboardStats();
-    } catch (error) {
-        console.error('Fout bij laden tickets uit storage:', error);
-        tickets = [
-            // Test sollicitant voor testing
-            {
-                id: 'test-1',
-                ingameNaam: 'Test Sollicitant',
-                discordId: '123456789',
-                geboortedatum: '2000-01-01',
-                sollicitatieNummer: 'TEST001',
-                status: 'wachtend',
-                aangemaaktDoor: 'Test User',
-                datum: new Date().toISOString()
-            }
-        ];
-        displayTickets();
-        updateDashboardStats();
-    }
-}
+// localStorage storage functions removed - must use database
+// function loadTicketsFromStorage() - DEPRECATED: Use database API instead
 
 // Toon tickets
 function displayTickets() {
@@ -339,33 +283,28 @@ function displayTickets() {
 // Laad gesprekken
 async function loadGesprekken() {
     try {
+        console.log('[WERING] Loading gesprekken from database...');
         const response = await fetch(`${API}/api/sollicitatie-gesprekken`);
         if (response.ok) {
             gesprekken = await response.json();
+            console.log('[WERING] Successfully loaded gesprekken from database:', gesprekken.length, 'items');
             displayGesprekken();
         } else {
-            // Fallback naar localStorage als API niet beschikbaar is
-            loadGesprekkenFromStorage();
+            console.error('[WERING] CRITICAL: Database not available for gesprekken');
+            showToast('Database niet beschikbaar - kan geen gesprekken laden', 'error');
+            gesprekken = [];
+            displayGesprekken();
         }
     } catch (error) {
-        console.error('Fout bij laden gesprekken:', error);
-        // Fallback naar localStorage
-        loadGesprekkenFromStorage();
-    }
-}
-
-// Laad gesprekken uit localStorage
-function loadGesprekkenFromStorage() {
-    try {
-        const opgeslagen = localStorage.getItem('sollicitatie-gesprekken');
-        gesprekken = opgeslagen ? JSON.parse(opgeslagen) : [];
-        displayGesprekken();
-    } catch (error) {
-        console.error('Fout bij laden gesprekken uit storage:', error);
+        console.error('[WERING] CRITICAL: Database connection failed for gesprekken:', error);
+        showToast('Database niet bereikbaar - kan geen gesprekken laden', 'error');
         gesprekken = [];
         displayGesprekken();
     }
 }
+
+// localStorage storage functions removed - must use database
+// function loadGesprekkenFromStorage() - DEPRECATED: Use database API instead
 
 // Toon gesprekken
 function displayGesprekken() {
@@ -515,58 +454,19 @@ async function keurTicketGoed() {
             updateDashboardStats();
             showToast('Ticket goedgekeurd!');
         } else {
-            // Fallback naar localStorage
-            keurTicketGoedInStorage(ticketId);
+            console.error('[WERING] CRITICAL: Database operations failed for ticket approval');
+            showToast('Database niet beschikbaar - kan geen ticket goedkeuren', 'error');
+            // NO localStorage fallback - must use database
         }
     } catch (error) {
-        console.error('Fout bij goedkeuren ticket:', error);
-        // Fallback naar localStorage
-        keurTicketGoedInStorage(ticketId);
+        console.error('[WERING] CRITICAL: Database operations failed for ticket approval:', error);
+        showToast('Database niet bereikbaar - kan geen ticket goedkeuren', 'error');
+        // NO localStorage fallback - must use database
     }
 }
 
-// Keur ticket goed in localStorage
-function keurTicketGoedInStorage(ticketId) {
-    try {
-        // Update ticket status
-        const ticketIndex = tickets.findIndex(t => t.id === ticketId);
-        if (ticketIndex !== -1) {
-            tickets[ticketIndex].status = 'goedgekeurd';
-            tickets[ticketIndex].goedgekeurdDoor = currentUser?.displayName || currentUser?.username || 'Onbekend';
-        }
-
-        // Maak gesprek aan
-        const ticket = tickets.find(t => t.id === ticketId);
-        const gesprek = {
-            id: Date.now().toString(),
-            ingameNaam: ticket.ingameNaam,
-            discordId: ticket.discordId,
-            aangemaaktDoor: ticket.aangemaaktDoor || 'Onbekend',
-            goedgekeurdDoor: currentUser?.displayName || currentUser?.username || 'Onbekend',
-            datum: new Date().toISOString(),
-            notitie: null
-        };
-
-        gesprekken.push(gesprek);
-
-        // Verwijder goedgekeurd ticket uit tickets lijst
-        tickets = tickets.filter(t => t.id !== ticketId);
-
-        // Sla op in localStorage
-        localStorage.setItem('sollicitatie-tickets', JSON.stringify(tickets));
-        localStorage.setItem('sollicitatie-gesprekken', JSON.stringify(gesprekken));
-
-        // Sluit modal en update display
-        sluitTicketModal();
-        displayTickets();
-        displayGesprekken();
-        updateDashboardStats();
-        showToast('Ticket goedgekeurd en verplaatst naar gesprekken!');
-    } catch (error) {
-        console.error('Fout bij goedkeuren ticket in storage:', error);
-        showToast('Fout bij goedkeuren ticket', 'error');
-    }
-}
+// localStorage storage functions removed - must use database
+// function keurTicketGoedInStorage() - DEPRECATED: Use database API instead
 
 // Keur ticket af
 async function keurTicketAf() {
