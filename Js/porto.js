@@ -655,7 +655,8 @@ function updateSpecialisatiesLive() {
 }
 
 function renderLeaderboard() {
-  const metTijd = appData.eenheden.filter(e => e.indienstStart);
+  const eenheden = window.eenheden || [];
+  const metTijd = eenheden.filter(e => e.indienstStart);
   const gesorteerd = [...metTijd].sort((a, b) => a.indienstStart - b.indienstStart).slice(0, 10);
   const html = gesorteerd.length
     ? gesorteerd.map((e, i) => `
