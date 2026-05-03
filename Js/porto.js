@@ -591,7 +591,8 @@ function eenheidRow(e) {
   if (e.type && e.type !== '-' && window._specialisaties) {
     const spec = window._specialisaties.find(s => s.voertuig === e.type);
     if (spec && spec.min_eenheden > 0) {
-      const huidig = appData.eenheden.filter(x => x.type === e.type).length;
+      const eenheden = window.eenheden || [];
+      const huidig = eenheden.filter(x => x.type === e.type).length;
       if (huidig < spec.min_eenheden) {
         typeWarn = ` <span style="color:#f87171" title="Te weinig eenheden: ${huidig}/${spec.min_eenheden}">⚠</span>`;
       }
@@ -611,9 +612,10 @@ function eenheidRow(e) {
 
 // Functie om specialisaties live bij te werken zonder hele tabel te refreshen
 function updateSpecialisatiesLive() {
-  if (!appData.eenheden || !window._specialisaties) return;
+  const eenheden = window.eenheden || [];
+  if (!eenheden.length || !window._specialisaties) return;
   
-  appData.eenheden.forEach(e => {
+  eenheden.forEach(e => {
     if (!e.userId) return;
     
     // Haal live rollen op
@@ -707,7 +709,8 @@ function renderSpecOverzicht() {
           }
 
           // Check min eenheden - totaal in dienst, niet per voertuig type
-          const totaalIndienst = appData.eenheden ? appData.eenheden.length : 0;
+          const eenheden = window.eenheden || [];
+          const totaalIndienst = eenheden.length;
           const minOk = s.min_eenheden > 0 ? totaalIndienst >= s.min_eenheden : true;
           // Tijdslot alleen relevant als het voertuig een tijdslot heeft
           const tijdOk = s.tijdslot_start ? tijdslotActief : true;
@@ -1044,7 +1047,7 @@ function dismissAlert(id) {
 }
 
 function clearMeldingen() {
-  appData.meldingen = [];
+  window.meldingen = [];
   renderMeldingen();
   showToast('Alle meldingen verwijderd');
 }
@@ -1496,7 +1499,8 @@ function highlightVoertuig(v) {
 
 function openKoppelModal() {
   const id = document.getElementById('edit-unit-id').value;
-  const unit = appData.eenheden.find(e => e.id === id);
+  const eenheden = window.eenheden || [];
+  const unit = eenheden.find(e => e.id === id);
   if (!unit) return;
   closeVoertuigModal();
   document.getElementById('koppel-modal').classList.remove('hidden');
@@ -1925,7 +1929,8 @@ function startIndienstTimer(elId) {
 
 // ---- VOERTUIG MODAL ----
 function openVoertuigModal(id) {
-  const unit = appData.eenheden.find(e => e.id === id);
+  const eenheden = window.eenheden || [];
+  const unit = eenheden.find(e => e.id === id);
   if (!unit) return;
   closeVoertuigModal();
   document.getElementById('voertuig-modal').classList.remove('hidden');
@@ -2020,7 +2025,8 @@ function openVoertuigModal(id) {
 
 function setStatusVoorEenheid(status) {
   const id = document.getElementById('edit-unit-id').value;
-  const unit = appData.eenheden.find(e => e.id === id);
+  const eenheden = window.eenheden || [];
+  const unit = eenheden.find(e => e.id === id);
   if (!unit) return;
   
   // Store previous status for proper alert cleanup logic
@@ -2114,7 +2120,8 @@ function ontkoppelEenheid() {
   console.log('🔍 ONTKOPPELEN - Functie aangeroepen');
   
   const id = document.getElementById('edit-unit-id').value;
-  const unit = appData.eenheden.find(e => e.id === id);
+  const eenheden = window.eenheden || [];
+  const unit = eenheden.find(e => e.id === id);
   
   if (!unit || !unit.koppelId) {
     console.log('🔍 ONTKOPPELEN - Early return - geen unit of koppelId');
@@ -2234,7 +2241,8 @@ function selectOntkoppelKeuze(hoofdUserId, gekozenUnitId, keuze) {
 
 function saveEenheidEdit() {
   const id = document.getElementById('edit-unit-id').value;
-  const unit = appData.eenheden.find(e => e.id === id);
+  const eenheden = window.eenheden || [];
+  const unit = eenheden.find(e => e.id === id);
   if (!unit) return;
   const roepnummer = document.getElementById('edit-roepnummer').value.trim();
   const voertuig = document.getElementById('edit-voertuig').value;
@@ -2262,7 +2270,8 @@ function saveEenheidEdit() {
 
 function saveVoertuigEdit() {
   const id = document.getElementById('edit-unit-id').value;
-  const unit = appData.eenheden.find(e => e.id === id);
+  const eenheden = window.eenheden || [];
+  const unit = eenheden.find(e => e.id === id);
   if (!unit) return;
 
   fetch(`${API_URL}/api/reset/${unit.userId}`, {
