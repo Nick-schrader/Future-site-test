@@ -422,7 +422,7 @@
   
   <script>
     // Check if user is admin (Discord ID 1196035736823156790)
-    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    const user = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || '{}');
     const isAdmin = user.id === '1196035736823156790';
     
     if (isAdmin) {
