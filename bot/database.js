@@ -157,15 +157,21 @@ db.exec(`
   );
 `);
 
-// Migrate existing logs table - voeg doelwit kolom toe als die niet bestaat
+// Migrate existing logs table - voeg doelwit en extra kolommen toe als die niet bestaan
 try {
   // Controleer of doelwit kolom bestaat
   const tableInfo = db.prepare("PRAGMA table_info(logs)").all();
   const hasDoelwit = tableInfo.some(column => column.name === 'doelwit');
+  const hasExtra = tableInfo.some(column => column.name === 'extra');
   
   if (!hasDoelwit) {
     console.log('[DB] Adding doelwit column to logs table');
     db.exec('ALTER TABLE logs ADD COLUMN doelwit TEXT');
+  }
+  
+  if (!hasExtra) {
+    console.log('[DB] Adding extra column to logs table');
+    db.exec('ALTER TABLE logs ADD COLUMN extra TEXT');
   }
   
   // Controleer of tijd kolom TEXT type is
@@ -335,8 +341,8 @@ if (!logsKolommen.includes('timestamp')) {
 function addLogEntry(logData) {
   try {
     const stmt = db.prepare(`
-      INSERT INTO logs (actie, door, doelwit, details, tijd)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO logs (actie, door, doelwit, details, extra, tijd)
+      VALUES (?, ?, ?, ?, ?, ?)
     `);
     
     const result = stmt.run(
@@ -344,7 +350,8 @@ function addLogEntry(logData) {
       logData.door || '',
       logData.doelwit || '',
       logData.details || '',
-      new Date().toISOString()
+      logData.extra || '',
+      logData.tijd || new Date().toISOString()
     );
     
     return result;

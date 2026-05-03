@@ -1763,7 +1763,7 @@ app.delete('/api/blacklist/:id', (req, res) => {
     const { db } = require('./database');
     
     // Haal item info op VOORDAT je verwijdert
-    const getItemStmt = db.prepare('SELECT naam, discord_id FROM blacklist WHERE id = ?');
+    const getItemStmt = db.prepare('SELECT naam, discord_id, reden, beschrijving FROM blacklist WHERE id = ?');
     const item = getItemStmt.get(id);
     
     console.log(`[BLACKLIST DELETE] Item found:`, item);
@@ -1777,31 +1777,16 @@ app.delete('/api/blacklist/:id', (req, res) => {
     const stmt = db.prepare('DELETE FROM blacklist WHERE id = ?');
     const result = stmt.run(id);
     
-    // Directe database logging - fix kolomnamen
-    try {
-      const directLogStmt = db.prepare(`
-        INSERT INTO logs (actie, door, doelwit, details, tijd)
-        VALUES (?, ?, ?, ?, ?)
-      `);
-      
-      const directResult = directLogStmt.run(
-        'blacklist_verwijderd',
-        door || 'Systeem',
-        `${item.naam} (${item.discord_id})`,
-        `Blacklist item verwijderd - ID: ${id}`,
-        new Date().toISOString()
-      );
-      
-      console.log(`[BLACKLIST] Directe logging succesvol: ${directResult.lastInsertRowid}`);
-      
-      // Verifieer direct
-      const verifyStmt = db.prepare('SELECT * FROM logs WHERE actie = ? ORDER BY id DESC LIMIT 1');
-      const verifyResult = verifyStmt.get('blacklist_verwijderd');
-      console.log(`[BLACKLIST] Verificatie:`, verifyResult ? 'GEVONDEN' : 'NIET GEVONDEN');
-      
-    } catch (directError) {
-      console.error('[BLACKLIST] Directe logging fout:', directError);
-    }
+    // Gebruik addLogEntry functie voor consistentie
+    const { addLogEntry } = require('./database');
+    addLogEntry({
+      actie: 'blacklist_verwijderd',
+      door: door || 'Systeem',
+      doelwit: `${item.naam} (${item.discord_id})`,
+      details: `Reden: ${item.reden || 'Onbekend'}${item.beschrijving ? ` | ${item.beschrijving}` : ''}`,
+      extra: `Blacklist ID: ${id}`,
+      timestamp: new Date().toISOString()
+    });
     
     console.log(`[BLACKLIST] Item ${id} (${item.naam}) verwijderd uit blacklist`);
     
