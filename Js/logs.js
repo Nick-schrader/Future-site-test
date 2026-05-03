@@ -186,11 +186,27 @@ function filterLogs() {
         // Speciale parsing voor blacklist acties
         // Gebruik doelwit veld direct voor wie
         wie = l.doelwit || '-';
-        // Gebruik details veld voor reden
-        reden = l.details || '-';
-        // Gebruik extra veld voor uren kolom (ID)
-        if (l.extra) {
-          uren = l.extra;
+        
+        // Parse details veld - split ID van reden/beschrijving
+        if (l.details && l.details.includes('Blacklist item verwijderd')) {
+          // Oude format: "Blacklist item verwijderd - ID: 34"
+          const idMatch = l.details.match(/ID:\s*(\d+)/);
+          if (idMatch) {
+            reden = 'Blacklist item verwijderd';
+            uren = `ID: ${idMatch[1]}`;
+          } else {
+            reden = l.details;
+            uren = '-';
+          }
+        } else {
+          // Nieuwe format: "Reden: misdraging | beschrijving"
+          reden = l.details || '-';
+          // Gebruik extra veld voor ID als beschikbaar
+          if (l.extra) {
+            uren = l.extra;
+          } else {
+            uren = '-';
+          }
         }
       } else {
         // Normale parsing voor andere acties

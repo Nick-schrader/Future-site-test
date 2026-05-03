@@ -706,7 +706,7 @@ async function ontslaPersoneel(personeelId) {
         
         // Log de ontslag actie
         const doelwitInfo = personeel.discordId ? `${personeel.naam} (${personeel.discordId})` : personeel.naam;
-        logPersoneelActie('ontslag', doelwitInfo, `Ontslagen uit dienst | Laatste rang: ${personeel.rang}${personeel.roepnummer ? ` | Roepnummer: ${personeel.roepnummer}` : ''} | Toegang ingetrokken`);
+        logPersoneelActie('ontslag', doelwitInfo, `Ontslagen uit dienst - Laatste rang: ${personeel.rang}`);
     }
 }
 

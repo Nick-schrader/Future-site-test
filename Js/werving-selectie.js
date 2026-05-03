@@ -569,7 +569,7 @@ async function finaliseerGesprek(gesprekId) {
             actie: 'Gesprek goedgekeurd',
             door: currentUser?.displayName || currentUser?.username || 'Onbekend',
             doelwit: `${gesprek.ingameNaam} (${gesprek.discordId})`,
-            details: `${gesprek.ingameNaam} (${gesprek.discordId}) is goedgekeurd na gesprek en toegevoegd als 4e klasse met roepnummer ${roepnummer}`,
+            details: `Goedgekeurd na gesprek - Roepnummer: ${roepnummer}`,
             timestamp: new Date().toISOString()
         };
 
@@ -610,7 +610,7 @@ async function keurGesprekAf(gesprekId) {
                 actie: 'Gesprek afgekeurd',
                 door: currentUser?.displayName || currentUser?.username || 'Onbekend',
                 doelwit: `${gesprek.ingameNaam} (${gesprek.discordId})`,
-                details: `${gesprek.ingameNaam} (${gesprek.discordId}) is afgekeurd na gesprek`,
+                details: `Afgekeurd na gesprek`,
                 timestamp: new Date().toISOString()
             };
 
