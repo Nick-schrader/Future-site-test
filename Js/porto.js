@@ -503,16 +503,22 @@ function renderEenheden() {
     }
   }
 
+  // Groepeer eenheden per prefix
+  const groepen = {};
+  const eenheden = window.eenheden || [];
+  
+  eenheden.forEach(e => {
     const prefix = e.id.trim().length >= 2 ? e.id.trim().substring(0, 2) : null;
     
-    if (prefix && groepen[prefix] !== undefined) {
+    if (prefix && GROEPEN.includes(prefix)) {
+      if (!groepen[prefix]) groepen[prefix] = [];
       groepen[prefix].push(e);
     } else {
       if (!groepen['Overig']) groepen['Overig'] = [];
       groepen['Overig'].push(e);
     }
   });
-  
+
   Object.keys(groepen).forEach(groep => {
     groepen[groep].sort((a, b) => {
       // Extract numeriek deel voor correcte sortering
