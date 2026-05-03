@@ -267,7 +267,13 @@ async function verwijderUitBlacklist(id) {
     try {
         console.log('Sending DELETE request to:', `${API}/api/blacklist/${id}`);
         const response = await fetch(`${API}/api/blacklist/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                door: window.getUser?.()?.displayName || window.getUser?.()?.username || 'Onbekend'
+            })
         });
 
         console.log('DELETE response status:', response.status);

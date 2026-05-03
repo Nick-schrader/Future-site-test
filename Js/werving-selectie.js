@@ -494,10 +494,10 @@ async function keurTicketGoed() {
             // Voeg toe aan logs
             const logData = {
                 actie: 'Sollicitant goedgekeurd',
+                door: currentUser?.displayName || currentUser?.username || 'Onbekend',
+                doelwit: `${ticket.ingameNaam} (${ticket.discordId})`,
                 details: `${ticket.ingameNaam} (${ticket.discordId}) is goedgekeurd door ${currentUser?.displayName || currentUser?.username || 'Onbekend'} en toegevoegd als 4e klasse met roepnummer`,
-                timestamp: new Date().toISOString(),
-                gebruiker: currentUser?.displayName || currentUser?.username || 'Onbekend',
-                categorie: 'Werving & Selectie'
+                timestamp: new Date().toISOString()
             };
 
             await fetch(`${API}/api/logs`, {
@@ -667,10 +667,10 @@ async function finaliseerGesprek(gesprekId) {
         // Voeg toe aan logs
         const logData = {
             actie: 'Gesprek goedgekeurd',
+            door: currentUser?.displayName || currentUser?.username || 'Onbekend',
+            doelwit: `${gesprek.ingameNaam} (${gesprek.discordId})`,
             details: `${gesprek.ingameNaam} (${gesprek.discordId}) is goedgekeurd na gesprek en toegevoegd als 4e klasse met roepnummer ${roepnummer}`,
-            timestamp: new Date().toISOString(),
-            gebruiker: currentUser?.displayName || currentUser?.username || 'Onbekend',
-            categorie: 'Werving & Selectie'
+            timestamp: new Date().toISOString()
         };
 
         await fetch(`${API}/api/logs`, {
@@ -708,10 +708,10 @@ async function keurGesprekAf(gesprekId) {
             // Voeg toe aan logs
             const logData = {
                 actie: 'Gesprek afgekeurd',
+                door: currentUser?.displayName || currentUser?.username || 'Onbekend',
+                doelwit: `${gesprek.ingameNaam} (${gesprek.discordId})`,
                 details: `${gesprek.ingameNaam} (${gesprek.discordId}) is afgekeurd na gesprek`,
-                timestamp: new Date().toISOString(),
-                gebruiker: currentUser?.displayName || currentUser?.username || 'Onbekend',
-                categorie: 'Werving & Selectie'
+                timestamp: new Date().toISOString()
             };
 
             await fetch(`${API}/api/logs`, {
