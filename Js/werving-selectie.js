@@ -496,7 +496,7 @@ async function keurTicketGoed() {
                 actie: 'Sollicitant goedgekeurd',
                 door: currentUser?.displayName || currentUser?.username || 'Onbekend',
                 doelwit: `${ticket.ingameNaam} (${ticket.discordId})`,
-                details: `${ticket.ingameNaam} (${ticket.discordId}) is goedgekeurd door ${currentUser?.displayName || currentUser?.username || 'Onbekend'} en toegevoegd als 4e klasse met roepnummer`,
+                details: `${ticket.ingameNaam} (${ticket.discordId}) is goedgekeurd door ${currentUser?.displayName || currentUser?.username || 'Onbekend'}`,
                 timestamp: new Date().toISOString()
             };
 
@@ -513,7 +513,7 @@ async function keurTicketGoed() {
             await loadTickets();
             await loadGesprekken();
             updateDashboardStats();
-            showToast('Ticket goedgekeurd! Personeel toegevoegd als 4e klasse met roepnummer.');
+            showToast('Ticket goedgekeurd!');
         } else {
             // Fallback naar localStorage
             keurTicketGoedInStorage(ticketId);

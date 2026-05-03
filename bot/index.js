@@ -1754,6 +1754,7 @@ app.delete('/api/blacklist/:id', (req, res) => {
   
   try {
     const { id } = req.params;
+    const { door } = req.body;
     console.log(`[BLACKLIST DELETE] ===== BLACKLIST DELETE START =====`);
     console.log(`[BLACKLIST DELETE] Request received for ID: ${id}`);
     console.log(`[BLACKLIST DELETE] Request params:`, req.params);
@@ -1785,7 +1786,7 @@ app.delete('/api/blacklist/:id', (req, res) => {
       
       const directResult = directLogStmt.run(
         'blacklist_verwijderd',
-        'Systeem',
+        door || 'Systeem',
         `${item.naam} (${item.discord_id})`,
         `Blacklist item verwijderd - ID: ${id}`,
         new Date().toISOString()

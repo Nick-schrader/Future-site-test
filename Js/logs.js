@@ -9,6 +9,7 @@ const ACTIE_LABELS = {
   blacklist_toegevoegd: 'Toegevoegd aan blacklist',
   blacklist_verwijderd: 'Verwijderd uit blacklist',
   BLACKLIST: 'Blacklist',
+  
 };
 
 let _alleLogs = [];
@@ -174,6 +175,12 @@ function filterLogs() {
           }
           wie = l.doelwit || '-';
         }
+      } else if (l.actie === 'Sollicitant goedgekeurd' || l.actie === 'Gesprek goedgekeurd' || l.actie === 'Gesprek afgekeurd') {
+        // Speciale parsing voor werving & selectie acties
+        // Gebruik doelwit veld direct voor wie
+        wie = l.doelwit || '-';
+        // Gebruik details veld voor reden
+        reden = l.details || '-';
       } else {
         // Normale parsing voor andere acties
         // Als details " | " bevat, splits het
