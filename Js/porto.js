@@ -416,11 +416,10 @@ function laadEenheden() {
     data.forEach(e => {
       let roepnummer = e.roepnummer || e.dienstnummer || '-';
       
-      // Emergency fix: tijdelijk uitgeschakeld om oneindige loop te stoppen
-      // Gebruik OVD interface om handmatig roepnummer toe te wijzen
+      // Eenheden zonder roepnummer blijven in wachtrij, worden niet verwerkt
       if (roepnummer === '-') {
-        console.log('[DISABLED] Emergency fix uitgeschakeld - gebruik OVD interface voor:', e.naam);
-        // Laat gebruiker in wachtrij staan voor handmatige fix
+        console.log('[EENHEDEN] Geen roepnummer voor:', e.naam, '- blijft in wachtrij');
+        return; // Sla deze eenheid over, blijft in wachtrij staan
       }
       
       if (!gegroepeerd[roepnummer]) {
@@ -492,6 +491,15 @@ function renderEenheden() {
   const tbody = document.getElementById('eenheden-tbody');
   const u = getUser();
   const canEdit = ['ovd', 'opco', 'oc', 'ops'].includes(u.role);
+  
+  console.log('[EENHEDEN] renderEenheden called');
+  console.log('[EENHEDEN] tbody found:', !!tbody);
+  console.log('[EENHEDEN] window.eenheden:', window.eenheden?.length || 0, 'eenheden');
+  
+  if (!tbody) {
+    console.error('[EENHEDEN] eenheden-tbody element not found!');
+    return;
+  }
 
   if (!window._groepIngeklapt) {
     // Probeer de staat uit localStorage te laden
