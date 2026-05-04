@@ -515,17 +515,26 @@ function renderEenheden() {
   const groepen = {};
   const eenheden = window.eenheden || [];
   
+  console.log('[EENHEDEN] Available eenheden:', eenheden.length);
+  console.log('[EENHEDEN] Eenheden data:', eenheden);
+  
   eenheden.forEach(e => {
     const prefix = e.id.trim().length >= 2 ? e.id.trim().substring(0, 2) : null;
+    console.log('[EENHEDEN] Processing eenheid:', e.id, 'prefix:', prefix);
     
     if (prefix && GROEPEN.includes(prefix)) {
       if (!groepen[prefix]) groepen[prefix] = [];
       groepen[prefix].push(e);
+      console.log('[EENHEDEN] Added to group', prefix, '- total now:', groepen[prefix].length);
     } else {
       if (!groepen['Overig']) groepen['Overig'] = [];
       groepen['Overig'].push(e);
+      console.log('[EENHEDEN] Added to Overig - total now:', groepen['Overig'].length);
     }
   });
+  
+  console.log('[EENHEDEN] Final groups:', Object.keys(groepen));
+  console.log('[EENHEDEN] Group sizes:', Object.keys(groepen).map(g => `${g}: ${groepen[g].length}`));
 
   Object.keys(groepen).forEach(groep => {
     groepen[groep].sort((a, b) => {
