@@ -518,7 +518,9 @@ function renderEenheden() {
   console.log('[EENHEDEN] Available eenheden:', eenheden.length);
   console.log('[EENHEDEN] Eenheden data:', eenheden);
   
+  console.log('[EENHEDEN] Starting forEach loop with', eenheden.length, 'eenheden');
   eenheden.forEach(e => {
+    console.log('[EENHEDEN] In forEach loop, processing eenheid:', e);
     const prefix = e.id.trim().length >= 2 ? e.id.trim().substring(0, 2) : null;
     console.log('[EENHEDEN] Processing eenheid:', e.id, 'prefix:', prefix);
     
