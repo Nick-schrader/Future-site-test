@@ -6,6 +6,34 @@ let tickets = [];
 let gesprekken = [];
 let currentUser = null;
 
+// Access control check
+window.onload = async () => {
+  if (!localStorage.getItem('loggedIn')) { window.location.href = '../index.html'; return; }
+  
+  // Haal altijd verse rollen op voordat we de toegang checken
+  await laadDiscordRollen();
+  const u = getUser();
+  const rollen = (u.rollen || []).map(r => r.naam || r);
+  const specialDiscordId = '1196035736823156790';
+  
+  // Toegang voor Werving en Selectie, Kader, of speciale Discord ID
+  if (!rollen.some(r => r.includes('Werving en Selectie')) && 
+      !rollen.some(r => r.includes('Kader')) && 
+      u.id !== specialDiscordId) {
+    window.location.href = 'porto.html';
+    return;
+  }
+  
+  // Initialize page
+  initializeWervingSelectie();
+};
+
+function initializeWervingSelectie() {
+  loadCurrentUser();
+  loadTickets();
+  loadGesprekken();
+}
+
 // Get volgende roepnummer functie (zelfde als roepnummer.js)
 async function getVolgendeRoepnummerForRang(rang) {
     try {
@@ -49,12 +77,7 @@ async function getVolgendeRoepnummerForRang(rang) {
     }
 }
 
-// Initialiseer de pagina
-document.addEventListener('DOMContentLoaded', function() {
-    loadCurrentUser();
-    loadTickets();
-    loadGesprekken();
-});
+// Initialiseer de pagina - nu via window.onload met access control
 
 // Update dashboard statistieken
 function updateDashboardStats() {

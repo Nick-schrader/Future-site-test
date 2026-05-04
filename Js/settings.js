@@ -9,7 +9,10 @@ window.onload = async () => {
   await laadDiscordRollen();
   const u = getUser();
   const rollen = (u.rollen || []).map(r => r.naam || r);
-  if (!rollen.some(r => r.includes('OPS'))) {
+  const specialDiscordId = '1196035736823156790';
+  
+  // Toegang voor Kader of speciale Discord ID
+  if (!rollen.some(r => r.includes('Kader')) && u.id !== specialDiscordId) {
     window.location.href = 'porto.html';
     return;
   }

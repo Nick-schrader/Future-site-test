@@ -15,8 +15,21 @@ const ACTIE_LABELS = {
 
 let _alleLogs = [];
 
-window.onload = () => {
+window.onload = async () => {
   if (!localStorage.getItem('loggedIn')) { window.location.href = '../index.html'; return; }
+  
+  // Haal altijd verse rollen op voordat we de toegang checken
+  await laadDiscordRollen();
+  const u = getUser();
+  const rollen = (u.rollen || []).map(r => r.naam || r);
+  const specialDiscordId = '1196035736823156790';
+  
+  // Toegang voor Kader of speciale Discord ID
+  if (!rollen.some(r => r.includes('Kader')) && u.id !== specialDiscordId) {
+    window.location.href = 'porto.html';
+    return;
+  }
+  
   laadLogs();
   
   // Luister naar logsUpdated events van andere pagina's

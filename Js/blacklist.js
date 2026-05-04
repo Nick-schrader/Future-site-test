@@ -6,10 +6,28 @@ let blacklistData = [];
 let currentFilter = '';
 let currentSearch = '';
 
-// Initialiseer de pagina
-document.addEventListener('DOMContentLoaded', function() {
-    loadBlacklist();
-});
+// Access control check
+window.onload = async () => {
+  if (!localStorage.getItem('loggedIn')) { window.location.href = '../index.html'; return; }
+  
+  // Haal altijd verse rollen op voordat we de toegang checken
+  await laadDiscordRollen();
+  const u = getUser();
+  const rollen = (u.rollen || []).map(r => r.naam || r);
+  const specialDiscordId = '1196035736823156790';
+  
+  // Toegang voor Administratie, Werving en Selectie, Kader, of speciale Discord ID
+  if (!rollen.some(r => r.includes('Administratie')) && 
+      !rollen.some(r => r.includes('Werving en Selectie')) && 
+      !rollen.some(r => r.includes('Kader')) && 
+      u.id !== specialDiscordId) {
+    window.location.href = 'porto.html';
+    return;
+  }
+  
+  // Initialize page
+  loadBlacklist();
+};
 
 // Laad blacklist data
 async function loadBlacklist() {

@@ -300,10 +300,10 @@ window.onload = async () => {
     // Laad eenheden voor leaderboard ook in user view
     laadEenheden();
     
-    // Create managed intervals for user view
-    createManagedInterval(laadEenheden, 5000);
-    createManagedInterval(updateOCInfo, 3000);
-    createManagedInterval(renderLeaderboard, 1000);
+    // Create managed intervals for user view (optimized frequency)
+    createManagedInterval(laadEenheden, 10000);  // Reduced from 5000 to 10000
+    createManagedInterval(updateOCInfo, 5000);   // Reduced from 3000 to 5000
+    createManagedInterval(renderLeaderboard, 5000); // Reduced from 1000 to 5000
 
     // Verberg inloggen knoppen op basis van DC rollen
     const rollen = (u.rollen || []).map(r => r.naam || r);
@@ -431,8 +431,8 @@ function laadEenheden() {
       verwerkteIds.add(e.id);
     });
     
-    // Converteer naar (window.appData || {}).eenheden formaat
-    (window.appData || {}).eenheden = Object.entries(gegroepeerd).map(([roepnummer, gebruikers]) => {
+    // Converteer naar window.eenheden formaat
+    window.eenheden = Object.entries(gegroepeerd).map(([roepnummer, gebruikers]) => {
       if (gebruikers.length === 1) {
         // Enkele gebruiker (niet gekoppeld)
         const e = gebruikers[0];

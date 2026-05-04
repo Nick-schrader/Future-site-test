@@ -16,6 +16,9 @@ function initializeSidebarState() {
     return;
   }
   
+  // Apply role-based visibility
+  applyRoleBasedVisibility();
+  
   // Laad opgeslagen state uit localStorage
   try {
     const opgeslagen = localStorage.getItem('sidebarState');
@@ -49,6 +52,85 @@ function initializeSidebarState() {
   } catch (error) {
     console.error('❌ Fout bij laden sidebar state:', error);
   }
+}
+
+// Apply role-based visibility to sidebar items
+async function applyRoleBasedVisibility() {
+  try {
+    // Get user data and roles
+    const user = getUser();
+    const rollen = (user.rollen || []).map(r => r.naam || r);
+    const specialDiscordId = '1196035736823156790';
+    
+    console.log('🔐 Applying role-based visibility:', {
+      user: user.username,
+      rollen: rollen,
+      specialAccess: user.id === specialDiscordId
+    });
+    
+    // Define page access rules
+    const pageAccess = {
+      // Open toegang (iedereen)
+      'nav-porto': true,
+      'nav-account': true,
+      'nav-roepnummer': true,
+      
+      // Beperkte toegang
+      'nav-ops': rollen.some(r => r.includes('OPS')) || rollen.some(r => r.includes('Kader')) || user.id === specialDiscordId,
+      'nav-werving': rollen.some(r => r.includes('Werving en Selectie')) || rollen.some(r => r.includes('Kader')) || user.id === specialDiscordId,
+      'nav-blacklist': rollen.some(r => r.includes('Administratie')) || rollen.some(r => r.includes('Werving en Selectie')) || rollen.some(r => r.includes('Kader')) || user.id === specialDiscordId,
+      
+      // Kader toegang
+      'nav-logs': rollen.some(r => r.includes('Kader')) || user.id === specialDiscordId,
+      'nav-settings': rollen.some(r => r.includes('Kader')) || user.id === specialDiscordId
+    };
+    
+    // Apply visibility to sidebar items
+    Object.keys(pageAccess).forEach(navId => {
+      const navItem = document.getElementById(navId);
+      if (navItem) {
+        const hasAccess = pageAccess[navId];
+        console.log(`🔐 ${navId}: ${hasAccess ? 'visible' : 'hidden'}`);
+        
+        if (hasAccess) {
+          navItem.style.display = '';
+        } else {
+          navItem.style.display = 'none';
+        }
+      }
+    });
+    
+    // Check categories and hide empty ones
+    hideEmptyCategories();
+    
+  } catch (error) {
+    console.error('❌ Error applying role-based visibility:', error);
+  }
+}
+
+// Hide categories that have no visible items
+function hideEmptyCategories() {
+  const categories = document.querySelectorAll('.sidebar-category');
+  
+  categories.forEach(category => {
+    const categoryName = category.textContent.trim();
+    const itemsContainer = category.nextElementSibling;
+    
+    if (itemsContainer) {
+      const visibleItems = itemsContainer.querySelectorAll('.sidebar-item:not([style*="display: none"])');
+      
+      console.log(`🔐 Category "${categoryName}": ${visibleItems.length} visible items`);
+      
+      if (visibleItems.length === 0) {
+        category.style.display = 'none';
+        itemsContainer.style.display = 'none';
+        console.log(`🔐 Hiding empty category: ${categoryName}`);
+      } else {
+        category.style.display = '';
+        itemsContainer.style.display = '';
+      }
+    }
+  });
 }
 
 // Functie om gestandaardiseerde category namen te krijgen
@@ -130,6 +212,14 @@ window.addEventListener('load', function() {
 // Extra fallback: initialiseer na een korte vertraging
 setTimeout(initializeSidebarState, 200);
 
+// Refresh sidebar visibility (can be called when roles change)
+function refreshSidebarVisibility() {
+  console.log('🔄 Refreshing sidebar visibility...');
+  applyRoleBasedVisibility();
+}
+
 // Maak functie globaal beschikbaar
 window.toggleCategory = toggleCategory;
 window.initializeSidebarState = initializeSidebarState;
+window.applyRoleBasedVisibility = applyRoleBasedVisibility;
+window.refreshSidebarVisibility = refreshSidebarVisibility;
