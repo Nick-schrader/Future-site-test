@@ -523,15 +523,21 @@ function renderEenheden() {
     console.log('[EENHEDEN] In forEach loop, processing eenheid:', e);
     const prefix = e.id.trim().length >= 2 ? e.id.trim().substring(0, 2) : null;
     console.log('[EENHEDEN] Processing eenheid:', e.id, 'prefix:', prefix);
+    console.log('[EENHEDEN] GROEPEN array:', GROEPEN);
+    console.log('[EENHEDEN] GROEPEN.includes(prefix):', GROEPEN.includes(prefix));
     
-    if (prefix && GROEPEN.includes(prefix)) {
-      if (!groepen[prefix]) groepen[prefix] = [];
-      groepen[prefix].push(e);
-      console.log('[EENHEDEN] Added to group', prefix, '- total now:', groepen[prefix].length);
-    } else {
-      if (!groepen['Overig']) groepen['Overig'] = [];
-      groepen['Overig'].push(e);
-      console.log('[EENHEDEN] Added to Overig - total now:', groepen['Overig'].length);
+    try {
+      if (prefix && GROEPEN.includes(prefix)) {
+        if (!groepen[prefix]) groepen[prefix] = [];
+        groepen[prefix].push(e);
+        console.log('[EENHEDEN] Added to group', prefix, '- total now:', groepen[prefix].length);
+      } else {
+        if (!groepen['Overig']) groepen['Overig'] = [];
+        groepen['Overig'].push(e);
+        console.log('[EENHEDEN] Added to Overig - total now:', groepen['Overig'].length);
+      }
+    } catch (error) {
+      console.error('[EENHEDEN] Error in forEach loop:', error);
     }
   });
   
