@@ -515,8 +515,12 @@ function renderEenheden() {
   const groepen = {};
   const eenheden = window.eenheden || [];
   
+  // Fallback GROEPEN constant if not globally defined
+  const GROEPEN = window.GROEPEN || ['17', '18', '19', '20', '21', '22', '23', '24', '25', '26'];
+  
   console.log('[EENHEDEN] Available eenheden:', eenheden.length);
   console.log('[EENHEDEN] Eenheden data:', eenheden);
+  console.log('[EENHEDEN] Using GROEPEN:', GROEPEN);
   
   console.log('[EENHEDEN] Starting forEach loop with', eenheden.length, 'eenheden');
   eenheden.forEach(e => {
