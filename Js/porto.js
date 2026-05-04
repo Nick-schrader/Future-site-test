@@ -492,12 +492,7 @@ function renderEenheden() {
   const u = getUser();
   const canEdit = ['ovd', 'opco', 'oc', 'ops'].includes(u.role);
   
-  console.log('[EENHEDEN] renderEenheden called');
-  console.log('[EENHEDEN] tbody found:', !!tbody);
-  console.log('[EENHEDEN] window.eenheden:', window.eenheden?.length || 0, 'eenheden');
-  
   if (!tbody) {
-    console.error('[EENHEDEN] eenheden-tbody element not found!');
     return;
   }
 
@@ -518,39 +513,24 @@ function renderEenheden() {
   // Fallback GROEPEN constant if not globally defined
   const GROEPEN = window.GROEPEN || ['17', '18', '19', '20', '21', '22', '23', '24', '25', '26'];
   
-  console.log('[EENHEDEN] Available eenheden:', eenheden.length);
-  console.log('[EENHEDEN] Eenheden data:', eenheden);
-  console.log('[EENHEDEN] Using GROEPEN:', GROEPEN);
-  
-  console.log('[EENHEDEN] Starting forEach loop with', eenheden.length, 'eenheden');
   eenheden.forEach(e => {
-    console.log('[EENHEDEN] In forEach loop, processing eenheid:', e);
     const prefix = e.id.trim().length >= 2 ? e.id.trim().substring(0, 2) : null;
-    console.log('[EENHEDEN] Processing eenheid:', e.id, 'prefix:', prefix);
-    console.log('[EENHEDEN] GROEPEN array:', GROEPEN);
-    console.log('[EENHEDEN] GROEPEN.includes(prefix):', GROEPEN.includes(prefix));
     
     try {
-      // Debug: check exact match
+      // Check exact match
       const hasMatch = GROEPEN.some(g => g === prefix);
-      console.log('[EENHEDEN] Exact match check:', hasMatch, 'for prefix:', prefix);
       
       if (prefix && hasMatch) {
         if (!groepen[prefix]) groepen[prefix] = [];
         groepen[prefix].push(e);
-        console.log('[EENHEDEN] Added to group', prefix, '- total now:', groepen[prefix].length);
       } else {
         if (!groepen['Overig']) groepen['Overig'] = [];
         groepen['Overig'].push(e);
-        console.log('[EENHEDEN] Added to Overig - total now:', groepen['Overig'].length);
       }
     } catch (error) {
-      console.error('[EENHEDEN] Error in forEach loop:', error);
+      // Silently handle errors
     }
   });
-  
-  console.log('[EENHEDEN] Final groups:', Object.keys(groepen));
-  console.log('[EENHEDEN] Group sizes:', Object.keys(groepen).map(g => `${g}: ${groepen[g].length}`));
 
   Object.keys(groepen).forEach(groep => {
     groepen[groep].sort((a, b) => {
@@ -568,10 +548,11 @@ function renderEenheden() {
     });
   });
 
-  const labels = ['Wachtrij', ...GROEPEN, ...(groepen['Overig'] ? ['Overig'] : [])];
-
-  console.log('[EENHEDEN] Labels array:', labels);
-  console.log('[EENHEDEN] Available groups:', Object.keys(groepen));
+  // Always show 17, 18, 20, but only show Wachtrij if there are people waiting
+  let labels = ['17', '18', '20'];
+  if (groepen['Wachtrij'] && groepen['Wachtrij'].length > 0) {
+    labels.unshift('Wachtrij'); // Add Wachtrij at the beginning
+  }
 
   let html = '';
   labels.forEach(prefix => {
@@ -580,29 +561,21 @@ function renderEenheden() {
     const ingeklapt = window._groepIngeklapt[label] || false;
     const pijl = ingeklapt ? '▶' : '▼';
 
-    console.log('[EENHEDEN] Processing label:', prefix, 'group size:', groep.length, 'display label:', label);
-
     // Check min eenheden warnings voor specialisaties in deze groep
     let warnings = '';
 
     html += `<tr class="group-header" onclick="toggleGroep('${label}')" style="cursor:pointer">
       <td colspan="7"><span style="margin-right:6px;font-size:0.7rem">${pijl}</span>${label} <span class="badge-tag">Totaal ${groep.length}</span></td>
     </tr>`;
-    console.log('[EENHEDEN] Added group header for:', label);
     
     if (!ingeklapt) {
       groep.forEach(e => {
         html += eenheidRow(e);
-        console.log('[EENHEDEN] Added eenheid row for:', e.id);
       });
     }
   });
 
-  console.log('[EENHEDEN] Final HTML length:', html.length);
-  console.log('[EENHEDEN] Final HTML preview:', html.substring(0, 200) + '...');
-  console.log('[EENHEDEN] Setting tbody.innerHTML...');
   tbody.innerHTML = html;
-  console.log('[EENHEDEN] tbody.innerHTML set successfully');
 }
 
 function eenheidRow(e) {
