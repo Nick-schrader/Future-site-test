@@ -531,7 +531,11 @@ function renderEenheden() {
     console.log('[EENHEDEN] GROEPEN.includes(prefix):', GROEPEN.includes(prefix));
     
     try {
-      if (prefix && GROEPEN.includes(prefix)) {
+      // Debug: check exact match
+      const hasMatch = GROEPEN.some(g => g === prefix);
+      console.log('[EENHEDEN] Exact match check:', hasMatch, 'for prefix:', prefix);
+      
+      if (prefix && hasMatch) {
         if (!groepen[prefix]) groepen[prefix] = [];
         groepen[prefix].push(e);
         console.log('[EENHEDEN] Added to group', prefix, '- total now:', groepen[prefix].length);
@@ -566,6 +570,9 @@ function renderEenheden() {
 
   const labels = ['Wachtrij', ...GROEPEN, ...(groepen['Overig'] ? ['Overig'] : [])];
 
+  console.log('[EENHEDEN] Labels array:', labels);
+  console.log('[EENHEDEN] Available groups:', Object.keys(groepen));
+
   let html = '';
   labels.forEach(prefix => {
     const groep = groepen[prefix] || [];
@@ -573,18 +580,29 @@ function renderEenheden() {
     const ingeklapt = window._groepIngeklapt[label] || false;
     const pijl = ingeklapt ? '▶' : '▼';
 
+    console.log('[EENHEDEN] Processing label:', prefix, 'group size:', groep.length, 'display label:', label);
+
     // Check min eenheden warnings voor specialisaties in deze groep
     let warnings = '';
 
     html += `<tr class="group-header" onclick="toggleGroep('${label}')" style="cursor:pointer">
       <td colspan="7"><span style="margin-right:6px;font-size:0.7rem">${pijl}</span>${label} <span class="badge-tag">Totaal ${groep.length}</span></td>
     </tr>`;
+    console.log('[EENHEDEN] Added group header for:', label);
+    
     if (!ingeklapt) {
-      groep.forEach(e => html += eenheidRow(e));
+      groep.forEach(e => {
+        html += eenheidRow(e);
+        console.log('[EENHEDEN] Added eenheid row for:', e.id);
+      });
     }
   });
 
+  console.log('[EENHEDEN] Final HTML length:', html.length);
+  console.log('[EENHEDEN] Final HTML preview:', html.substring(0, 200) + '...');
+  console.log('[EENHEDEN] Setting tbody.innerHTML...');
   tbody.innerHTML = html;
+  console.log('[EENHEDEN] tbody.innerHTML set successfully');
 }
 
 function eenheidRow(e) {
