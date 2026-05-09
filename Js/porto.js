@@ -2747,8 +2747,10 @@ function renderKandidaten(kandidaten, rol, lijst) {
         });
         const heeftRolProperty = k.role && k.role.toLowerCase() === rol.toLowerCase();
 
-        // ❌ Uitsluiten als role property OVD of OPCO is
-        if (isOvdOfOpco(k)) {
+        // ✅ OVD/OPCO gebruikers mogen wel kandidaten zijn voor koppels
+        // OVD gebruikers kunnen andere OVD/OPCO gebruikers koppelen
+        // maar niet als ze zelf al OVD/OPCO zijn
+        if (isOvdOfOpco(k) && isOvdOfOpco(k.role)) {
             return false;
         }
 
