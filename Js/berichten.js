@@ -469,7 +469,6 @@ window.checkBerichtenSysteem = function() {
         });
 };
 
-console.log('[BERICHTEN] Test functie beschikbaar:', typeof window.testBericht);
 
 // Reload berichten bij pagina focus/wissel
 document.addEventListener('visibilitychange', async () => {

@@ -265,12 +265,14 @@ window.onload = async () => {
           saveUser(u);
           // console.log('🔍 After saveUser - u.ingedeeld:', u.ingedeeld);
           
-          // Alleen ovd-porto-main tonen als echt ingedeeld
-          if (data.ingedeeld) {
-            // console.log('🔍 SHOWING ovd-porto-main because data.ingedeeld is true');
+          // Voor OVD/OPCO altijd ovd-porto-main tonen, ongeacht ingedeeld status
+          if (['ovd','opco','oc','ops'].includes(u.role)) {
+            // console.log('🔍 SHOWING ovd-porto-main for OVD/OPCO role');
             const main = document.getElementById('ovd-porto-main');
             if (main) { main.style.display = ''; }
-            startIndienstTimer('ovd-oc-tijd');
+            if (data.ingedeeld) {
+              startIndienstTimer('ovd-oc-tijd');
+            }
             ovdUpdateInfo();
           } else {
             // console.log('🔍 USER NIET INGEDEELD - Porto menu niet tonen, rol reset naar user');
@@ -286,10 +288,13 @@ window.onload = async () => {
           }
         }).catch(() => {
           if (!u.indienstStart) { u.indienstStart = Date.now(); saveUser(u); }
-          const main = document.getElementById('ovd-porto-main');
-          if (main) { main.style.display = ''; }
-          startIndienstTimer('ovd-oc-tijd');
-          ovdUpdateInfo();
+          // Voor OVD/OPCO altijd ovd-porto-main tonen, ook in fallback
+          if (['ovd','opco','oc','ops'].includes(u.role)) {
+            const main = document.getElementById('ovd-porto-main');
+            if (main) { main.style.display = ''; }
+            startIndienstTimer('ovd-oc-tijd');
+            ovdUpdateInfo();
+          }
         });
     }
   } else {
